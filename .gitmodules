@@ -1,6 +1,0 @@
-[submodule "proto/grpc-graphql-gateway"]
-	path = .proto/grpc-graphql-gateway
-	url = https://github.com/ysugimoto/grpc-graphql-gateway.git
-[submodule "proto/googleapis"]
-	path = .proto/googleapis
-	url = https://github.com/googleapis/googleapis.git
