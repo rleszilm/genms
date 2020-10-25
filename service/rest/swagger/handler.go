@@ -27,6 +27,14 @@ func (s *Service) Shutdown(_ context.Context) error {
 	return nil
 }
 
+// Name implements service.Name
+func (s *Service) Name() string {
+	if s.config.Name != "" {
+		return s.config.Name
+	}
+	return "swagger"
+}
+
 // NewService returns a new Service.
 func NewService(config *Config, server *rest_service.Server) *Service {
 	return &Service{

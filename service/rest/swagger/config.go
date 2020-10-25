@@ -6,6 +6,7 @@ import (
 
 // Config is the struct used to parse configuration from environment variables.
 type Config struct {
+	Name          string `envconfig:"name" default:""`
 	Enabled       bool   `envconfig:"enabled"`
 	RequestPrefix string `envconfig:"request_prefix" default:"/swagger/"`
 	Dir           string `envconfig:"dir" default:"var/swagger"`

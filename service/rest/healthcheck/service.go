@@ -24,6 +24,14 @@ func (s *Service) Shutdown(_ context.Context) error {
 	return nil
 }
 
+// Name implements service.Name
+func (s *Service) Name() string {
+	if s.config.Name != "" {
+		return s.config.Name
+	}
+	return "healthcheck"
+}
+
 // Healthy is the handler that checks whether the service is ready to service.
 func (s *Service) ServeHTTP(w http.ResponseWriter, req *http.Request) {
 	w.WriteHeader(http.StatusOK)
