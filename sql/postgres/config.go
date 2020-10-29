@@ -23,3 +23,14 @@ func (c *Config) ConnectionString() string {
 		c.Host, c.Port, c.User, c.Password, c.Database,
 	)
 }
+
+// NewFromEnv returns a new Config from env vars.
+func NewFromEnv(namespace string) (*Config, error) {
+	c := &Config{}
+	err := envconfig.Process(namespace, c)
+	if err != nil {
+		return nil, err
+	}
+
+	return c, nil
+}
