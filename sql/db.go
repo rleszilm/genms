@@ -1,0 +1,17 @@
+package sql
+
+import (
+	"context"
+
+	"github.com/rleszilm/gen_microservice/service"
+)
+
+// DB defines the interface to use when getting database connections.
+type DB interface {
+	service.Service
+
+	Bind(string, interface{}) (string, []interface{}, error)
+	Rebind(string) string
+	Query(context.Context, string, interface{}) (Rows, error)
+	Exec(context.Context, string, interface{}) (Result, error)
+}
