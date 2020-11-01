@@ -3,6 +3,7 @@ package postgres_sql
 import (
 	"fmt"
 
+	"github.com/kelseyhightower/envconfig"
 	"github.com/rleszilm/gen_microservice/sql"
 )
 

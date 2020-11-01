@@ -11,7 +11,7 @@ import (
 // and Stop all services in the application. User should be aware of the order in which services are
 // added.
 type Manager struct {
-	svcs Dependencies
+	svcs *Dependencies
 }
 
 // Register adds an Service interface to its slice. Services will start and stop in the order which
@@ -78,5 +78,7 @@ func (m *Manager) Shutdown(ctx context.Context) error {
 
 // NewManager returns a new service Manager.
 func NewManager() *Manager {
-	return &Manager{}
+	return &Manager{
+		svcs: &Dependencies{},
+	}
 }

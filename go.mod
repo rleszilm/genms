@@ -7,7 +7,7 @@ require (
 	github.com/Shopify/sarama v1.27.2
 	github.com/awalterschulze/goderive v0.0.0-20201024082847-dcd8fe800b1e
 	github.com/golang/groupcache v0.0.0-20200121045136-8c9f03a8e57e // indirect
-	github.com/golang/protobuf v1.4.3 // indirect
+	github.com/golang/protobuf v1.4.3
 	github.com/grpc-ecosystem/go-grpc-middleware v1.2.2
 	github.com/grpc-ecosystem/grpc-gateway v1.15.2
 	github.com/iancoleman/strcase v0.1.2 // indirect
