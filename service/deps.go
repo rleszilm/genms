@@ -11,14 +11,20 @@ type Dependencies struct {
 }
 
 // Register adds a service to the dependencies.
-func (d *Dependencies) Register(svc Service, deps ...string) {
+func (d *Dependencies) Register(svc Service, deps ...Service) {
 	if len(d.svcs) == 0 {
 		d.first = svc.Name()
 	}
 
 	d.svcs[svc.Name()] = svc
-	d.deps[svc.Name()] = deriveSetDeps(deps)
+
+	d.deps[svc.Name()] = deriveSetDeps(deriveFmapServiceNames(serviceKey, deps))
 	d.sort()
+}
+
+// WithDependencies adds dependencies to the specified service.
+func (d *Dependencies) WithDependencies(svc Service, deps ...Service) {
+	d.deps[svc.Name()] = deriveUnionDeps(deriveSetDeps(deriveFmapServiceNames(serviceKey, deps)), d.deps[svc.Name()])
 }
 
 // Iterate returns an iterator for the Dependencies
@@ -112,4 +118,8 @@ func NewDependencies() *Dependencies {
 		svcs: map[string]Service{},
 		deps: map[string]map[string]struct{}{},
 	}
+}
+
+func serviceKey(s Service) string {
+	return s.Name()
 }

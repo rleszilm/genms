@@ -16,7 +16,7 @@ type Manager struct {
 
 // Register adds an Service interface to its slice. Services will start and stop in the order which
 // they are Registered.
-func (m *Manager) Register(svc Service, deps ...string) {
+func (m *Manager) Register(svc Service, deps ...Service) {
 	m.svcs.Register(svc, deps...)
 }
 

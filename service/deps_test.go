@@ -27,7 +27,7 @@ func TestDependencies(t *testing.T) {
 	testcases := []struct {
 		desc        string
 		svcs        []service.Service
-		deps        map[string][]string
+		deps        map[string][]service.Service
 		expectSet   map[string]struct{}
 		expectOrder []string
 		err         error
@@ -46,12 +46,12 @@ func TestDependencies(t *testing.T) {
 		{
 			desc: "many dependencies",
 			svcs: []service.Service{svc1, svc2, svc3, svc4, svc5},
-			deps: map[string][]string{
+			deps: map[string][]service.Service{
 				"svc-1": {},
-				"svc-2": {"svc-1"},
-				"svc-3": {"svc-1", "svc-2"},
-				"svc-4": {"svc-1", "svc-2", "svc-3"},
-				"svc-5": {"svc-1", "svc-2", "svc-3", "svc-4"},
+				"svc-2": {svc1},
+				"svc-3": {svc1, svc2},
+				"svc-4": {svc1, svc2, svc3},
+				"svc-5": {svc1, svc2, svc3, svc4},
 			},
 			expectOrder: []string{
 				"svc-1",
@@ -64,20 +64,20 @@ func TestDependencies(t *testing.T) {
 		{
 			desc: "simple cycle",
 			svcs: []service.Service{svc1, svc2},
-			deps: map[string][]string{
-				"svc-1": {"svc-2"},
-				"svc-2": {"svc-1"},
+			deps: map[string][]service.Service{
+				"svc-1": {svc2},
+				"svc-2": {svc1},
 			},
 			err: service.ErrDependencyCycle,
 		},
 		{
 			desc: "longer cycle",
 			svcs: []service.Service{svc1, svc2, svc3, svc4},
-			deps: map[string][]string{
-				"svc-1": {"svc-2"},
-				"svc-2": {"svc-3"},
-				"svc-3": {"svc-4"},
-				"svc-4": {"svc-1"},
+			deps: map[string][]service.Service{
+				"svc-1": {svc2},
+				"svc-2": {svc3},
+				"svc-3": {svc4},
+				"svc-4": {svc1},
 			},
 			err: service.ErrDependencyCycle,
 		},
