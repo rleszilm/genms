@@ -79,6 +79,6 @@ func (m *Manager) Shutdown(ctx context.Context) error {
 // NewManager returns a new service Manager.
 func NewManager() *Manager {
 	return &Manager{
-		svcs: &Dependencies{},
+		svcs: NewDependencies(),
 	}
 }
