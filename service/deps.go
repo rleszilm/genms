@@ -10,21 +10,20 @@ type Dependencies struct {
 	cycle []string
 }
 
-// Register adds a service to the dependencies.
+// Register adds a service to the dependencies. If the given service is already registered its
+// dependencies are updated.
 func (d *Dependencies) Register(svc Service, deps ...Service) {
 	if len(d.svcs) == 0 {
 		d.first = svc.Name()
 	}
 
-	d.svcs[svc.Name()] = svc
+	svcKey := serviceKey(svc)
+	if _, ok := d.svcs[svcKey]; !ok {
+		d.svcs[svcKey] = svc
+	}
 
-	d.deps[svc.Name()] = deriveSetDeps(deriveFmapServiceNames(serviceKey, deps))
+	d.deps[svcKey] = deriveUnionDeps(deriveSetDeps(deriveFmapServiceNames(serviceKey, deps)), d.deps[svcKey])
 	d.sort()
-}
-
-// WithDependencies adds dependencies to the specified service.
-func (d *Dependencies) WithDependencies(svc Service, deps ...Service) {
-	d.deps[svc.Name()] = deriveUnionDeps(deriveSetDeps(deriveFmapServiceNames(serviceKey, deps)), d.deps[svc.Name()])
 }
 
 // Iterate returns an iterator for the Dependencies
