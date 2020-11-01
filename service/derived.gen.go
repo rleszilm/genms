@@ -12,6 +12,15 @@ func deriveContains(list []string, item string) bool {
 	return false
 }
 
+// deriveUnionDeps returns the union of two maps, with respect to the keys.
+// It does this by adding the keys to the first map.
+func deriveUnionDeps(union, that map[string]struct{}) map[string]struct{} {
+	for k := range that {
+		union[k] = struct{}{}
+	}
+	return union
+}
+
 // deriveCloneDeps returns a clone of the src parameter.
 func deriveCloneDeps(src map[string]map[string]struct{}) map[string]map[string]struct{} {
 	if src == nil {
@@ -20,6 +29,15 @@ func deriveCloneDeps(src map[string]map[string]struct{}) map[string]map[string]s
 	dst := make(map[string]map[string]struct{})
 	deriveDeepCopy(dst, src)
 	return dst
+}
+
+// deriveFmapServiceNames returns a list where each element of the input list has been morphed by the input function.
+func deriveFmapServiceNames(f func(Service) string, list []Service) []string {
+	out := make([]string, len(list))
+	for i, elem := range list {
+		out[i] = f(elem)
+	}
+	return out
 }
 
 // deriveSetDeps returns the input list as a map with the items of the list as the keys of the map.
