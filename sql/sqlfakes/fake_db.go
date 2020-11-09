@@ -5,6 +5,7 @@ import (
 	"context"
 	"sync"
 
+	"github.com/rleszilm/gen_microservice/service"
 	"github.com/rleszilm/gen_microservice/sql"
 )
 
@@ -24,6 +25,16 @@ type FakeDB struct {
 		result1 string
 		result2 []interface{}
 		result3 error
+	}
+	DependenciesStub        func() service.Services
+	dependenciesMutex       sync.RWMutex
+	dependenciesArgsForCall []struct {
+	}
+	dependenciesReturns struct {
+		result1 service.Services
+	}
+	dependenciesReturnsOnCall map[int]struct {
+		result1 service.Services
 	}
 	ExecStub        func(context.Context, string, interface{}) (sql.Result, error)
 	execMutex       sync.RWMutex
@@ -98,6 +109,21 @@ type FakeDB struct {
 	shutdownReturnsOnCall map[int]struct {
 		result1 error
 	}
+	StringStub        func() string
+	stringMutex       sync.RWMutex
+	stringArgsForCall []struct {
+	}
+	stringReturns struct {
+		result1 string
+	}
+	stringReturnsOnCall map[int]struct {
+		result1 string
+	}
+	WithDependencyStub        func(service.Service)
+	withDependencyMutex       sync.RWMutex
+	withDependencyArgsForCall []struct {
+		arg1 service.Service
+	}
 	invocations      map[string][][]interface{}
 	invocationsMutex sync.RWMutex
 }
@@ -167,6 +193,58 @@ func (fake *FakeDB) BindReturnsOnCall(i int, result1 string, result2 []interface
 		result2 []interface{}
 		result3 error
 	}{result1, result2, result3}
+}
+
+func (fake *FakeDB) Dependencies() service.Services {
+	fake.dependenciesMutex.Lock()
+	ret, specificReturn := fake.dependenciesReturnsOnCall[len(fake.dependenciesArgsForCall)]
+	fake.dependenciesArgsForCall = append(fake.dependenciesArgsForCall, struct {
+	}{})
+	fake.recordInvocation("Dependencies", []interface{}{})
+	fake.dependenciesMutex.Unlock()
+	if fake.DependenciesStub != nil {
+		return fake.DependenciesStub()
+	}
+	if specificReturn {
+		return ret.result1
+	}
+	fakeReturns := fake.dependenciesReturns
+	return fakeReturns.result1
+}
+
+func (fake *FakeDB) DependenciesCallCount() int {
+	fake.dependenciesMutex.RLock()
+	defer fake.dependenciesMutex.RUnlock()
+	return len(fake.dependenciesArgsForCall)
+}
+
+func (fake *FakeDB) DependenciesCalls(stub func() service.Services) {
+	fake.dependenciesMutex.Lock()
+	defer fake.dependenciesMutex.Unlock()
+	fake.DependenciesStub = stub
+}
+
+func (fake *FakeDB) DependenciesReturns(result1 service.Services) {
+	fake.dependenciesMutex.Lock()
+	defer fake.dependenciesMutex.Unlock()
+	fake.DependenciesStub = nil
+	fake.dependenciesReturns = struct {
+		result1 service.Services
+	}{result1}
+}
+
+func (fake *FakeDB) DependenciesReturnsOnCall(i int, result1 service.Services) {
+	fake.dependenciesMutex.Lock()
+	defer fake.dependenciesMutex.Unlock()
+	fake.DependenciesStub = nil
+	if fake.dependenciesReturnsOnCall == nil {
+		fake.dependenciesReturnsOnCall = make(map[int]struct {
+			result1 service.Services
+		})
+	}
+	fake.dependenciesReturnsOnCall[i] = struct {
+		result1 service.Services
+	}{result1}
 }
 
 func (fake *FakeDB) Exec(arg1 context.Context, arg2 string, arg3 interface{}) (sql.Result, error) {
@@ -531,11 +609,96 @@ func (fake *FakeDB) ShutdownReturnsOnCall(i int, result1 error) {
 	}{result1}
 }
 
+func (fake *FakeDB) String() string {
+	fake.stringMutex.Lock()
+	ret, specificReturn := fake.stringReturnsOnCall[len(fake.stringArgsForCall)]
+	fake.stringArgsForCall = append(fake.stringArgsForCall, struct {
+	}{})
+	fake.recordInvocation("String", []interface{}{})
+	fake.stringMutex.Unlock()
+	if fake.StringStub != nil {
+		return fake.StringStub()
+	}
+	if specificReturn {
+		return ret.result1
+	}
+	fakeReturns := fake.stringReturns
+	return fakeReturns.result1
+}
+
+func (fake *FakeDB) StringCallCount() int {
+	fake.stringMutex.RLock()
+	defer fake.stringMutex.RUnlock()
+	return len(fake.stringArgsForCall)
+}
+
+func (fake *FakeDB) StringCalls(stub func() string) {
+	fake.stringMutex.Lock()
+	defer fake.stringMutex.Unlock()
+	fake.StringStub = stub
+}
+
+func (fake *FakeDB) StringReturns(result1 string) {
+	fake.stringMutex.Lock()
+	defer fake.stringMutex.Unlock()
+	fake.StringStub = nil
+	fake.stringReturns = struct {
+		result1 string
+	}{result1}
+}
+
+func (fake *FakeDB) StringReturnsOnCall(i int, result1 string) {
+	fake.stringMutex.Lock()
+	defer fake.stringMutex.Unlock()
+	fake.StringStub = nil
+	if fake.stringReturnsOnCall == nil {
+		fake.stringReturnsOnCall = make(map[int]struct {
+			result1 string
+		})
+	}
+	fake.stringReturnsOnCall[i] = struct {
+		result1 string
+	}{result1}
+}
+
+func (fake *FakeDB) WithDependency(arg1 service.Service) {
+	fake.withDependencyMutex.Lock()
+	fake.withDependencyArgsForCall = append(fake.withDependencyArgsForCall, struct {
+		arg1 service.Service
+	}{arg1})
+	fake.recordInvocation("WithDependency", []interface{}{arg1})
+	fake.withDependencyMutex.Unlock()
+	if fake.WithDependencyStub != nil {
+		fake.WithDependencyStub(arg1)
+	}
+}
+
+func (fake *FakeDB) WithDependencyCallCount() int {
+	fake.withDependencyMutex.RLock()
+	defer fake.withDependencyMutex.RUnlock()
+	return len(fake.withDependencyArgsForCall)
+}
+
+func (fake *FakeDB) WithDependencyCalls(stub func(service.Service)) {
+	fake.withDependencyMutex.Lock()
+	defer fake.withDependencyMutex.Unlock()
+	fake.WithDependencyStub = stub
+}
+
+func (fake *FakeDB) WithDependencyArgsForCall(i int) service.Service {
+	fake.withDependencyMutex.RLock()
+	defer fake.withDependencyMutex.RUnlock()
+	argsForCall := fake.withDependencyArgsForCall[i]
+	return argsForCall.arg1
+}
+
 func (fake *FakeDB) Invocations() map[string][][]interface{} {
 	fake.invocationsMutex.RLock()
 	defer fake.invocationsMutex.RUnlock()
 	fake.bindMutex.RLock()
 	defer fake.bindMutex.RUnlock()
+	fake.dependenciesMutex.RLock()
+	defer fake.dependenciesMutex.RUnlock()
 	fake.execMutex.RLock()
 	defer fake.execMutex.RUnlock()
 	fake.initializeMutex.RLock()
@@ -548,6 +711,10 @@ func (fake *FakeDB) Invocations() map[string][][]interface{} {
 	defer fake.rebindMutex.RUnlock()
 	fake.shutdownMutex.RLock()
 	defer fake.shutdownMutex.RUnlock()
+	fake.stringMutex.RLock()
+	defer fake.stringMutex.RUnlock()
+	fake.withDependencyMutex.RLock()
+	defer fake.withDependencyMutex.RUnlock()
 	copiedInvocations := map[string][][]interface{}{}
 	for key, value := range fake.invocations {
 		copiedInvocations[key] = value
