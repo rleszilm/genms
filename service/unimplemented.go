@@ -1,16 +1,22 @@
 package service
 
-import "context"
+// Deps manages a services dependencies.
+type Deps []Service
 
-// Unimplemented is a Service that has no needed Intialize or Shutdown logic.
-type Unimplemented struct{}
+// Dependencies returns the services dependencies.
+func (d *Deps) Dependencies() []Service {
+	if d == nil {
+		return nil
+	}
 
-// Initialize implements service.Initialize
-func (n *Unimplemented) Initialize(context.Context) error {
-	return nil
+	return []Service(*d)
 }
 
-// Shutdown implements service.Shutdown
-func (n *Unimplemented) Shutdown(context.Context) error {
-	return nil
+// WithDependencies adds dependencies to the service.
+func (d *Deps) WithDependencies(svcs ...Service) {
+	if d == nil {
+		return
+	}
+
+	*d = append(*d, svcs...)
 }

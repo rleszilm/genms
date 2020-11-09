@@ -6,6 +6,7 @@ import (
 	"net/http"
 
 	"github.com/grpc-ecosystem/grpc-gateway/runtime"
+	"github.com/rleszilm/gen_microservice/service"
 	"google.golang.org/grpc"
 )
 
@@ -14,6 +15,7 @@ type GrpcProxy func(context.Context, *runtime.ServeMux, string, []grpc.DialOptio
 
 // Server is a service.Service that handles rest requests.
 type Server struct {
+	service.Deps
 	name     string
 	config   *Config
 	server   *http.Server
@@ -45,6 +47,11 @@ func (s *Server) Shutdown(_ context.Context) error {
 
 // Name implements Server.Name()
 func (s *Server) Name() string {
+	return s.name
+}
+
+// String implements Server.String()
+func (s *Server) String() string {
 	return s.name
 }
 

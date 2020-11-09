@@ -17,6 +17,15 @@ type Service interface {
 	// Name returns the name of a service. This must be unique if there are multiple instances of the same
 	// service.
 	Name() string
+
+	// String returns a string identifier for the service.
+	String() string
+
+	// Dependencies returns the servers dependencies.
+	Dependencies() Services
+
+	// WithDependency adds a dependency to the service.
+	WithDependency(Service)
 }
 
 // Listener is a Service that accepts connections and does work based on the requests made.
