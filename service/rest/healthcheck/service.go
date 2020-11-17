@@ -4,11 +4,14 @@ import (
 	"context"
 	"net/http"
 
+	"github.com/rleszilm/gen_microservice/service"
 	rest_service "github.com/rleszilm/gen_microservice/service/rest"
 )
 
 // Service function returns an http.Handler that handles system status request.
 type Service struct {
+	service.Deps
+
 	config *Config
 	server *rest_service.Server
 }
@@ -32,6 +35,11 @@ func (s *Service) Name() string {
 	return "healthcheck"
 }
 
+// String returns a sting identifier
+func (s *Service) String() string {
+	return s.Name()
+}
+
 // Healthy is the handler that checks whether the service is ready to service.
 func (s *Service) ServeHTTP(w http.ResponseWriter, req *http.Request) {
 	w.WriteHeader(http.StatusOK)
@@ -40,8 +48,12 @@ func (s *Service) ServeHTTP(w http.ResponseWriter, req *http.Request) {
 
 // NewService instantitates a Service server.
 func NewService(config *Config, server *rest_service.Server) *Service {
-	return &Service{
+	svc := &Service{
 		config: config,
 		server: server,
 	}
+
+	server.WithDependencies(svc)
+
+	return svc
 }

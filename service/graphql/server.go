@@ -7,36 +7,27 @@ import (
 	"github.com/rleszilm/gen_microservice/service"
 	rest_service "github.com/rleszilm/gen_microservice/service/rest"
 	"github.com/rleszilm/grpc-graphql-gateway/options"
-	"github.com/ysugimoto/grpc-graphql-gateway/runtime"
+	"github.com/rleszilm/grpc-graphql-gateway/runtime"
 )
 
 // GraphqlProxy is a function that registers http routes to a grpc server.
-type GraphqlProxy func(context.Context, *runtime.ServeMux, *options.ServerOptions) error
+type GraphqlProxy func(*runtime.ServeMux, *options.ServerOptions) error
 
 // Server is a service.Service that handles rest requests.
 type Server struct {
 	service.Deps
-	name         string
-	config       *Config
-	server       *rest_service.Server
-	sharedServer bool
-	proxyMux     *runtime.ServeMux
+	name       string
+	config     *Config
+	restServer *rest_service.Server
 }
 
 // Initialize implements the Server.Initialize interface for Server.
 func (s *Server) Initialize(ctx context.Context) error {
-	if !s.sharedServer {
-		return s.server.Initialize(ctx)
-	}
-
 	return nil
 }
 
 // Shutdown implements the Server.Shutdown interface for Server.
 func (s *Server) Shutdown(ctx context.Context) error {
-	if !s.sharedServer {
-		return s.server.Shutdown(ctx)
-	}
 	return nil
 }
 
@@ -63,14 +54,28 @@ func (s *Server) Addr() string {
 	return s.config.Addr
 }
 
-// WithProxy adds rest methods that proxy to a grpc server.
-func (s *Server) WithProxy(ctx context.Context, proxy GraphqlProxy) error {
-	options := &options.ServerOptions{
-		Host:         s.config.ProxyGrpc.Addr,
-		WithInsecure: s.config.ProxyGrpc.Secure,
+// WithGrpcProxy adds rest methods that proxy to a grpc server.
+func (s *Server) WithGrpcProxy(_ context.Context, proxyName string, proxyFunc GraphqlProxy) error {
+	proxy, ok := s.config.Proxies[proxyName]
+	if !ok {
+		return service.ErrNoProxy
 	}
 
-	if err := proxy(ctx, s.proxyMux, options); err != nil {
+	if !proxy.Enabled {
+		return nil
+	}
+
+	proxyOpts := &options.ServerOptions{
+		Host:         proxy.Addr,
+		WithInsecure: proxy.Insecure,
+	}
+
+	proxyMux := runtime.NewServeMux()
+	if err := s.restServer.WithRoute(proxy.Pattern, proxyMux); err != nil {
+		return err
+	}
+
+	if err := proxyFunc(proxyMux, proxyOpts); err != nil {
 		return err
 	}
 
@@ -79,10 +84,8 @@ func (s *Server) WithProxy(ctx context.Context, proxy GraphqlProxy) error {
 
 // NewServer returns a new Server.
 func NewServer(name string, config *Config) (*Server, error) {
-	proxyMux := runtime.NewServeMux()
-
-	shared := config.RestServer != nil
-	if !shared {
+	restServer := config.RestServer
+	if restServer == nil {
 		restConfig := &rest_service.Config{}
 		copier.Copy(restConfig, config)
 
@@ -90,16 +93,16 @@ func NewServer(name string, config *Config) (*Server, error) {
 		if err != nil {
 			return nil, err
 		}
-		config.RestServer = rest
+		restServer = rest
 	}
 
-	config.RestServer.WithRoute(config.ProxyGrpc.Pattern, proxyMux)
+	server := &Server{
+		name:       name,
+		config:     config,
+		restServer: restServer,
+	}
 
-	return &Server{
-		name:         name,
-		config:       config,
-		server:       config.RestServer,
-		sharedServer: shared,
-		proxyMux:     proxyMux,
-	}, nil
+	server.restServer.WithDependencies(server)
+
+	return server, nil
 }

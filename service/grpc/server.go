@@ -54,6 +54,7 @@ func (s *Server) Initialize(_ context.Context) error {
 		if err := s.grpc.Serve(listener); err != nil {
 			log.Fatalln("Error serving grpc requests", err)
 		}
+		log.Println("no longer serving grpc")
 	}()
 
 	return nil

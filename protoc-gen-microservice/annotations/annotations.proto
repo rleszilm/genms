@@ -1,0 +1,27 @@
+syntax = "proto3";
+
+package annotations;
+option go_package = "github.com/rleszilm/gen_microservice/protoc-gen-microservice/annotations";
+
+import "google/protobuf/descriptor.proto";
+
+extend google.protobuf.FileOptions {
+    optional string my_file_option = 50001;
+}
+
+extend google.protobuf.ServiceOptions {
+    optional MicroServiceOptions micro_service = 50002;
+}
+
+message MicroServiceOptions {
+    bool rest = 1;
+    bool graphql = 2;
+}
+
+extend google.protobuf.MethodOptions {
+    optional string my_method_option = 50002;
+}
+
+extend google.protobuf.MessageOptions {
+    optional string my_message_option = 50003;
+}
