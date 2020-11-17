@@ -73,10 +73,10 @@ type FakeConsumer struct {
 	stringReturnsOnCall map[int]struct {
 		result1 string
 	}
-	WithDependencyStub        func(service.Service)
-	withDependencyMutex       sync.RWMutex
-	withDependencyArgsForCall []struct {
-		arg1 service.Service
+	WithDependenciesStub        func(...service.Service)
+	withDependenciesMutex       sync.RWMutex
+	withDependenciesArgsForCall []struct {
+		arg1 []service.Service
 	}
 	invocations      map[string][][]interface{}
 	invocationsMutex sync.RWMutex
@@ -418,34 +418,34 @@ func (fake *FakeConsumer) StringReturnsOnCall(i int, result1 string) {
 	}{result1}
 }
 
-func (fake *FakeConsumer) WithDependency(arg1 service.Service) {
-	fake.withDependencyMutex.Lock()
-	fake.withDependencyArgsForCall = append(fake.withDependencyArgsForCall, struct {
-		arg1 service.Service
+func (fake *FakeConsumer) WithDependencies(arg1 ...service.Service) {
+	fake.withDependenciesMutex.Lock()
+	fake.withDependenciesArgsForCall = append(fake.withDependenciesArgsForCall, struct {
+		arg1 []service.Service
 	}{arg1})
-	fake.recordInvocation("WithDependency", []interface{}{arg1})
-	fake.withDependencyMutex.Unlock()
-	if fake.WithDependencyStub != nil {
-		fake.WithDependencyStub(arg1)
+	fake.recordInvocation("WithDependencies", []interface{}{arg1})
+	fake.withDependenciesMutex.Unlock()
+	if fake.WithDependenciesStub != nil {
+		fake.WithDependenciesStub(arg1...)
 	}
 }
 
-func (fake *FakeConsumer) WithDependencyCallCount() int {
-	fake.withDependencyMutex.RLock()
-	defer fake.withDependencyMutex.RUnlock()
-	return len(fake.withDependencyArgsForCall)
+func (fake *FakeConsumer) WithDependenciesCallCount() int {
+	fake.withDependenciesMutex.RLock()
+	defer fake.withDependenciesMutex.RUnlock()
+	return len(fake.withDependenciesArgsForCall)
 }
 
-func (fake *FakeConsumer) WithDependencyCalls(stub func(service.Service)) {
-	fake.withDependencyMutex.Lock()
-	defer fake.withDependencyMutex.Unlock()
-	fake.WithDependencyStub = stub
+func (fake *FakeConsumer) WithDependenciesCalls(stub func(...service.Service)) {
+	fake.withDependenciesMutex.Lock()
+	defer fake.withDependenciesMutex.Unlock()
+	fake.WithDependenciesStub = stub
 }
 
-func (fake *FakeConsumer) WithDependencyArgsForCall(i int) service.Service {
-	fake.withDependencyMutex.RLock()
-	defer fake.withDependencyMutex.RUnlock()
-	argsForCall := fake.withDependencyArgsForCall[i]
+func (fake *FakeConsumer) WithDependenciesArgsForCall(i int) []service.Service {
+	fake.withDependenciesMutex.RLock()
+	defer fake.withDependenciesMutex.RUnlock()
+	argsForCall := fake.withDependenciesArgsForCall[i]
 	return argsForCall.arg1
 }
 
@@ -464,8 +464,8 @@ func (fake *FakeConsumer) Invocations() map[string][][]interface{} {
 	defer fake.shutdownMutex.RUnlock()
 	fake.stringMutex.RLock()
 	defer fake.stringMutex.RUnlock()
-	fake.withDependencyMutex.RLock()
-	defer fake.withDependencyMutex.RUnlock()
+	fake.withDependenciesMutex.RLock()
+	defer fake.withDependenciesMutex.RUnlock()
 	copiedInvocations := map[string][][]interface{}{}
 	for key, value := range fake.invocations {
 		copiedInvocations[key] = value

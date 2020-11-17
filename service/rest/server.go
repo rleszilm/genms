@@ -16,11 +16,10 @@ type GrpcProxy func(context.Context, *runtime.ServeMux, string, []grpc.DialOptio
 // Server is a service.Service that handles rest requests.
 type Server struct {
 	service.Deps
-	name     string
-	config   *Config
-	server   *http.Server
-	mux      *http.ServeMux
-	proxyMux *runtime.ServeMux
+	name   string
+	config *Config
+	server *http.Server
+	mux    *http.ServeMux
 }
 
 // Initialize implements the Server.Initialize interface for Server.
@@ -70,19 +69,36 @@ func (s *Server) Addr() string {
 
 // WithRoute adds a route to the rest service
 func (s *Server) WithRoute(pattern string, handler http.Handler) error {
-	s.mux.Handle(pattern, handler)
+	s.mux.Handle(pattern, http.StripPrefix(pattern, handler))
 	return nil
 }
 
 // WithRouteFunc adds a route to the rest service
 func (s *Server) WithRouteFunc(pattern string, handler http.HandlerFunc) error {
-	s.mux.HandleFunc(pattern, handler)
+	s.WithRoute(pattern, handler)
 	return nil
 }
 
-// WithProxy adds rest methods that proxy to a grpc server.
-func (s *Server) WithProxy(ctx context.Context, addr string, opts []grpc.DialOption, proxy GrpcProxy) error {
-	if err := proxy(ctx, s.proxyMux, addr, opts); err != nil {
+// WithGrpcProxy adds rest methods that proxy to a grpc server.
+func (s *Server) WithGrpcProxy(ctx context.Context, proxyName string, proxyFunc GrpcProxy) error {
+	proxy, ok := s.config.Proxies[proxyName]
+	if !ok {
+		return service.ErrNoProxy
+	}
+
+	if !proxy.Enabled {
+		return nil
+	}
+
+	proxyOpts := []grpc.DialOption{}
+	if proxy.Insecure {
+		proxyOpts = append(proxyOpts, grpc.WithInsecure())
+	}
+
+	proxyMux := runtime.NewServeMux()
+	s.mux.Handle(proxy.Pattern, http.StripPrefix(proxy.Pattern[:len(proxy.Pattern)-1], proxyMux))
+
+	if err := proxyFunc(ctx, proxyMux, proxy.Addr, proxyOpts); err != nil {
 		return err
 	}
 
@@ -92,8 +108,6 @@ func (s *Server) WithProxy(ctx context.Context, addr string, opts []grpc.DialOpt
 // NewServer returns a new Server.
 func NewServer(name string, config *Config) (*Server, error) {
 	mux := http.NewServeMux()
-	proxyMux := runtime.NewServeMux()
-	mux.Handle(config.ProxyGrpc.Pattern, proxyMux)
 
 	s := &Server{
 		name:   name,
@@ -102,8 +116,7 @@ func NewServer(name string, config *Config) (*Server, error) {
 			Addr:    config.Addr,
 			Handler: mux,
 		},
-		mux:      mux,
-		proxyMux: proxyMux,
+		mux: mux,
 	}
 
 	return s, nil

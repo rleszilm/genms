@@ -25,7 +25,7 @@ type Service interface {
 	Dependencies() Services
 
 	// WithDependency adds a dependency to the service.
-	WithDependency(Service)
+	WithDependencies(...Service)
 }
 
 // Listener is a Service that accepts connections and does work based on the requests made.
