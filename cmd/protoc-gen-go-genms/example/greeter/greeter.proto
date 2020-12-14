@@ -1,0 +1,62 @@
+syntax = "proto3";
+
+package greeter;
+option go_package = "github.com/rleszilm/gen_microservice/cmd/protoc-gen-go-genms/example/greeter";
+
+import "graphql/graphql.proto";
+import "google/api/annotations.proto";
+import "protoc-gen-go-genms/annotations/annotations.proto";
+
+message Message {
+    string value = 1 [(graphql.field) = {required: true}];
+}
+
+service WithRest {
+    option (annotations.micro_service) = {
+        rest: true
+    };
+
+    rpc HelloRest(Message) returns (Message) {
+        option (google.api.http) = {
+            post: "/v1/rest"
+            body: "*"
+        };
+    }
+}
+
+service WithGraphQL {
+    option (annotations.micro_service) = {
+        graphql: true
+    };
+
+    rpc HelloGraphQL(Message) returns (Message) {
+        option (google.api.http) = {
+            post: "/v1/graphql"
+            body: "*"
+        };
+        option (graphql.schema) = {
+            type: QUERY
+            name: "graphql"
+        };
+    }
+}
+
+service WithRestAndGraphQL {
+    option (graphql.service) = {};
+
+    option (annotations.micro_service) = {
+        rest: true
+        graphql: true
+    };
+
+    rpc HelloRestAndGraphQL(Message) returns (Message) {
+        option (google.api.http) = {
+            post: "/v1/rest/graphql"
+            body: "*"
+        };
+        option (graphql.schema) = {
+            type: QUERY
+            name: "restAndGraphQL"
+        };
+    }
+}
