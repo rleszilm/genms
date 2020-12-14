@@ -1,0 +1,46 @@
+syntax = "proto3";
+
+package greeter;
+option go_package = "github.com/rleszilm/gen_microservice/cmd/protoc-gen-go-genms-dal/example/users";
+
+import "protoc-gen-go-genms-dal/annotations/annotations.proto";
+
+message User {
+    option (annotations.genms_dal) = {
+        queries: [
+            {
+                name: "by id"
+                fields: ["id"]
+            },
+            {
+                name: "by name and division"
+                fields: ["name", "division"]
+            },
+            {
+                name: "stub only"
+                fields: []
+                stub_only: true
+            }
+        ]
+        sql: {
+            enabled: true
+            variant: SQLVariant_Postgres
+        }
+    };
+
+    int64 id = 1;
+    string name = 2;
+    string division = 3;
+    double lifetime_score = 4;
+    float last_score = 5;
+    int64 lifetime_winnings = 6 [
+        (annotations.genms_dal_field) = {
+            ignore: true
+        }
+    ];
+    int32 last_winnings = 7 [
+        (annotations.genms_dal_field) = {
+            field_name: "payout"
+        }
+    ];
+}

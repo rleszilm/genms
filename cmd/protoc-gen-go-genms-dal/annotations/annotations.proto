@@ -1,0 +1,59 @@
+syntax = "proto3";
+
+package annotations;
+option go_package = "github.com/rleszilm/gen_microservice/cmd/protoc-gen-go-genms-dal/annotations";
+
+import "google/protobuf/descriptor.proto";
+
+message DalOptions {
+    message Query {
+        string name = 1;
+        repeated string fields = 2;
+        bool stub_only = 3;
+    }
+    repeated Query queries = 1;
+
+    message SQL {
+        bool enabled = 1;
+        
+        string primary_key = 2;
+
+        message SQLConstraint {
+            string name = 1;
+            string key = 2;
+        }
+        repeated SQLConstraint constraints = 3;
+
+        enum SQLVariant {
+            SQLVariant_Default = 0;
+            SQLVariant_Postgres = 1;
+        }
+        SQLVariant variant = 4;
+        
+        message SQLQuery {
+            string name = 1;
+            string clause = 2;
+            bool stub_only = 3;
+        }
+        repeated SQLQuery queries = 5;
+    }
+    SQL sql = 2;
+}
+
+extend google.protobuf.MessageOptions {
+    DalOptions genms_dal = 50000;
+}
+
+message DalFieldOptions {
+    bool ignore = 1;
+    message SQL {
+        bool ignore = 1;
+        string column = 2;
+    }
+    SQL sql = 2;
+    string field_name = 3;
+}
+
+extend google.protobuf.FieldOptions {
+    DalFieldOptions genms_dal_field = 50000;
+}
