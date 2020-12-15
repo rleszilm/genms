@@ -42,14 +42,14 @@ type FakeConsumer struct {
 	initializeReturnsOnCall map[int]struct {
 		result1 error
 	}
-	NameStub        func() string
-	nameMutex       sync.RWMutex
-	nameArgsForCall []struct {
+	NameOfStub        func() string
+	nameOfMutex       sync.RWMutex
+	nameOfArgsForCall []struct {
 	}
-	nameReturns struct {
+	nameOfReturns struct {
 		result1 string
 	}
-	nameReturnsOnCall map[int]struct {
+	nameOfReturnsOnCall map[int]struct {
 		result1 string
 	}
 	ShutdownStub        func(context.Context) error
@@ -254,54 +254,54 @@ func (fake *FakeConsumer) InitializeReturnsOnCall(i int, result1 error) {
 	}{result1}
 }
 
-func (fake *FakeConsumer) Name() string {
-	fake.nameMutex.Lock()
-	ret, specificReturn := fake.nameReturnsOnCall[len(fake.nameArgsForCall)]
-	fake.nameArgsForCall = append(fake.nameArgsForCall, struct {
+func (fake *FakeConsumer) NameOf() string {
+	fake.nameOfMutex.Lock()
+	ret, specificReturn := fake.nameOfReturnsOnCall[len(fake.nameOfArgsForCall)]
+	fake.nameOfArgsForCall = append(fake.nameOfArgsForCall, struct {
 	}{})
-	fake.recordInvocation("Name", []interface{}{})
-	fake.nameMutex.Unlock()
-	if fake.NameStub != nil {
-		return fake.NameStub()
+	fake.recordInvocation("NameOf", []interface{}{})
+	fake.nameOfMutex.Unlock()
+	if fake.NameOfStub != nil {
+		return fake.NameOfStub()
 	}
 	if specificReturn {
 		return ret.result1
 	}
-	fakeReturns := fake.nameReturns
+	fakeReturns := fake.nameOfReturns
 	return fakeReturns.result1
 }
 
-func (fake *FakeConsumer) NameCallCount() int {
-	fake.nameMutex.RLock()
-	defer fake.nameMutex.RUnlock()
-	return len(fake.nameArgsForCall)
+func (fake *FakeConsumer) NameOfCallCount() int {
+	fake.nameOfMutex.RLock()
+	defer fake.nameOfMutex.RUnlock()
+	return len(fake.nameOfArgsForCall)
 }
 
-func (fake *FakeConsumer) NameCalls(stub func() string) {
-	fake.nameMutex.Lock()
-	defer fake.nameMutex.Unlock()
-	fake.NameStub = stub
+func (fake *FakeConsumer) NameOfCalls(stub func() string) {
+	fake.nameOfMutex.Lock()
+	defer fake.nameOfMutex.Unlock()
+	fake.NameOfStub = stub
 }
 
-func (fake *FakeConsumer) NameReturns(result1 string) {
-	fake.nameMutex.Lock()
-	defer fake.nameMutex.Unlock()
-	fake.NameStub = nil
-	fake.nameReturns = struct {
+func (fake *FakeConsumer) NameOfReturns(result1 string) {
+	fake.nameOfMutex.Lock()
+	defer fake.nameOfMutex.Unlock()
+	fake.NameOfStub = nil
+	fake.nameOfReturns = struct {
 		result1 string
 	}{result1}
 }
 
-func (fake *FakeConsumer) NameReturnsOnCall(i int, result1 string) {
-	fake.nameMutex.Lock()
-	defer fake.nameMutex.Unlock()
-	fake.NameStub = nil
-	if fake.nameReturnsOnCall == nil {
-		fake.nameReturnsOnCall = make(map[int]struct {
+func (fake *FakeConsumer) NameOfReturnsOnCall(i int, result1 string) {
+	fake.nameOfMutex.Lock()
+	defer fake.nameOfMutex.Unlock()
+	fake.NameOfStub = nil
+	if fake.nameOfReturnsOnCall == nil {
+		fake.nameOfReturnsOnCall = make(map[int]struct {
 			result1 string
 		})
 	}
-	fake.nameReturnsOnCall[i] = struct {
+	fake.nameOfReturnsOnCall[i] = struct {
 		result1 string
 	}{result1}
 }
@@ -458,8 +458,8 @@ func (fake *FakeConsumer) Invocations() map[string][][]interface{} {
 	defer fake.dependenciesMutex.RUnlock()
 	fake.initializeMutex.RLock()
 	defer fake.initializeMutex.RUnlock()
-	fake.nameMutex.RLock()
-	defer fake.nameMutex.RUnlock()
+	fake.nameOfMutex.RLock()
+	defer fake.nameOfMutex.RUnlock()
 	fake.shutdownMutex.RLock()
 	defer fake.shutdownMutex.RUnlock()
 	fake.stringMutex.RLock()

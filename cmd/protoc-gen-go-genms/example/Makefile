@@ -15,9 +15,9 @@ proto:
 		--grpc-gateway_opt=logtostderr=true,paths=source_relative \
 		--graphql_out=greeter \
 		--graphql_opt=paths=source_relative \
-		--go-microservice_out=greeter \
-		--go-microservice_opt=paths=source_relative \
+		--go-genms_out=greeter \
+		--go-genms_opt=paths=source_relative \
 		`ls greeter/*.proto`
 
-.DEFAULT:
+.DEFAULT: proto
 	go build main.go

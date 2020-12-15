@@ -30,8 +30,8 @@ func (d *DB) Shutdown(_ context.Context) error {
 	return d.db.Close()
 }
 
-// Name implements service.Service.Name.
-func (d *DB) Name() string {
+// NameOf implements service.Service.NameOf.
+func (d *DB) NameOf() string {
 	return "sqlx"
 }
 

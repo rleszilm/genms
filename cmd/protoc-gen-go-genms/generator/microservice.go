@@ -43,12 +43,12 @@ func (s *{{ .ms.name }}ServerService) Shutdown(_ context.Context) error {
 	return nil
 }
 
-func (s *{{ .ms.name }}ServerService) Name() string {
+func (s *{{ .ms.name }}ServerService) NameOf() string {
 	return "{{ .ms.name }}"
 }
 
 func (s *{{ .ms.name }}ServerService) String() string {
-	return s.Name()
+	return s.NameOf()
 }
 
 // New{{ .ms.name }}ServerService returns a new {{ .ms.name }}ServerService

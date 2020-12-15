@@ -44,8 +44,8 @@ func (s *Server) Shutdown(_ context.Context) error {
 	return s.server.Close()
 }
 
-// Name implements Server.Name()
-func (s *Server) Name() string {
+// NameOf implements Server.NameOf()
+func (s *Server) NameOf() string {
 	return s.name
 }
 

@@ -27,8 +27,8 @@ func (s *Service) Shutdown(_ context.Context) error {
 	return nil
 }
 
-// Name implements service.Name
-func (s *Service) Name() string {
+// NameOf implements service.NameOf
+func (s *Service) NameOf() string {
 	if s.config.Name != "" {
 		return s.config.Name
 	}
@@ -37,7 +37,7 @@ func (s *Service) Name() string {
 
 // String returns a sting identifier
 func (s *Service) String() string {
-	return s.Name()
+	return s.NameOf()
 }
 
 // Healthy is the handler that checks whether the service is ready to service.
