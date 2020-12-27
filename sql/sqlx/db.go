@@ -46,12 +46,22 @@ func (d *DB) Rebind(query string) string {
 }
 
 // Query implements sql.DB.Query
-func (d *DB) Query(ctx context.Context, query string, arg interface{}) (sql.Rows, error) {
+func (d *DB) Query(ctx context.Context, query string, args ...interface{}) (sql.Rows, error) {
+	return d.db.QueryxContext(ctx, query, args...)
+}
+
+// QueryWithReplacements implements sql.DB.QueryWithReplacements
+func (d *DB) QueryWithReplacements(ctx context.Context, query string, arg interface{}) (sql.Rows, error) {
 	return d.db.NamedQueryContext(ctx, query, arg)
 }
 
 // Exec implements sql.DB.Exec
-func (d *DB) Exec(ctx context.Context, query string, arg interface{}) (sql.Result, error) {
+func (d *DB) Exec(ctx context.Context, query string, args ...interface{}) (sql.Result, error) {
+	return d.db.ExecContext(ctx, query, args...)
+}
+
+// ExecWithReplacements implements sql.DB.ExecWithReplacements
+func (d *DB) ExecWithReplacements(ctx context.Context, query string, arg interface{}) (sql.Result, error) {
 	return d.db.NamedExecContext(ctx, query, arg)
 }
 

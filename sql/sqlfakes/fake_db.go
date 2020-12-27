@@ -36,18 +36,33 @@ type FakeDB struct {
 	dependenciesReturnsOnCall map[int]struct {
 		result1 service.Services
 	}
-	ExecStub        func(context.Context, string, interface{}) (sql.Result, error)
+	ExecStub        func(context.Context, string, ...interface{}) (sql.Result, error)
 	execMutex       sync.RWMutex
 	execArgsForCall []struct {
 		arg1 context.Context
 		arg2 string
-		arg3 interface{}
+		arg3 []interface{}
 	}
 	execReturns struct {
 		result1 sql.Result
 		result2 error
 	}
 	execReturnsOnCall map[int]struct {
+		result1 sql.Result
+		result2 error
+	}
+	ExecWithReplacementsStub        func(context.Context, string, interface{}) (sql.Result, error)
+	execWithReplacementsMutex       sync.RWMutex
+	execWithReplacementsArgsForCall []struct {
+		arg1 context.Context
+		arg2 string
+		arg3 interface{}
+	}
+	execWithReplacementsReturns struct {
+		result1 sql.Result
+		result2 error
+	}
+	execWithReplacementsReturnsOnCall map[int]struct {
 		result1 sql.Result
 		result2 error
 	}
@@ -72,18 +87,33 @@ type FakeDB struct {
 	nameOfReturnsOnCall map[int]struct {
 		result1 string
 	}
-	QueryStub        func(context.Context, string, interface{}) (sql.Rows, error)
+	QueryStub        func(context.Context, string, ...interface{}) (sql.Rows, error)
 	queryMutex       sync.RWMutex
 	queryArgsForCall []struct {
 		arg1 context.Context
 		arg2 string
-		arg3 interface{}
+		arg3 []interface{}
 	}
 	queryReturns struct {
 		result1 sql.Rows
 		result2 error
 	}
 	queryReturnsOnCall map[int]struct {
+		result1 sql.Rows
+		result2 error
+	}
+	QueryWithReplacementsStub        func(context.Context, string, interface{}) (sql.Rows, error)
+	queryWithReplacementsMutex       sync.RWMutex
+	queryWithReplacementsArgsForCall []struct {
+		arg1 context.Context
+		arg2 string
+		arg3 interface{}
+	}
+	queryWithReplacementsReturns struct {
+		result1 sql.Rows
+		result2 error
+	}
+	queryWithReplacementsReturnsOnCall map[int]struct {
 		result1 sql.Rows
 		result2 error
 	}
@@ -247,18 +277,18 @@ func (fake *FakeDB) DependenciesReturnsOnCall(i int, result1 service.Services) {
 	}{result1}
 }
 
-func (fake *FakeDB) Exec(arg1 context.Context, arg2 string, arg3 interface{}) (sql.Result, error) {
+func (fake *FakeDB) Exec(arg1 context.Context, arg2 string, arg3 ...interface{}) (sql.Result, error) {
 	fake.execMutex.Lock()
 	ret, specificReturn := fake.execReturnsOnCall[len(fake.execArgsForCall)]
 	fake.execArgsForCall = append(fake.execArgsForCall, struct {
 		arg1 context.Context
 		arg2 string
-		arg3 interface{}
+		arg3 []interface{}
 	}{arg1, arg2, arg3})
 	fake.recordInvocation("Exec", []interface{}{arg1, arg2, arg3})
 	fake.execMutex.Unlock()
 	if fake.ExecStub != nil {
-		return fake.ExecStub(arg1, arg2, arg3)
+		return fake.ExecStub(arg1, arg2, arg3...)
 	}
 	if specificReturn {
 		return ret.result1, ret.result2
@@ -273,13 +303,13 @@ func (fake *FakeDB) ExecCallCount() int {
 	return len(fake.execArgsForCall)
 }
 
-func (fake *FakeDB) ExecCalls(stub func(context.Context, string, interface{}) (sql.Result, error)) {
+func (fake *FakeDB) ExecCalls(stub func(context.Context, string, ...interface{}) (sql.Result, error)) {
 	fake.execMutex.Lock()
 	defer fake.execMutex.Unlock()
 	fake.ExecStub = stub
 }
 
-func (fake *FakeDB) ExecArgsForCall(i int) (context.Context, string, interface{}) {
+func (fake *FakeDB) ExecArgsForCall(i int) (context.Context, string, []interface{}) {
 	fake.execMutex.RLock()
 	defer fake.execMutex.RUnlock()
 	argsForCall := fake.execArgsForCall[i]
@@ -307,6 +337,71 @@ func (fake *FakeDB) ExecReturnsOnCall(i int, result1 sql.Result, result2 error) 
 		})
 	}
 	fake.execReturnsOnCall[i] = struct {
+		result1 sql.Result
+		result2 error
+	}{result1, result2}
+}
+
+func (fake *FakeDB) ExecWithReplacements(arg1 context.Context, arg2 string, arg3 interface{}) (sql.Result, error) {
+	fake.execWithReplacementsMutex.Lock()
+	ret, specificReturn := fake.execWithReplacementsReturnsOnCall[len(fake.execWithReplacementsArgsForCall)]
+	fake.execWithReplacementsArgsForCall = append(fake.execWithReplacementsArgsForCall, struct {
+		arg1 context.Context
+		arg2 string
+		arg3 interface{}
+	}{arg1, arg2, arg3})
+	fake.recordInvocation("ExecWithReplacements", []interface{}{arg1, arg2, arg3})
+	fake.execWithReplacementsMutex.Unlock()
+	if fake.ExecWithReplacementsStub != nil {
+		return fake.ExecWithReplacementsStub(arg1, arg2, arg3)
+	}
+	if specificReturn {
+		return ret.result1, ret.result2
+	}
+	fakeReturns := fake.execWithReplacementsReturns
+	return fakeReturns.result1, fakeReturns.result2
+}
+
+func (fake *FakeDB) ExecWithReplacementsCallCount() int {
+	fake.execWithReplacementsMutex.RLock()
+	defer fake.execWithReplacementsMutex.RUnlock()
+	return len(fake.execWithReplacementsArgsForCall)
+}
+
+func (fake *FakeDB) ExecWithReplacementsCalls(stub func(context.Context, string, interface{}) (sql.Result, error)) {
+	fake.execWithReplacementsMutex.Lock()
+	defer fake.execWithReplacementsMutex.Unlock()
+	fake.ExecWithReplacementsStub = stub
+}
+
+func (fake *FakeDB) ExecWithReplacementsArgsForCall(i int) (context.Context, string, interface{}) {
+	fake.execWithReplacementsMutex.RLock()
+	defer fake.execWithReplacementsMutex.RUnlock()
+	argsForCall := fake.execWithReplacementsArgsForCall[i]
+	return argsForCall.arg1, argsForCall.arg2, argsForCall.arg3
+}
+
+func (fake *FakeDB) ExecWithReplacementsReturns(result1 sql.Result, result2 error) {
+	fake.execWithReplacementsMutex.Lock()
+	defer fake.execWithReplacementsMutex.Unlock()
+	fake.ExecWithReplacementsStub = nil
+	fake.execWithReplacementsReturns = struct {
+		result1 sql.Result
+		result2 error
+	}{result1, result2}
+}
+
+func (fake *FakeDB) ExecWithReplacementsReturnsOnCall(i int, result1 sql.Result, result2 error) {
+	fake.execWithReplacementsMutex.Lock()
+	defer fake.execWithReplacementsMutex.Unlock()
+	fake.ExecWithReplacementsStub = nil
+	if fake.execWithReplacementsReturnsOnCall == nil {
+		fake.execWithReplacementsReturnsOnCall = make(map[int]struct {
+			result1 sql.Result
+			result2 error
+		})
+	}
+	fake.execWithReplacementsReturnsOnCall[i] = struct {
 		result1 sql.Result
 		result2 error
 	}{result1, result2}
@@ -424,18 +519,18 @@ func (fake *FakeDB) NameOfReturnsOnCall(i int, result1 string) {
 	}{result1}
 }
 
-func (fake *FakeDB) Query(arg1 context.Context, arg2 string, arg3 interface{}) (sql.Rows, error) {
+func (fake *FakeDB) Query(arg1 context.Context, arg2 string, arg3 ...interface{}) (sql.Rows, error) {
 	fake.queryMutex.Lock()
 	ret, specificReturn := fake.queryReturnsOnCall[len(fake.queryArgsForCall)]
 	fake.queryArgsForCall = append(fake.queryArgsForCall, struct {
 		arg1 context.Context
 		arg2 string
-		arg3 interface{}
+		arg3 []interface{}
 	}{arg1, arg2, arg3})
 	fake.recordInvocation("Query", []interface{}{arg1, arg2, arg3})
 	fake.queryMutex.Unlock()
 	if fake.QueryStub != nil {
-		return fake.QueryStub(arg1, arg2, arg3)
+		return fake.QueryStub(arg1, arg2, arg3...)
 	}
 	if specificReturn {
 		return ret.result1, ret.result2
@@ -450,13 +545,13 @@ func (fake *FakeDB) QueryCallCount() int {
 	return len(fake.queryArgsForCall)
 }
 
-func (fake *FakeDB) QueryCalls(stub func(context.Context, string, interface{}) (sql.Rows, error)) {
+func (fake *FakeDB) QueryCalls(stub func(context.Context, string, ...interface{}) (sql.Rows, error)) {
 	fake.queryMutex.Lock()
 	defer fake.queryMutex.Unlock()
 	fake.QueryStub = stub
 }
 
-func (fake *FakeDB) QueryArgsForCall(i int) (context.Context, string, interface{}) {
+func (fake *FakeDB) QueryArgsForCall(i int) (context.Context, string, []interface{}) {
 	fake.queryMutex.RLock()
 	defer fake.queryMutex.RUnlock()
 	argsForCall := fake.queryArgsForCall[i]
@@ -484,6 +579,71 @@ func (fake *FakeDB) QueryReturnsOnCall(i int, result1 sql.Rows, result2 error) {
 		})
 	}
 	fake.queryReturnsOnCall[i] = struct {
+		result1 sql.Rows
+		result2 error
+	}{result1, result2}
+}
+
+func (fake *FakeDB) QueryWithReplacements(arg1 context.Context, arg2 string, arg3 interface{}) (sql.Rows, error) {
+	fake.queryWithReplacementsMutex.Lock()
+	ret, specificReturn := fake.queryWithReplacementsReturnsOnCall[len(fake.queryWithReplacementsArgsForCall)]
+	fake.queryWithReplacementsArgsForCall = append(fake.queryWithReplacementsArgsForCall, struct {
+		arg1 context.Context
+		arg2 string
+		arg3 interface{}
+	}{arg1, arg2, arg3})
+	fake.recordInvocation("QueryWithReplacements", []interface{}{arg1, arg2, arg3})
+	fake.queryWithReplacementsMutex.Unlock()
+	if fake.QueryWithReplacementsStub != nil {
+		return fake.QueryWithReplacementsStub(arg1, arg2, arg3)
+	}
+	if specificReturn {
+		return ret.result1, ret.result2
+	}
+	fakeReturns := fake.queryWithReplacementsReturns
+	return fakeReturns.result1, fakeReturns.result2
+}
+
+func (fake *FakeDB) QueryWithReplacementsCallCount() int {
+	fake.queryWithReplacementsMutex.RLock()
+	defer fake.queryWithReplacementsMutex.RUnlock()
+	return len(fake.queryWithReplacementsArgsForCall)
+}
+
+func (fake *FakeDB) QueryWithReplacementsCalls(stub func(context.Context, string, interface{}) (sql.Rows, error)) {
+	fake.queryWithReplacementsMutex.Lock()
+	defer fake.queryWithReplacementsMutex.Unlock()
+	fake.QueryWithReplacementsStub = stub
+}
+
+func (fake *FakeDB) QueryWithReplacementsArgsForCall(i int) (context.Context, string, interface{}) {
+	fake.queryWithReplacementsMutex.RLock()
+	defer fake.queryWithReplacementsMutex.RUnlock()
+	argsForCall := fake.queryWithReplacementsArgsForCall[i]
+	return argsForCall.arg1, argsForCall.arg2, argsForCall.arg3
+}
+
+func (fake *FakeDB) QueryWithReplacementsReturns(result1 sql.Rows, result2 error) {
+	fake.queryWithReplacementsMutex.Lock()
+	defer fake.queryWithReplacementsMutex.Unlock()
+	fake.QueryWithReplacementsStub = nil
+	fake.queryWithReplacementsReturns = struct {
+		result1 sql.Rows
+		result2 error
+	}{result1, result2}
+}
+
+func (fake *FakeDB) QueryWithReplacementsReturnsOnCall(i int, result1 sql.Rows, result2 error) {
+	fake.queryWithReplacementsMutex.Lock()
+	defer fake.queryWithReplacementsMutex.Unlock()
+	fake.QueryWithReplacementsStub = nil
+	if fake.queryWithReplacementsReturnsOnCall == nil {
+		fake.queryWithReplacementsReturnsOnCall = make(map[int]struct {
+			result1 sql.Rows
+			result2 error
+		})
+	}
+	fake.queryWithReplacementsReturnsOnCall[i] = struct {
 		result1 sql.Rows
 		result2 error
 	}{result1, result2}
@@ -701,12 +861,16 @@ func (fake *FakeDB) Invocations() map[string][][]interface{} {
 	defer fake.dependenciesMutex.RUnlock()
 	fake.execMutex.RLock()
 	defer fake.execMutex.RUnlock()
+	fake.execWithReplacementsMutex.RLock()
+	defer fake.execWithReplacementsMutex.RUnlock()
 	fake.initializeMutex.RLock()
 	defer fake.initializeMutex.RUnlock()
 	fake.nameOfMutex.RLock()
 	defer fake.nameOfMutex.RUnlock()
 	fake.queryMutex.RLock()
 	defer fake.queryMutex.RUnlock()
+	fake.queryWithReplacementsMutex.RLock()
+	defer fake.queryWithReplacementsMutex.RUnlock()
 	fake.rebindMutex.RLock()
 	defer fake.rebindMutex.RUnlock()
 	fake.shutdownMutex.RLock()

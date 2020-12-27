@@ -26,6 +26,11 @@ proto-annotations:
 		--go_out=. \
 		--go_opt=paths=source_relative \
 		`ls cmd/protoc-gen-go-genms-dal/annotations/*.proto`
+	protoc \
+		-I . \
+		--go_out=. \
+		--go_opt=paths=source_relative \
+		`ls cmd/protoc-gen-go-genms-dal/annotations/types/*.proto`
 
 ## Test runs all project unit tests.
 test:

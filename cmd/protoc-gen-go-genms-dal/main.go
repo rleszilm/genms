@@ -1,13 +1,13 @@
 package main
 
 import (
-	"fmt"
 	"io/ioutil"
 	"log"
 	"os"
 
 	"github.com/rleszilm/gen_microservice/cmd/protoc-gen-go-genms-dal/annotations"
 	"github.com/rleszilm/gen_microservice/cmd/protoc-gen-go-genms-dal/generator"
+	"github.com/rleszilm/gen_microservice/cmd/protoc-gen-go-genms-dal/generator/rest"
 	"github.com/rleszilm/gen_microservice/cmd/protoc-gen-go-genms-dal/generator/sql/postgres"
 	"google.golang.org/protobuf/compiler/protogen"
 	"google.golang.org/protobuf/proto"
@@ -27,13 +27,12 @@ func main() {
 				genError = err
 			} else {
 				if _, err := os.Stdout.Write(out); err != nil {
-					fmt.Println("could not write output:", err)
+					log.Fatalln(err)
 				}
 			}
 		}
 
 		if genError != nil {
-			fmt.Println("generror", genError)
 			log.Fatalln(genError)
 		}
 	}()
@@ -69,33 +68,30 @@ func main() {
 
 func generate(plugin *protogen.Plugin, file *protogen.File, msg *protogen.Message) error {
 	msgOpts := msg.Desc.Options()
-	if !proto.HasExtension(msgOpts, annotations.E_GenmsDal) {
+	if !proto.HasExtension(msgOpts, annotations.E_Options) {
 		return nil
 	}
-	ext := proto.GetExtension(msgOpts, annotations.E_GenmsDal)
+	ext := proto.GetExtension(msgOpts, annotations.E_Options)
 	dalOpts := ext.(*annotations.DalOptions)
 
-	// if no database type is enabled return
-	if !dalOpts.Sql.Enabled {
-		return nil
-	}
-
-	// write interfaces
-	if err := generator.GenerateInterface(plugin, file, msg, dalOpts); err != nil {
-		return err
-	}
-
-	if dalOpts.Sql.Enabled {
-		switch dalOpts.Sql.Variant {
-		case annotations.DalOptions_SQL_SQLVariant_Postgres:
-			if err := postgres.GenerateCollection(plugin, file, msg, dalOpts); err != nil {
-				fmt.Println("count not generate collection", err)
-				return err
-			}
-		default:
-			return fmt.Errorf("%v is not a supported sql variant", dalOpts.Sql.Variant)
+	if len(dalOpts.Backends) > 0 {
+		// write interfaces
+		if err := generator.GenerateInterface(plugin, file, msg, dalOpts); err != nil {
+			return err
 		}
 	}
 
+	for _, be := range dalOpts.Backends {
+		switch be {
+		case annotations.DalOptions_BackEnd_Postgres:
+			if err := postgres.GenerateCollection(plugin, file, msg, dalOpts); err != nil {
+				return err
+			}
+		case annotations.DalOptions_BackEnd_Rest:
+			if err := rest.GenerateCollection(plugin, file, msg, dalOpts); err != nil {
+				return err
+			}
+		}
+	}
 	return nil
 }
