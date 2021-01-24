@@ -39,7 +39,7 @@ message DalOptions {
 }
 
 extend google.protobuf.MessageOptions {
-    DalOptions options = 50000;
+    DalOptions message_options = 51000;
 }
 
 message DalFieldOptions {
@@ -54,5 +54,5 @@ message DalFieldOptions {
 }
 
 extend google.protobuf.FieldOptions {
-    DalFieldOptions field = 50000;
+    DalFieldOptions field_options = 51000;
 }

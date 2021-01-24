@@ -47,7 +47,7 @@ func main() {
 	}
 	manager.Register(restServer)
 
-	health := healthcheck.NewService(&healthcheck.Config{RequestPath: "/health"}, restServer)
+	health := healthcheck.NewService(&healthcheck.Config{RequestPrefix: "/health"}, restServer)
 	manager.Register(health)
 
 	graphqlServer, err := graphql_service.NewServer("graphql-api",

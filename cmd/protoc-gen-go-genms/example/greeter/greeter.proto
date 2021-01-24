@@ -12,7 +12,7 @@ message Message {
 }
 
 service WithRest {
-    option (annotations.micro_service) = {
+    option (genms.service_options) = {
         rest: true
     };
 
@@ -25,7 +25,7 @@ service WithRest {
 }
 
 service WithGraphQL {
-    option (annotations.micro_service) = {
+    option (genms.service_options) = {
         graphql: true
     };
 
@@ -44,7 +44,7 @@ service WithGraphQL {
 service WithRestAndGraphQL {
     option (graphql.service) = {};
 
-    option (annotations.micro_service) = {
+    option (genms.service_options) = {
         rest: true
         graphql: true
     };

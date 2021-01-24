@@ -8,7 +8,7 @@ import "protoc-gen-go-genms-dal/annotations/annotations.proto";
 import "protoc-gen-go-genms-dal/annotations/types/types.proto";
 
 message User {
-    option (genms.dal.options) = {
+    option (genms.dal.message_options) = {
         queries: [
             {
                 name: "by id"
@@ -44,12 +44,12 @@ message User {
     double lifetime_score = 4;
     float last_score = 5;
     int64 lifetime_winnings = 6 [
-        (genms.dal.field) = {
+        (genms.dal.field_options) = {
             ignore: true
         }
     ];
     int32 last_winnings = 7 [
-        (genms.dal.field) = {
+        (genms.dal.field_options) = {
             field: "payout"
         }
     ];
@@ -65,7 +65,7 @@ message User {
     Kind kind = 11;
 
     string by_backend = 12 [
-        (genms.dal.field) = {
+        (genms.dal.field_options) = {
             postgres: {
                 field: "by_backend_postgres"
             }
