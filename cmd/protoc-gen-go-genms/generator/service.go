@@ -15,7 +15,7 @@ type serviceRunner struct {
 
 func (r *serviceRunner) Generate(defaults map[string]interface{}) ([]*plugin_go.CodeGeneratorResponse_File, error) {
 	resp := []*plugin_go.CodeGeneratorResponse_File{}
-	if proto.HasExtension(r.svc.GetOptions(), annotations.E_MicroService) {
+	if proto.HasExtension(r.svc.GetOptions(), annotations.E_GenmsService) {
 		ms := newMicroService(r.fr, r.svc, r.opts)
 
 		chunks, err := generate(ms, defaults)

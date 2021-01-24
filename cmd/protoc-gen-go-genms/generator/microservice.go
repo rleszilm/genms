@@ -151,7 +151,7 @@ func newMicroService(fr *fileRunner, svc *descriptorpb.ServiceDescriptorProto, r
 		reqOpts: reqOpts,
 	}
 
-	ext := proto.GetExtension(svc.GetOptions(), annotations.E_MicroService)
+	ext := proto.GetExtension(svc.GetOptions(), annotations.E_GenmsService)
 	opts, ok := ext.(*annotations.MicroServiceOptions)
 
 	if ok {
