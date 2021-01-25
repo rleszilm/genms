@@ -3,6 +3,7 @@ package postgres
 import (
 	"bytes"
 	"fmt"
+	"path"
 	"strings"
 	"text/template"
 
@@ -657,7 +658,9 @@ func (c *Collection) defineMetrics() error {
 
 // NewCollection returns a new collection renderer.
 func NewCollection(plugin *protogen.Plugin, file *protogen.File, msg *protogen.Message, opts *annotations.DalOptions) *Collection {
-	filename := fmt.Sprintf("dal/postgres/%s.genms.dal.%s.go", file.GeneratedFilenamePrefix, strings.ToLower(msg.GoIdent.GoName))
+	base := path.Base(file.GeneratedFilenamePrefix)
+	dir := path.Dir(file.GeneratedFilenamePrefix)
+	filename := path.Join(dir, fmt.Sprintf("dal/postgres/%s.genms.dal.%s.go", base, strings.ToLower(msg.GoIdent.GoName)))
 	outFile := plugin.NewGeneratedFile(filename, ".")
 	fields := generator.NewFields(msg, annotations.DalOptions_BackEnd_Postgres)
 

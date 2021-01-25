@@ -3,6 +3,7 @@ package generator
 import (
 	"bytes"
 	"fmt"
+	"path"
 	"strings"
 	"text/template"
 
@@ -101,7 +102,9 @@ var (
 
 // GenerateInterface generates the dal interface for the collection
 func GenerateInterface(plugin *protogen.Plugin, file *protogen.File, msg *protogen.Message, opts *annotations.DalOptions) error {
-	filename := fmt.Sprintf("dal/%s.genms.dal.%s.go", file.GeneratedFilenamePrefix, strings.ToLower(msg.GoIdent.GoName))
+	base := path.Base(file.GeneratedFilenamePrefix)
+	dir := path.Dir(file.GeneratedFilenamePrefix)
+	filename := path.Join(dir, fmt.Sprintf("dal/%s.genms.dal.%s.go", base, strings.ToLower(msg.GoIdent.GoName)))
 	outfile := plugin.NewGeneratedFile(filename, ".")
 
 	p := map[string]string{
