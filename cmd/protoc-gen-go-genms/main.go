@@ -1,33 +1,38 @@
 package main
 
 import (
+	"io/ioutil"
 	"log"
 	"os"
 
-	"io/ioutil"
-
-	"github.com/golang/protobuf/proto"
-	plugin "github.com/golang/protobuf/protoc-gen-go/plugin"
+	"github.com/rleszilm/gen_microservice/cmd/protoc-gen-go-genms/annotations"
 	"github.com/rleszilm/gen_microservice/cmd/protoc-gen-go-genms/generator"
+	"google.golang.org/protobuf/compiler/protogen"
+	"google.golang.org/protobuf/proto"
+	"google.golang.org/protobuf/types/pluginpb"
 )
 
 func main() {
+	var plugin *protogen.Plugin
 	var genError error
 
-	resp := &plugin.CodeGeneratorResponse{}
 	defer func() {
-		// If some error has been occurred in generate process,
-		// add error message to plugin response
-		if genError != nil {
-			message := genError.Error()
-			resp.Error = &message
-		}
-		buf, err := proto.Marshal(resp)
-		if err != nil {
-			log.Fatalln(err)
+		if plugin != nil {
+			plugin.Error(genError)
+
+			out, err := proto.Marshal(plugin.Response())
+			if err != nil {
+				genError = err
+			} else {
+				if _, err := os.Stdout.Write(out); err != nil {
+					log.Fatalln(err)
+				}
+			}
 		}
 
-		os.Stdout.Write(buf)
+		if genError != nil {
+			log.Fatalln(genError)
+		}
 	}()
 
 	buf, err := ioutil.ReadAll(os.Stdin)
@@ -36,18 +41,36 @@ func main() {
 		return
 	}
 
-	req := &plugin.CodeGeneratorRequest{}
+	req := &pluginpb.CodeGeneratorRequest{}
 	if err = proto.Unmarshal(buf, req); err != nil {
 		genError = err
 		return
 	}
 
-	run := generator.NewRunner()
-	chunks, err := run.Generate(req)
-
+	opts := protogen.Options{}
+	plugin, err = opts.New(req)
 	if err != nil {
 		genError = err
+		return
 	}
 
-	resp.File = append(resp.File, chunks...)
+	for _, file := range plugin.Files {
+		for _, msg := range file.Services {
+			if err := generate(plugin, file, msg); err != nil {
+				genError = err
+				return
+			}
+		}
+	}
+}
+
+func generate(plugin *protogen.Plugin, file *protogen.File, svc *protogen.Service) error {
+	svcOpts := svc.Desc.Options()
+	if !proto.HasExtension(svcOpts, annotations.E_ServiceOptions) {
+		return nil
+	}
+	ext := proto.GetExtension(svcOpts, annotations.E_ServiceOptions)
+	opts := ext.(*annotations.ServiceOptions)
+
+	return generator.GenerateMicroService(plugin, file, svc, opts)
 }

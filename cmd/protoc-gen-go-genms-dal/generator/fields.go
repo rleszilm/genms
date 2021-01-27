@@ -47,8 +47,8 @@ func NewFields(msg *protogen.Message, be annotations.DalOptions_Backend) *Fields
 		fieldsByName["f:-"+fName] = f
 
 		fOpts := f.Desc.Options()
-		if proto.HasExtension(fOpts, annotations.E_GenmsDalField) {
-			ext := proto.GetExtension(fOpts, annotations.E_GenmsDalField).(*annotations.DalFieldOptions)
+		if proto.HasExtension(fOpts, annotations.E_FieldOptions) {
+			ext := proto.GetExtension(fOpts, annotations.E_FieldOptions).(*annotations.DalFieldOptions)
 			if ext != nil {
 				if ext.Ignore {
 					continue

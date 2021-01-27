@@ -68,10 +68,10 @@ func main() {
 
 func generate(plugin *protogen.Plugin, file *protogen.File, msg *protogen.Message) error {
 	msgOpts := msg.Desc.Options()
-	if !proto.HasExtension(msgOpts, annotations.E_GenmsDalMsg) {
+	if !proto.HasExtension(msgOpts, annotations.E_MessageOptions) {
 		return nil
 	}
-	ext := proto.GetExtension(msgOpts, annotations.E_GenmsDalMsg)
+	ext := proto.GetExtension(msgOpts, annotations.E_MessageOptions)
 	dalOpts := ext.(*annotations.DalOptions)
 
 	if len(dalOpts.Backends) > 0 {

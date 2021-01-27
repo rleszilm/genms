@@ -49,6 +49,11 @@ func MessageName(msg *protogen.Message) string {
 	return msg.GoIdent.GoName
 }
 
+// ServiceName returns the name of the service for which code is being generated.
+func ServiceName(svc *protogen.Service) string {
+	return svc.GoName
+}
+
 // GoFieldName returns the field type.
 func GoFieldName(field *protogen.Field) string {
 	if field == nil {
