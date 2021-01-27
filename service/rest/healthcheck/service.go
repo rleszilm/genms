@@ -22,8 +22,10 @@ type Service struct {
 
 // Initialize implements the service.Initialize interface for Service.
 func (s *Service) Initialize(_ context.Context) error {
-	s.server.WithRouteFunc(s.config.RequestPrefix, s.ServeHTTP)
-	s.server.WithRouteFunc(path.Join(s.config.RequestPrefix, "ready"), s.ServeReady)
+	if s.config.Enabled {
+		s.server.WithRouteFunc(s.config.RequestPrefix, s.ServeHTTP)
+		s.server.WithRouteFunc(path.Join(s.config.RequestPrefix, "ready"), s.ServeReady)
+	}
 	return nil
 }
 
@@ -85,6 +87,5 @@ func NewService(config *Config, server *rest_service.Server) *Service {
 	}
 
 	server.WithDependencies(svc)
-
 	return svc
 }

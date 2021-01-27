@@ -5,11 +5,14 @@ import (
 	"net/http/pprof"
 	"runtime"
 
+	"github.com/rleszilm/gen_microservice/service"
 	rest_service "github.com/rleszilm/gen_microservice/service/rest"
 )
 
 // Service function returns an http.Handler that handles system status request.
 type Service struct {
+	service.Deps
+
 	config *Config
 	server *rest_service.Server
 }
@@ -32,18 +35,26 @@ func (s *Service) Shutdown(_ context.Context) error {
 	return nil
 }
 
-// Name implements service.Name
-func (s *Service) Name() string {
+// NameOf implements service.NameOf
+func (s *Service) NameOf() string {
 	if s.config.Name != "" {
 		return s.config.Name
 	}
 	return "pprof"
 }
 
+// String returns a sting identifier
+func (s *Service) String() string {
+	return s.NameOf()
+}
+
 // NewService instantitates a Service server.
-func NewService(conf *Config, server *rest_service.Server) *Service {
-	return &Service{
-		config: conf,
+func NewService(config *Config, server *rest_service.Server) *Service {
+	svc := &Service{
+		config: config,
 		server: server,
 	}
+
+	server.WithDependencies(svc)
+	return svc
 }
