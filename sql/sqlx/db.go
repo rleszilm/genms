@@ -5,11 +5,14 @@ import (
 
 	"github.com/jmoiron/sqlx"
 	_ "github.com/lib/pq"
+	"github.com/rleszilm/gen_microservice/service"
 	"github.com/rleszilm/gen_microservice/sql"
 )
 
 // DB is a sql.DB that uses sqlx under the hood.
 type DB struct {
+	service.Deps
+
 	db  *sqlx.DB
 	cfg sql.Config
 }
