@@ -531,6 +531,7 @@ func (c *Collection) defineConfig() error {
 func (c *Collection) defineTemplateProvider() error {
 	tmplSrc := `// {{ MessageName .C.Message }}QueryTemplateProvider is an interface that returns the query templated that should be executed
 // to generate the queries that the collection will use.
+//go:generate go run github.com/maxbrunsfeld/counterfeiter/v6 . {{ MessageName .C.Message }}QueryTemplateProvider
 type {{ MessageName .C.Message }}QueryTemplateProvider interface {
 	Upsert() string
 	All() string

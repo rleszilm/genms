@@ -297,6 +297,7 @@ type UserConfig struct {
 
 // UserQueryTemplateProvider is an interface that returns the query templated that should be executed
 // to generate the queries that the collection will use.
+//go:generate go run github.com/maxbrunsfeld/counterfeiter/v6 . UserQueryTemplateProvider
 type UserQueryTemplateProvider interface {
 	Upsert() string
 	All() string

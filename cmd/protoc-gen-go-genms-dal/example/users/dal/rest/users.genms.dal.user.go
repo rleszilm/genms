@@ -404,6 +404,7 @@ type UserConfig struct {
 
 // UserQueryProvider is an interface that returns the query templated that should be executed
 // to generate the queries that the collection will use.
+//go:generate go run github.com/maxbrunsfeld/counterfeiter/v6 . UserQueryProvider
 type UserQueryProvider interface {
 	All() (scheme string, method string, host string, path string, headers map[string]string, query []string, body []string)
 	ById() (scheme string, method string, host string, path string, headers map[string]string, query []string, body []string)

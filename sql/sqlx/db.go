@@ -38,6 +38,11 @@ func (d *DB) NameOf() string {
 	return "sqlx"
 }
 
+// String implements service.Service.String
+func (d *DB) String() string {
+	return d.NameOf()
+}
+
 // Bind implements sql.DB.Bind
 func (d *DB) Bind(query string, arg interface{}) (string, []interface{}, error) {
 	return d.db.BindNamed(query, arg)
