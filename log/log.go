@@ -22,8 +22,14 @@ const (
 	LvlWarning
 	// LvlError is for messages that indicate a problem occurred that isn't fatal.
 	LvlError
+	// LvlDisable is for when all logging on the channel should be disabled. This does not impact
+	// logging on the fatal or panic levels.
+	LvlDisable
 	// LvlFatal is for a problem that is non-recoverable. This also terminates the app.
 	LvlFatal
+	// LvlPanic is for a problem that can be recovered from at the apps discretion. This
+	// causes a pannic that may result in app termination.
+	LvlPanic
 )
 
 var (
@@ -36,6 +42,7 @@ var (
 type Logger interface {
 	Println(...interface{})
 	Fatalln(...interface{})
+	Panicln(...interface{})
 	SetFlags(int)
 	SetOutput(io.Writer)
 }
@@ -51,11 +58,12 @@ type Channel struct {
 	nameWarning string
 	nameError   string
 	nameFatal   string
+	namePanic   string
 }
 
 // Trace logs Trace level messages
 func (c *Channel) Trace(args ...interface{}) {
-	if c.level > LvlTrace {
+	if c.skipLog(LvlTrace) {
 		return
 	}
 
@@ -64,7 +72,7 @@ func (c *Channel) Trace(args ...interface{}) {
 
 // Tracef logs Trace level messages
 func (c *Channel) Tracef(msg string, args ...interface{}) {
-	if c.level > LvlTrace {
+	if c.skipLog(LvlTrace) {
 		return
 	}
 
@@ -73,7 +81,7 @@ func (c *Channel) Tracef(msg string, args ...interface{}) {
 
 // Debug logs Debug level messages
 func (c *Channel) Debug(args ...interface{}) {
-	if c.level > LvlDebug {
+	if c.skipLog(LvlDebug) {
 		return
 	}
 
@@ -82,7 +90,7 @@ func (c *Channel) Debug(args ...interface{}) {
 
 // Debugf logs Debug level messages
 func (c *Channel) Debugf(msg string, args ...interface{}) {
-	if c.level > LvlDebug {
+	if c.skipLog(LvlDebug) {
 		return
 	}
 
@@ -91,7 +99,7 @@ func (c *Channel) Debugf(msg string, args ...interface{}) {
 
 // Info logs Info level messages
 func (c *Channel) Info(args ...interface{}) {
-	if c.level > LvlInfo {
+	if c.skipLog(LvlInfo) {
 		return
 	}
 
@@ -100,7 +108,7 @@ func (c *Channel) Info(args ...interface{}) {
 
 // Infof logs Info level messages
 func (c *Channel) Infof(msg string, args ...interface{}) {
-	if c.level > LvlInfo {
+	if c.skipLog(LvlInfo) {
 		return
 	}
 
@@ -109,7 +117,7 @@ func (c *Channel) Infof(msg string, args ...interface{}) {
 
 // Warning logs Warning level messages
 func (c *Channel) Warning(args ...interface{}) {
-	if c.level > LvlWarning {
+	if c.skipLog(LvlWarning) {
 		return
 	}
 
@@ -118,7 +126,7 @@ func (c *Channel) Warning(args ...interface{}) {
 
 // Warningf logs Warning level messages
 func (c *Channel) Warningf(msg string, args ...interface{}) {
-	if c.level > LvlWarning {
+	if c.skipLog(LvlWarning) {
 		return
 	}
 
@@ -127,7 +135,7 @@ func (c *Channel) Warningf(msg string, args ...interface{}) {
 
 // Error logs Error level messages
 func (c *Channel) Error(args ...interface{}) {
-	if c.level > LvlError {
+	if c.skipLog(LvlError) {
 		return
 	}
 
@@ -136,7 +144,7 @@ func (c *Channel) Error(args ...interface{}) {
 
 // Errorf logs Error level messages
 func (c *Channel) Errorf(msg string, args ...interface{}) {
-	if c.level > LvlError {
+	if c.skipLog(LvlError) {
 		return
 	}
 
@@ -145,20 +153,22 @@ func (c *Channel) Errorf(msg string, args ...interface{}) {
 
 // Fatal logs Fatal level messages
 func (c *Channel) Fatal(args ...interface{}) {
-	if c.level > LvlFatal {
-		return
-	}
-
 	c.log.Fatalln(append([]interface{}{c.nameFatal}, args...)...)
 }
 
 // Fatalf logs Fatal level messages
 func (c *Channel) Fatalf(msg string, args ...interface{}) {
-	if c.level > LvlFatal {
-		return
-	}
-
 	c.Fatal(fmt.Sprintf(msg, args...))
+}
+
+// Panic logs Panic level messages
+func (c *Channel) Panic(args ...interface{}) {
+	c.log.Panicln(append([]interface{}{c.namePanic}, args...)...)
+}
+
+// Panicf logs Panic level messages
+func (c *Channel) Panicf(msg string, args ...interface{}) {
+	c.Panic(fmt.Sprintf(msg, args...))
 }
 
 // WithFlags sets the flags on the underlying logger.
@@ -181,6 +191,45 @@ func (c *Channel) WithLevel(l Level) {
 	c.level = l
 }
 
+func (c *Channel) skipLog(msg Level) bool {
+	// always print fatal and panic messages
+	if msg == LvlFatal || msg == LvlPanic {
+		return false
+	}
+
+	// if the channel or the global system is disabled do not log
+	if c.level == LvlDisable || globalLevel == LvlDisable {
+		return true
+	}
+
+	// log at the global level unless the channel level is more permissive
+	lvl := globalLevel
+	if c.level < globalLevel {
+		lvl = c.level
+	}
+
+	if msg < lvl {
+		return true
+	}
+	return false
+}
+
+// SetLevel sets the global logging level. When logging the lower of the global and channel specific
+// level is used. A channel level of debug and a global level of info will result in all
+func SetLevel(l Level) {
+	globalLevel = l
+}
+
+// SetChannelLevel sets the logging level of a specific channel if it exists.
+func SetChannelLevel(name string, l Level) {
+	channelMux.Lock()
+	defer channelMux.Unlock()
+
+	if c, ok := channels[name]; ok {
+		c.WithLevel(l)
+	}
+}
+
 // NewChannel returns a logging channel with the given name.
 func NewChannel(name string) *Channel {
 	channelMux.Lock()
@@ -200,6 +249,7 @@ func NewChannel(name string) *Channel {
 		nameWarning: fmt.Sprintf("[Warning](%s):", name),
 		nameError:   fmt.Sprintf("[Error](%s):", name),
 		nameFatal:   fmt.Sprintf("[Fatal](%s):", name),
+		namePanic:   fmt.Sprintf("[Panic](%s):", name),
 	}
 	return channels[name]
 }
