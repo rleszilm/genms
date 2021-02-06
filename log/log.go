@@ -5,6 +5,7 @@ import (
 	"io"
 	"log"
 	"os"
+	"strings"
 	"sync"
 )
 
@@ -212,6 +213,30 @@ func (c *Channel) skipLog(msg Level) bool {
 		return true
 	}
 	return false
+}
+
+// LevelFromString returns the level from the given string.
+func LevelFromString(lvl string) (Level, bool) {
+	lvl = strings.ToLower(lvl)
+	switch lvl {
+	case "trace":
+		return LvlTrace, true
+	case "debug":
+		return LvlDebug, true
+	case "info":
+		return LvlInfo, true
+	case "warning":
+		return LvlWarning, true
+	case "error":
+		return LvlError, true
+	case "disable":
+		return LvlDisable, true
+	case "fatal":
+		return LvlFatal, true
+	case "panic":
+		return LvlPanic, true
+	}
+	return LvlInfo, false
 }
 
 // SetLevel sets the global logging level. When logging the lower of the global and channel specific
