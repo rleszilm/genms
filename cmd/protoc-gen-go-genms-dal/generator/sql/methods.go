@@ -121,7 +121,7 @@ func QueryImplementation(outfile *protogen.GeneratedFile, msg *protogen.Message,
 func QueryTemplate(msg *protogen.Message, query *annotations.DalOptions_Query) (string, error) {
 	tmplSrc := `// {{ ToTitleCase .query.Name }} implements {{ MessageName .msg }}QueryTemplateProvider.{{ ToTitleCase .query.Name }}.
 func (x *{{ MessageName .msg }}Queries) {{ ToTitleCase .query.Name }}() string {
-	return ` + "`" + `SELECT {{ "{{ fields }}" }} FROM {{ "{{ table }}" }}
+	return ` + "`" + `SELECT {{ "{{ .fields }}" }} FROM {{ "{{ .table }}" }}
 	{{- if .clauses }}
 		WHERE 
 			{{ .clauses }};` + "`" + `

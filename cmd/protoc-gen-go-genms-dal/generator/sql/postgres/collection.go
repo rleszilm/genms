@@ -547,7 +547,7 @@ type {{ MessageName .C.Message }}Queries struct {
 
 // All implements {{ MessageName .C.Message }}QueryTemplateProvider.All.
 func (x *{{ MessageName .C.Message }}Queries) All() string {
-	return ` + "`" + `SELECT {{ .C.QueryFields }} FROM {{ "{{ table }}" }};` + "`" + `
+	return ` + "`" + `SELECT {{ .C.QueryFields }} FROM {{ "{{ .table }}" }};` + "`" + `
 }
 
 {{ with $state := . }}
