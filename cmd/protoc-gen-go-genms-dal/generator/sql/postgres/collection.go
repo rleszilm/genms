@@ -234,7 +234,7 @@ func (x *{{ MessageName .C.Message }}Collection) DoUpsert(ctx {{ .P.Context }}.C
 
 	writer := {{ MessageName .C.Message }}Writer{}
 	writer.From{{ MessageName .C.Message }}(arg)
-	return x.db.ExecWithReplacements(ctx, x.execInsert, writer)
+	return x.db.ExecWithReplacements(ctx, x.execUpsert, writer)
 }
 
 // All implements {{ QualifiedDalType .C.Outfile .C.Message }}Collection.All

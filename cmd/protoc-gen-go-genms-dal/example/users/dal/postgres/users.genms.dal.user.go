@@ -115,7 +115,7 @@ func (x *UserCollection) DoUpsert(ctx context.Context, arg *users.User) (sql1.Re
 
 	writer := UserWriter{}
 	writer.FromUser(arg)
-	return x.db.ExecWithReplacements(ctx, x.execInsert, writer)
+	return x.db.ExecWithReplacements(ctx, x.execUpsert, writer)
 }
 
 // All implements dal.UserCollection.All
