@@ -182,7 +182,7 @@ func (c *Collection) defineDefaultQueries() error {
 	tmplSrc := `// DoInsert provides the base logic for {{ QualifiedDalType .C.Outfile .C.Message }}Collection.Insert.
 // The user should use this as a base for {{ QualifiedDalType .C.Outfile .C.Message }}Collection.Insert, only having to add
 // code that interprets the returned values.
-func (x *{{ MessageName .C.Message }}Collection) DoInsert(ctx {{ .P.Context }}.Context, arg *{{ QualifiedType .C.Outfile .C.Message }}) ({{ .P.SQL }}.Result, error) {
+func (x *{{ MessageName .C.Message }}Collection) DoInsert(ctx {{ .P.Context }}.Context, arg interface{}) ({{ .P.SQL }}.Result, error) {
 	var err error
 	start := {{ .P.Time }}.Now()
 	{{ .P.Stats }}.Record(ctx, {{ ToCamelCase (MessageName .C.Message) }}Inflight.M(1))
@@ -203,15 +203,13 @@ func (x *{{ MessageName .C.Message }}Collection) DoInsert(ctx {{ .P.Context }}.C
 		{{ .P.Stats }}.Record(ctx, {{ ToCamelCase (MessageName .C.Message) }}Latency.M(dur), {{ ToCamelCase (MessageName .C.Message) }}Inflight.M(-1))
 	}()
 
-	writer := {{ MessageName .C.Message }}Writer{}
-	writer.From{{ MessageName .C.Message }}(arg)
-	return x.db.ExecWithReplacements(ctx, x.execInsert, writer)
+	return x.db.ExecWithReplacements(ctx, x.execInsert, arg)
 }
 
 // DoUpsert provides the base logic for {{ QualifiedDalType .C.Outfile .C.Message }}Collection.Upsert.
 // The user should use this as a base for {{ QualifiedDalType .C.Outfile .C.Message }}Collection.Upsert, only having to add
 // code that interprets the returned values.
-func (x *{{ MessageName .C.Message }}Collection) DoUpsert(ctx {{ .P.Context }}.Context, arg *{{ QualifiedType .C.Outfile .C.Message }}) ({{ .P.SQL }}.Result, error) {
+func (x *{{ MessageName .C.Message }}Collection) DoUpsert(ctx {{ .P.Context }}.Context, arg interface{}) ({{ .P.SQL }}.Result, error) {
 	var err error
 	start := {{ .P.Time }}.Now()
 	{{ .P.Stats }}.Record(ctx, {{ ToCamelCase (MessageName .C.Message) }}Inflight.M(1))
@@ -232,9 +230,7 @@ func (x *{{ MessageName .C.Message }}Collection) DoUpsert(ctx {{ .P.Context }}.C
 		{{ .P.Stats }}.Record(ctx, {{ ToCamelCase (MessageName .C.Message) }}Latency.M(dur), {{ ToCamelCase (MessageName .C.Message) }}Inflight.M(-1))
 	}()
 
-	writer := {{ MessageName .C.Message }}Writer{}
-	writer.From{{ MessageName .C.Message }}(arg)
-	return x.db.ExecWithReplacements(ctx, x.execUpsert, writer)
+	return x.db.ExecWithReplacements(ctx, x.execUpsert, arg)
 }
 
 // All implements {{ QualifiedDalType .C.Outfile .C.Message }}Collection.All
