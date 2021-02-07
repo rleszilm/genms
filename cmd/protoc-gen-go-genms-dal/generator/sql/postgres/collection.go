@@ -21,6 +21,7 @@ type Collection struct {
 	Opts        *annotations.DalOptions
 	Fields      *generator.Fields
 	QueryFields string
+	WriteFields string
 }
 
 func (c *Collection) render() error {
@@ -31,7 +32,7 @@ func (c *Collection) render() error {
 		c.defineDefaultQueries,
 		c.defineQueries,
 		c.defineNewCollection,
-		c.defineScanner,
+		c.defineInternalStructs,
 		c.defineConfig,
 		c.defineTemplateProvider,
 		c.defineMetrics,
@@ -81,6 +82,7 @@ type {{ MessageName .C.Message }}Collection struct {
 	db {{ .P.GenMSSQL }}.DB
 	config *{{ MessageName .C.Message }}Config
 
+	execInsert string
 	execUpsert string
 	queryAll string
 
@@ -177,8 +179,39 @@ func (x *{{ MessageName .C.Message }}Collection) String() string {
 }
 
 func (c *Collection) defineDefaultQueries() error {
-	tmplSrc := `// Upsert implements {{ QualifiedDalType .C.Outfile .C.Message }}Collection.Upsert
-func (x *{{ MessageName .C.Message }}Collection) Upsert(ctx {{ .P.Context }}.Context, arg *{{ QualifiedType .C.Outfile .C.Message }}) (*{{ QualifiedType .C.Outfile .C.Message }}, error) {
+	tmplSrc := `// DoInsert provides the base logic for {{ QualifiedDalType .C.Outfile .C.Message }}Collection.Insert.
+// The user should use this as a base for {{ QualifiedDalType .C.Outfile .C.Message }}Collection.Insert, only having to add
+// code that interprets the returned values.
+func (x *{{ MessageName .C.Message }}Collection) DoInsert(ctx {{ .P.Context }}.Context, arg *{{ QualifiedType .C.Outfile .C.Message }}) ({{ .P.SQL }}.Result, error) {
+	var err error
+	start := {{ .P.Time }}.Now()
+	{{ .P.Stats }}.Record(ctx, {{ ToCamelCase (MessageName .C.Message) }}Inflight.M(1))
+	defer func() {
+		stop := {{ .P.Time }}.Now()
+		dur := float64(stop.Sub(start).Nanoseconds()) / float64({{ .P.Time }}.Millisecond)
+
+		if err != nil {
+			ctx, err = {{ .P.Tag }}.New(ctx,
+				{{ .P.Tag }}.Insert({{ ToCamelCase (MessageName .C.Message) }}QueryError, "{{ ToLower (MessageName .C.Message) }}_insert"),
+			)
+		}
+
+		ctx, err = {{ .P.Tag }}.New(ctx,
+			{{ .P.Tag }}.Insert({{ ToCamelCase (MessageName .C.Message) }}QueryName, "{{ ToLower (MessageName .C.Message) }}_insert"),
+		)
+
+		{{ .P.Stats }}.Record(ctx, {{ ToCamelCase (MessageName .C.Message) }}Latency.M(dur), {{ ToCamelCase (MessageName .C.Message) }}Inflight.M(-1))
+	}()
+
+	writer := {{ MessageName .C.Message }}Writer{}
+	writer.From{{ MessageName .C.Message }}(arg)
+	return x.db.ExecWithReplacements(ctx, x.execInsert, writer)
+}
+
+// DoUpsert provides the base logic for {{ QualifiedDalType .C.Outfile .C.Message }}Collection.Upsert.
+// The user should use this as a base for {{ QualifiedDalType .C.Outfile .C.Message }}Collection.Upsert, only having to add
+// code that interprets the returned values.
+func (x *{{ MessageName .C.Message }}Collection) DoUpsert(ctx {{ .P.Context }}.Context, arg *{{ QualifiedType .C.Outfile .C.Message }}) ({{ .P.SQL }}.Result, error) {
 	var err error
 	start := {{ .P.Time }}.Now()
 	{{ .P.Stats }}.Record(ctx, {{ ToCamelCase (MessageName .C.Message) }}Inflight.M(1))
@@ -199,11 +232,9 @@ func (x *{{ MessageName .C.Message }}Collection) Upsert(ctx {{ .P.Context }}.Con
 		{{ .P.Stats }}.Record(ctx, {{ ToCamelCase (MessageName .C.Message) }}Latency.M(dur), {{ ToCamelCase (MessageName .C.Message) }}Inflight.M(-1))
 	}()
 
-	if _, err = x.db.ExecWithReplacements(ctx, x.execUpsert, arg); err != nil {
-		return nil, err
-	}
-
-	return arg, nil
+	writer := {{ MessageName .C.Message }}Writer{}
+	writer.From{{ MessageName .C.Message }}(arg)
+	return x.db.ExecWithReplacements(ctx, x.execInsert, writer)
 }
 
 // All implements {{ QualifiedDalType .C.Outfile .C.Message }}Collection.All
@@ -301,6 +332,7 @@ func (x *{{ MessageName .C.Message }}Collection) find(ctx {{ .P.Context }}.Conte
 		"Fmt":     generator.QualifiedPackageName(c.Outfile, "fmt"),
 		"Strings": generator.QualifiedPackageName(c.Outfile, "strings"),
 		"Time":    generator.QualifiedPackageName(c.Outfile, "time"),
+		"SQL":     generator.QualifiedPackageName(c.Outfile, "database/sql"),
 		"Tag":     generator.QualifiedPackageName(c.Outfile, "go.opencensus.io/tag"),
 		"Stats":   generator.QualifiedPackageName(c.Outfile, "go.opencensus.io/stats"),
 	}
@@ -368,7 +400,11 @@ func New{{ MessageName .C.Message }}Collection(db {{ .P.GenMSSQL }}.DB, queries 
 	queryReplacements := map[string]string{
 		"table": config.TableName,
 		"fields": "{{ .C.QueryFields }}",
+		"writeFields": "{{ .C.WriteFields }}",
 	}
+
+	// generate Upsert exec
+	coll.execInsert = {{ .P.GenerateSQL }}.MustGenerateQuery("{{ QualifiedDalType .C.Outfile .C.Message }}-Exec-Insert", queries.Insert(), queryReplacements)
 
 	// generate Upsert exec
 	coll.execUpsert = {{ .P.GenerateSQL }}.MustGenerateQuery("{{ QualifiedDalType .C.Outfile .C.Message }}-Exec-Upsert", queries.Upsert(), queryReplacements)
@@ -427,7 +463,7 @@ func New{{ MessageName .C.Message }}Collection(db {{ .P.GenMSSQL }}.DB, queries 
 	return nil
 }
 
-func (c *Collection) defineScanner() error {
+func (c *Collection) defineInternalStructs() error {
 	tmplSrc := `// {{ MessageName .C.Message }}Scanner is an autogenerated struct that
 // is used to parse query results.
 type {{ MessageName .C.Message }}Scanner struct {
@@ -444,6 +480,21 @@ func (x *{{ MessageName .C.Message }}Scanner) {{ MessageName .C.Message }}() *{{
 		{{ end }}
 	}
 }
+
+// {{ MessageName .C.Message }}Writer is an autogenerated struct that
+// is used to supply values to write queries.
+type {{ MessageName .C.Message }}Writer struct {
+	{{ range .WriterFields -}}
+		{{ . }}
+	{{ end }}
+}
+
+// From{{ MessageName .C.Message }} populates the struct with values from the base type.
+func (x *{{ MessageName .C.Message }}Writer) From{{ MessageName .C.Message }}(y *{{ QualifiedType .C.Outfile .C.Message }}) {
+	{{ range .WriterValues -}}
+		{{ . }}
+	{{ end }}
+}
 `
 
 	tmpl, err := template.New("defineScanner").
@@ -459,6 +510,8 @@ func (x *{{ MessageName .C.Message }}Scanner) {{ MessageName .C.Message }}() *{{
 
 	scannerFields := []string{}
 	scannerValues := []string{}
+	writerFields := []string{}
+	writerValues := []string{}
 	for _, q := range c.Fields.QueryNames() {
 		field := c.Fields.ByQueryName(q)
 		fname := generator.GoFieldName(field)
@@ -474,16 +527,25 @@ func (x *{{ MessageName .C.Message }}Scanner) {{ MessageName .C.Message }}() *{{
 			return err
 		}
 		scannerValues = append(scannerValues, fmt.Sprintf("%s: %s", fname, nt))
+
+		ftype, err := generator.GoFieldType(c.Outfile, field)
+		if err != nil {
+			return err
+		}
+		writerFields = append(writerFields, fmt.Sprintf("%s %s `db:\"%s\"`", fname, ftype, q))
+		writerValues = append(writerValues, fmt.Sprintf("x.%s = y.%s", fname, fname))
 	}
 
 	p := map[string]string{}
 
 	buf := &bytes.Buffer{}
 	if err := tmpl.Execute(buf, map[string]interface{}{
-		"C":          c,
-		"P":          p,
-		"ScanFields": scannerFields,
-		"ScanValues": scannerValues,
+		"C":            c,
+		"P":            p,
+		"ScanFields":   scannerFields,
+		"ScanValues":   scannerValues,
+		"WriterFields": writerFields,
+		"WriterValues": writerValues,
 	}); err != nil {
 		return err
 	}
@@ -498,7 +560,6 @@ func (c *Collection) defineConfig() error {
 	tmplSrc := `// {{ MessageName .C.Message }}Config is a struct that can be used to configure a {{ MessageName .C.Message }}Collection
 	type {{ MessageName .C.Message }}Config struct {
 		TableName string ` + "`" + `envconfig:"table"` + "`" + `
-		ExecUpsert string
 	}
 `
 
@@ -533,6 +594,7 @@ func (c *Collection) defineTemplateProvider() error {
 // to generate the queries that the collection will use.
 //go:generate go run github.com/maxbrunsfeld/counterfeiter/v6 . {{ MessageName .C.Message }}QueryTemplateProvider
 type {{ MessageName .C.Message }}QueryTemplateProvider interface {
+	Insert() string
 	Upsert() string
 	All() string
 	{{ range .C.Opts.Queries -}}
@@ -545,9 +607,19 @@ type {{ MessageName .C.Message }}QueryTemplateProvider interface {
 type {{ MessageName .C.Message }}Queries struct {
 }
 
+// Insert implements {{ MessageName .C.Message }}QueryTemplateProvider.Insert.
+func (x *{{ MessageName .C.Message }}Queries) Insert() string {
+	return ` + "`" + `INSERT INTO {{ "{{ .table }}" }}({{ "{{ .fields }}" }}) VALUES({{ "{{ .writeFields }}" }});` + "`" + `
+}
+
+// Upsert implements {{ MessageName .C.Message }}QueryTemplateProvider.Upsert.
+func (x *{{ MessageName .C.Message }}Queries) Upsert() string {
+	return ` + "`" + `INSERT INTO {{ "{{ .table }}" }}({{ "{{ .fields }}" }}) VALUES({{ "{{ .writeFields }}" }});` + "`" + `
+}
+
 // All implements {{ MessageName .C.Message }}QueryTemplateProvider.All.
 func (x *{{ MessageName .C.Message }}Queries) All() string {
-	return ` + "`" + `SELECT {{ .C.QueryFields }} FROM {{ "{{ .table }}" }};` + "`" + `
+	return ` + "`" + `SELECT {{ "{{ .fields }}" }} FROM {{ "{{ .table }}" }};` + "`" + `
 }
 
 {{ with $state := . }}
@@ -672,6 +744,7 @@ func NewCollection(plugin *protogen.Plugin, file *protogen.File, msg *protogen.M
 		Opts:        opts,
 		Fields:      fields,
 		QueryFields: strings.Join(fields.QueryNames(), ", "),
+		WriteFields: ":" + strings.Join(fields.QueryNames(), ", :"),
 	}
 }
 

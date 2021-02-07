@@ -3,12 +3,12 @@ package postgres_dal_users
 
 import (
 	context "context"
-	sql2 "database/sql"
+	sql1 "database/sql"
 	fmt "fmt"
 	types "github.com/rleszilm/gen_microservice/cmd/protoc-gen-go-genms-dal/annotations/types"
 	users "github.com/rleszilm/gen_microservice/cmd/protoc-gen-go-genms-dal/example/users"
 	dal "github.com/rleszilm/gen_microservice/cmd/protoc-gen-go-genms-dal/example/users/dal"
-	sql1 "github.com/rleszilm/gen_microservice/cmd/protoc-gen-go-genms-dal/generator/sql"
+	sql2 "github.com/rleszilm/gen_microservice/cmd/protoc-gen-go-genms-dal/generator/sql"
 	sql "github.com/rleszilm/gen_microservice/sql"
 	stats "go.opencensus.io/stats"
 	view "go.opencensus.io/stats/view"
@@ -27,6 +27,7 @@ type UserCollection struct {
 	db     sql.DB
 	config *UserConfig
 
+	execInsert string
 	execUpsert string
 	queryAll   string
 
@@ -59,8 +60,39 @@ func (x *UserCollection) String() string {
 	return x.NameOf()
 }
 
-// Upsert implements dal.UserCollection.Upsert
-func (x *UserCollection) Upsert(ctx context.Context, arg *users.User) (*users.User, error) {
+// DoInsert provides the base logic for dal.UserCollection.Insert.
+// The user should use this as a base for dal.UserCollection.Insert, only having to add
+// code that interprets the returned values.
+func (x *UserCollection) DoInsert(ctx context.Context, arg *users.User) (sql1.Result, error) {
+	var err error
+	start := time.Now()
+	stats.Record(ctx, userInflight.M(1))
+	defer func() {
+		stop := time.Now()
+		dur := float64(stop.Sub(start).Nanoseconds()) / float64(time.Millisecond)
+
+		if err != nil {
+			ctx, err = tag.New(ctx,
+				tag.Insert(userQueryError, "user_insert"),
+			)
+		}
+
+		ctx, err = tag.New(ctx,
+			tag.Insert(userQueryName, "user_insert"),
+		)
+
+		stats.Record(ctx, userLatency.M(dur), userInflight.M(-1))
+	}()
+
+	writer := UserWriter{}
+	writer.FromUser(arg)
+	return x.db.ExecWithReplacements(ctx, x.execInsert, writer)
+}
+
+// DoUpsert provides the base logic for dal.UserCollection.Upsert.
+// The user should use this as a base for dal.UserCollection.Upsert, only having to add
+// code that interprets the returned values.
+func (x *UserCollection) DoUpsert(ctx context.Context, arg *users.User) (sql1.Result, error) {
 	var err error
 	start := time.Now()
 	stats.Record(ctx, userInflight.M(1))
@@ -81,11 +113,9 @@ func (x *UserCollection) Upsert(ctx context.Context, arg *users.User) (*users.Us
 		stats.Record(ctx, userLatency.M(dur), userInflight.M(-1))
 	}()
 
-	if _, err = x.db.ExecWithReplacements(ctx, x.execUpsert, arg); err != nil {
-		return nil, err
-	}
-
-	return arg, nil
+	writer := UserWriter{}
+	writer.FromUser(arg)
+	return x.db.ExecWithReplacements(ctx, x.execInsert, writer)
 }
 
 // All implements dal.UserCollection.All
@@ -228,30 +258,34 @@ func NewUserCollection(db sql.DB, queries UserQueryTemplateProvider, config *Use
 	}
 
 	queryReplacements := map[string]string{
-		"table":  config.TableName,
-		"fields": "id, name, division, lifetime_score, last_score, payout, point, phone, geo, kind, by_backend_postgres",
+		"table":       config.TableName,
+		"fields":      "id, name, division, lifetime_score, last_score, payout, point, phone, geo, kind, by_backend_postgres",
+		"writeFields": ":id, :name, :division, :lifetime_score, :last_score, :payout, :point, :phone, :geo, :kind, :by_backend_postgres",
 	}
 
 	// generate Upsert exec
-	coll.execUpsert = sql1.MustGenerateQuery("dal.User-Exec-Upsert", queries.Upsert(), queryReplacements)
+	coll.execInsert = sql2.MustGenerateQuery("dal.User-Exec-Insert", queries.Insert(), queryReplacements)
+
+	// generate Upsert exec
+	coll.execUpsert = sql2.MustGenerateQuery("dal.User-Exec-Upsert", queries.Upsert(), queryReplacements)
 
 	// generate All query
-	coll.queryAll = sql1.MustGenerateQuery("dal.User-Query-All", queries.All(), queryReplacements)
+	coll.queryAll = sql2.MustGenerateQuery("dal.User-Query-All", queries.All(), queryReplacements)
 
 	// generate ById query
-	coll.queryById = sql1.MustGenerateQuery("dal.User-Query-ById", queries.ById(), queryReplacements)
+	coll.queryById = sql2.MustGenerateQuery("dal.User-Query-ById", queries.ById(), queryReplacements)
 
 	// generate ByNameAndDivision query
-	coll.queryByNameAndDivision = sql1.MustGenerateQuery("dal.User-Query-ByNameAndDivision", queries.ByNameAndDivision(), queryReplacements)
+	coll.queryByNameAndDivision = sql2.MustGenerateQuery("dal.User-Query-ByNameAndDivision", queries.ByNameAndDivision(), queryReplacements)
 
 	// generate ByKind query
-	coll.queryByKind = sql1.MustGenerateQuery("dal.User-Query-ByKind", queries.ByKind(), queryReplacements)
+	coll.queryByKind = sql2.MustGenerateQuery("dal.User-Query-ByKind", queries.ByKind(), queryReplacements)
 
 	// generate ByPhone query
-	coll.queryByPhone = sql1.MustGenerateQuery("dal.User-Query-ByPhone", queries.ByPhone(), queryReplacements)
+	coll.queryByPhone = sql2.MustGenerateQuery("dal.User-Query-ByPhone", queries.ByPhone(), queryReplacements)
 
 	// generate ProviderStubOnly query
-	coll.queryProviderStubOnly = sql1.MustGenerateQuery("dal.User-Query-ProviderStubOnly", queries.ProviderStubOnly(), queryReplacements)
+	coll.queryProviderStubOnly = sql2.MustGenerateQuery("dal.User-Query-ProviderStubOnly", queries.ProviderStubOnly(), queryReplacements)
 
 	return coll, nil
 }
@@ -259,17 +293,17 @@ func NewUserCollection(db sql.DB, queries UserQueryTemplateProvider, config *Use
 // UserScanner is an autogenerated struct that
 // is used to parse query results.
 type UserScanner struct {
-	Id            sql2.NullInt64   `db:"id"`
-	Name          sql2.NullString  `db:"name"`
-	Division      sql2.NullString  `db:"division"`
-	LifetimeScore sql2.NullFloat64 `db:"lifetime_score"`
-	LastScore     sql2.NullFloat64 `db:"last_score"`
-	LastWinnings  sql2.NullInt32   `db:"payout"`
+	Id            sql1.NullInt64   `db:"id"`
+	Name          sql1.NullString  `db:"name"`
+	Division      sql1.NullString  `db:"division"`
+	LifetimeScore sql1.NullFloat64 `db:"lifetime_score"`
+	LastScore     sql1.NullFloat64 `db:"last_score"`
+	LastWinnings  sql1.NullInt32   `db:"payout"`
 	Point         *types.Point     `db:"point"`
 	Phone         *types.Phone     `db:"phone"`
 	Geo           *latlng.LatLng   `db:"geo"`
 	Kind          users.User_Kind  `db:"kind"`
-	ByBackend     sql2.NullString  `db:"by_backend_postgres"`
+	ByBackend     sql1.NullString  `db:"by_backend_postgres"`
 }
 
 // User returns a new users.User populated with scanned values.
@@ -289,16 +323,48 @@ func (x *UserScanner) User() *users.User {
 	}
 }
 
+// UserWriter is an autogenerated struct that
+// is used to supply values to write queries.
+type UserWriter struct {
+	Id            int64           `db:"id"`
+	Name          string          `db:"name"`
+	Division      string          `db:"division"`
+	LifetimeScore float64         `db:"lifetime_score"`
+	LastScore     float32         `db:"last_score"`
+	LastWinnings  int32           `db:"payout"`
+	Point         *types.Point    `db:"point"`
+	Phone         *types.Phone    `db:"phone"`
+	Geo           *latlng.LatLng  `db:"geo"`
+	Kind          users.User_Kind `db:"kind"`
+	ByBackend     string          `db:"by_backend_postgres"`
+}
+
+// FromUser populates the struct with values from the base type.
+func (x *UserWriter) FromUser(y *users.User) {
+	x.Id = y.Id
+	x.Name = y.Name
+	x.Division = y.Division
+	x.LifetimeScore = y.LifetimeScore
+	x.LastScore = y.LastScore
+	x.LastWinnings = y.LastWinnings
+	x.Point = y.Point
+	x.Phone = y.Phone
+	x.Geo = y.Geo
+	x.Kind = y.Kind
+	x.ByBackend = y.ByBackend
+
+}
+
 // UserConfig is a struct that can be used to configure a UserCollection
 type UserConfig struct {
-	TableName  string `envconfig:"table"`
-	ExecUpsert string
+	TableName string `envconfig:"table"`
 }
 
 // UserQueryTemplateProvider is an interface that returns the query templated that should be executed
 // to generate the queries that the collection will use.
 //go:generate go run github.com/maxbrunsfeld/counterfeiter/v6 . UserQueryTemplateProvider
 type UserQueryTemplateProvider interface {
+	Insert() string
 	Upsert() string
 	All() string
 	ById() string
@@ -313,21 +379,31 @@ type UserQueryTemplateProvider interface {
 type UserQueries struct {
 }
 
+// Insert implements UserQueryTemplateProvider.Insert.
+func (x *UserQueries) Insert() string {
+	return `INSERT INTO {{ .table }}({{ .fields }}) VALUES({{ .writeFields }});`
+}
+
+// Upsert implements UserQueryTemplateProvider.Upsert.
+func (x *UserQueries) Upsert() string {
+	return `INSERT INTO {{ .table }}({{ .fields }}) VALUES({{ .writeFields }});`
+}
+
 // All implements UserQueryTemplateProvider.All.
 func (x *UserQueries) All() string {
-	return `SELECT id, name, division, lifetime_score, last_score, payout, point, phone, geo, kind, by_backend_postgres FROM {{ table }};`
+	return `SELECT {{ .fields }} FROM {{ .table }};`
 }
 
 // ById implements UserQueryTemplateProvider.ById.
 func (x *UserQueries) ById() string {
-	return `SELECT {{ fields }} FROM {{ table }}
+	return `SELECT {{ .fields }} FROM {{ .table }}
 		WHERE 
 			id = :id;`
 }
 
 // ByNameAndDivision implements UserQueryTemplateProvider.ByNameAndDivision.
 func (x *UserQueries) ByNameAndDivision() string {
-	return `SELECT {{ fields }} FROM {{ table }}
+	return `SELECT {{ .fields }} FROM {{ .table }}
 		WHERE 
 			name = :name AND
 			division = :division;`
@@ -335,14 +411,14 @@ func (x *UserQueries) ByNameAndDivision() string {
 
 // ByKind implements UserQueryTemplateProvider.ByKind.
 func (x *UserQueries) ByKind() string {
-	return `SELECT {{ fields }} FROM {{ table }}
+	return `SELECT {{ .fields }} FROM {{ .table }}
 		WHERE 
 			kind = :kind;`
 }
 
 // ByPhone implements UserQueryTemplateProvider.ByPhone.
 func (x *UserQueries) ByPhone() string {
-	return `SELECT {{ fields }} FROM {{ table }}
+	return `SELECT {{ .fields }} FROM {{ .table }}
 		WHERE 
 			phone = :phone;`
 }

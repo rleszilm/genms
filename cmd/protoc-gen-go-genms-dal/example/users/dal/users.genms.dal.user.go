@@ -66,6 +66,11 @@ type UnimplementedUserCollection struct {
 	service.Deps
 }
 
+// Insert implements UserCollection.Insert
+func (x *UnimplementedUserCollection) Insert(_ context.Context, _ *users.User) (*users.User, error) {
+	return nil, ErrUserCollectionMethodImpl
+}
+
 // Upsert implements UserCollection.Upsert
 func (x *UnimplementedUserCollection) Upsert(_ context.Context, _ *users.User) (*users.User, error) {
 	return nil, ErrUserCollectionMethodImpl

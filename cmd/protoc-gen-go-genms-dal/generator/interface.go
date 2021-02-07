@@ -62,6 +62,11 @@ type Unimplemented{{ MessageName .msg }}Collection struct {
 	{{ .P.Service }}.Deps
 }
 
+// Insert implements {{ MessageName .msg }}Collection.Insert
+func (x *Unimplemented{{ MessageName $state.msg }}Collection) Insert(_ {{ .P.Context }}.Context, _ *{{ QualifiedType .outfile .msg }}) (*{{ QualifiedType .outfile .msg }}, error) {
+	return nil, Err{{ MessageName $state.msg }}CollectionMethodImpl
+}
+
 // Upsert implements {{ MessageName .msg }}Collection.Upsert
 func (x *Unimplemented{{ MessageName $state.msg }}Collection) Upsert(_ {{ .P.Context }}.Context, _ *{{ QualifiedType .outfile .msg }}) (*{{ QualifiedType .outfile .msg }}, error) {
 	return nil, Err{{ MessageName $state.msg }}CollectionMethodImpl
