@@ -16,7 +16,7 @@ type ProxyGrpc struct {
 	Name     string `envconfig:"name" required:"true"`
 	Pattern  string `envconfig:"pattern" default:"/"`
 	Addr     string `envconfig:"addr" default:""`
-	Insecure bool   `envconfig:"secure" default:"true"`
+	Insecure bool   `envconfig:"insecure" default:"false"`
 }
 
 // NewFromEnv generates a new set of configuration data.
