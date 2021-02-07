@@ -67,8 +67,8 @@ func (m *MicroService) defineMicroService() error {
 	tmplSrc := `// {{ ServiceName .M.Service }}ServerService implements {{ ServiceName .M.Service }}Service
 type {{ ServiceName .M.Service }}ServerService struct {
 	{{ .P.Service }}.Deps
-	{{ ServiceName .M.Service }}Server
-
+	
+	impl {{ ServiceName .M.Service }}Server
 	grpcServer *{{ .P.GRPCService }}.Server
 	{{ if .M.Opts.Rest -}} restServer *{{ .P.RESTService }}.Server {{- end }}
 	{{ if .M.Opts.Graphql -}} graphqlServer *{{ .P.GraphQLService }}.Server {{- end }}
@@ -116,7 +116,7 @@ func (m *MicroService) defineService() error {
 // Initialize implements service.Service.Initialize
 func (s *{{ ServiceName $M.Service }}ServerService) Initialize(ctx {{ .P.Context }}.Context) error {
 	s.grpcServer.WithService(func(server *{{ .P.GRPC }}.Server) {
-		Register{{ ServiceName $M.Service }}Server(server, s)
+		Register{{ ServiceName $M.Service }}Server(server, s.impl)
 	})
 	{{ if $M.Opts.Rest }}
 		if err := s.restServer.WithGrpcProxyHandler(ctx, "{{ ServiceName $M.Service }}", Register{{ ServiceName $M.Service }}HandlerFromEndpoint); err != nil {
@@ -137,7 +137,7 @@ func (s *{{ ServiceName $M.Service }}ServerService) Shutdown(_ {{ .P.Context }}.
 
 // NameOf returns the name of the service
 func (s *{{ ServiceName $M.Service }}ServerService) NameOf() string {
-	return "{{ ServiceName $M.Service | ToSnakeCase | ToLower }}"
+	return "{{ ServiceName $M.Service | ToDashCase | ToLower }}"
 }
 
 // String returns the string name of the service
@@ -148,10 +148,14 @@ func (s *{{ ServiceName $M.Service }}ServerService) String() string {
 // New{{ ServiceName $M.Service }}ServerService returns a new {{ ServiceName $M.Service }}ServerService
 func New{{ ServiceName $M.Service }}ServerService(impl {{ ServiceName $M.Service }}Server, grpcServer *{{ .P.GRPCService }}.Server {{- if $M.Opts.Rest }}, restServer *{{ .P.RESTService }}.Server{{ end }} {{- if $M.Opts.Graphql }}, graphqlServer *{{ .P.GraphQLService }}.Server{{ end }}) *{{ ServiceName $M.Service }}ServerService {
 	server := &{{ ServiceName $M.Service }}ServerService{
-		{{ ServiceName $M.Service }}Server: impl,
+		impl: impl,
 		grpcServer: grpcServer,
 		{{ if $M.Opts.Rest -}} restServer: restServer,{{- end }}
 		{{ if $M.Opts.Graphql -}} graphqlServer: graphqlServer,{{- end }}
+	}
+
+	if asService, ok := impl.({{ .P.Service }}.Service); ok {
+		server.WithDependencies(asService)
 	}
 
 	grpcServer.WithDependencies(server)
@@ -169,7 +173,7 @@ func New{{ ServiceName $M.Service }}ServerService(impl {{ ServiceName $M.Service
 		Funcs(template.FuncMap{
 			"ServiceName": generator.ServiceName,
 			"ToLower":     strings.ToLower,
-			"ToSnakeCase": generator.ToSnakeCase,
+			"ToDashCase":  generator.ToDashCase,
 		}).
 		Parse(tmplSrc)
 
@@ -181,6 +185,7 @@ func New{{ ServiceName $M.Service }}ServerService(impl {{ ServiceName $M.Service
 		"Context":     generator.QualifiedPackageName(m.Outfile, "context"),
 		"GRPC":        generator.QualifiedPackageName(m.Outfile, "google.golang.org/grpc"),
 		"GRPCService": generator.QualifiedPackageName(m.Outfile, "github.com/rleszilm/gen_microservice/service/grpc"),
+		"Service":     generator.QualifiedPackageName(m.Outfile, "github.com/rleszilm/gen_microservice/service"),
 	}
 	if m.Opts.Graphql {
 		p["GraphQLService"] = generator.QualifiedPackageName(m.Outfile, "github.com/rleszilm/gen_microservice/service/graphql")

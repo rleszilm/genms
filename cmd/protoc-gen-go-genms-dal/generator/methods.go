@@ -129,6 +129,14 @@ func ToSnakeCase(s string) string {
 	return strings.Join(tokens, "_")
 }
 
+func ToDashCase(s string) string {
+	tokens := tokenize(s)
+	for i, tok := range tokens {
+		tokens[i] = strings.ToLower(tok)
+	}
+	return strings.Join(tokens, "-")
+}
+
 func ToGoType(t protoreflect.Kind) string {
 	switch t.String() {
 	case "bool":

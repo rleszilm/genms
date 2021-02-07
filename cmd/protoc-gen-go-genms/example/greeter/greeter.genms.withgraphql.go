@@ -12,8 +12,8 @@ import (
 // WithGraphQLServerService implements WithGraphQLService
 type WithGraphQLServerService struct {
 	service.Deps
-	WithGraphQLServer
 
+	impl       WithGraphQLServer
 	grpcServer *grpc.Server
 
 	graphqlServer *graphql.Server
@@ -22,7 +22,7 @@ type WithGraphQLServerService struct {
 // Initialize implements service.Service.Initialize
 func (s *WithGraphQLServerService) Initialize(ctx context.Context) error {
 	s.grpcServer.WithService(func(server *grpc1.Server) {
-		RegisterWithGraphQLServer(server, s)
+		RegisterWithGraphQLServer(server, s.impl)
 	})
 
 	if err := s.graphqlServer.WithGrpcProxy(ctx, "WithGraphQL", RegisterWithGraphQLGraphqlWithOptions); err != nil {
@@ -49,10 +49,14 @@ func (s *WithGraphQLServerService) String() string {
 // NewWithGraphQLServerService returns a new WithGraphQLServerService
 func NewWithGraphQLServerService(impl WithGraphQLServer, grpcServer *grpc.Server, graphqlServer *graphql.Server) *WithGraphQLServerService {
 	server := &WithGraphQLServerService{
-		WithGraphQLServer: impl,
-		grpcServer:        grpcServer,
+		impl:       impl,
+		grpcServer: grpcServer,
 
 		graphqlServer: graphqlServer,
+	}
+
+	if asService, ok := impl.(service.Service); ok {
+		server.WithDependencies(asService)
 	}
 
 	grpcServer.WithDependencies(server)

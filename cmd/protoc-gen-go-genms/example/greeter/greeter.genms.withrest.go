@@ -12,8 +12,8 @@ import (
 // WithRestServerService implements WithRestService
 type WithRestServerService struct {
 	service.Deps
-	WithRestServer
 
+	impl       WithRestServer
 	grpcServer *grpc.Server
 	restServer *rest.Server
 }
@@ -21,7 +21,7 @@ type WithRestServerService struct {
 // Initialize implements service.Service.Initialize
 func (s *WithRestServerService) Initialize(ctx context.Context) error {
 	s.grpcServer.WithService(func(server *grpc1.Server) {
-		RegisterWithRestServer(server, s)
+		RegisterWithRestServer(server, s.impl)
 	})
 
 	if err := s.restServer.WithGrpcProxyHandler(ctx, "WithRest", RegisterWithRestHandlerFromEndpoint); err != nil {
@@ -49,9 +49,13 @@ func (s *WithRestServerService) String() string {
 // NewWithRestServerService returns a new WithRestServerService
 func NewWithRestServerService(impl WithRestServer, grpcServer *grpc.Server, restServer *rest.Server) *WithRestServerService {
 	server := &WithRestServerService{
-		WithRestServer: impl,
-		grpcServer:     grpcServer,
-		restServer:     restServer,
+		impl:       impl,
+		grpcServer: grpcServer,
+		restServer: restServer,
+	}
+
+	if asService, ok := impl.(service.Service); ok {
+		server.WithDependencies(asService)
 	}
 
 	grpcServer.WithDependencies(server)
