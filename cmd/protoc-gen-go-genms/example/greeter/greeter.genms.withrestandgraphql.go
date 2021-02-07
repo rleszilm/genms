@@ -26,7 +26,7 @@ func (s *WithRestAndGraphQLServerService) Initialize(ctx context.Context) error 
 		RegisterWithRestAndGraphQLServer(server, s)
 	})
 
-	if err := s.restServer.WithGrpcProxy(ctx, "WithRestAndGraphQL", RegisterWithRestAndGraphQLHandlerFromEndpoint); err != nil {
+	if err := s.restServer.WithGrpcProxyHandler(ctx, "WithRestAndGraphQL", RegisterWithRestAndGraphQLHandlerFromEndpoint); err != nil {
 		return err
 	}
 

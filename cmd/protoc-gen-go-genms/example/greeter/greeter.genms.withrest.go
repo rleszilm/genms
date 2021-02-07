@@ -24,7 +24,7 @@ func (s *WithRestServerService) Initialize(ctx context.Context) error {
 		RegisterWithRestServer(server, s)
 	})
 
-	if err := s.restServer.WithGrpcProxy(ctx, "WithRest", RegisterWithRestHandlerFromEndpoint); err != nil {
+	if err := s.restServer.WithGrpcProxyHandler(ctx, "WithRest", RegisterWithRestHandlerFromEndpoint); err != nil {
 		return err
 	}
 

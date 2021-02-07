@@ -32,19 +32,18 @@ func main() {
 				Transport: "tcp",
 				Addr:      ":8081",
 			},
-			Proxies: map[string]*rest_service.ProxyGrpc{
-				"WithRestAndGraphQL": {
-					Enabled:  true,
-					Pattern:  "/rest/",
-					Addr:     ":8080",
-					Insecure: true,
-				},
-			},
 		},
 	)
 	if err != nil {
 		log.Fatalln("Unable to instantiate rest api server: ", err)
 	}
+	restServer.WithGrpcProxy(ctx, &rest_service.ProxyGrpc{
+		Name:     "WithRestAndGraphQL",
+		Enabled:  true,
+		Pattern:  "/rest/",
+		Addr:     ":8080",
+		Insecure: true,
+	})
 	manager.Register(restServer)
 
 	health := healthcheck.NewService(&healthcheck.Config{RequestPrefix: "/health"}, restServer)

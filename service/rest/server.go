@@ -16,10 +16,11 @@ type GrpcProxy func(context.Context, *runtime.ServeMux, string, []grpc.DialOptio
 // Server is a service.Service that handles rest requests.
 type Server struct {
 	service.Deps
-	name   string
-	config *Config
-	server *http.Server
-	mux    *http.ServeMux
+	name    string
+	config  *Config
+	proxies map[string]*ProxyGrpc
+	server  *http.Server
+	mux     *http.ServeMux
 }
 
 // Initialize implements the Server.Initialize interface for Server.
@@ -80,8 +81,13 @@ func (s *Server) WithRouteFunc(pattern string, handler http.HandlerFunc) error {
 }
 
 // WithGrpcProxy adds rest methods that proxy to a grpc server.
-func (s *Server) WithGrpcProxy(ctx context.Context, proxyName string, proxyFunc GrpcProxy) error {
-	proxy, ok := s.config.Proxies[proxyName]
+func (s *Server) WithGrpcProxy(ctx context.Context, proxy *ProxyGrpc) {
+	s.proxies[proxy.Name] = proxy
+}
+
+// WithGrpcProxyHandler adds rest methods that proxy to a grpc server.
+func (s *Server) WithGrpcProxyHandler(ctx context.Context, proxyName string, proxyFunc GrpcProxy) error {
+	proxy, ok := s.proxies[proxyName]
 	if !ok {
 		return service.ErrNoProxy
 	}
@@ -110,8 +116,9 @@ func NewServer(name string, config *Config) (*Server, error) {
 	mux := http.NewServeMux()
 
 	s := &Server{
-		name:   name,
-		config: config,
+		name:    name,
+		config:  config,
+		proxies: map[string]*ProxyGrpc{},
 		server: &http.Server{
 			Addr:    config.Addr,
 			Handler: mux,

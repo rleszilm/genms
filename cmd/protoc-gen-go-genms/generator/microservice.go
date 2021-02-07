@@ -119,7 +119,7 @@ func (s *{{ ServiceName $M.Service }}ServerService) Initialize(ctx {{ .P.Context
 		Register{{ ServiceName $M.Service }}Server(server, s)
 	})
 	{{ if $M.Opts.Rest }}
-		if err := s.restServer.WithGrpcProxy(ctx, "{{ ServiceName $M.Service }}", Register{{ ServiceName $M.Service }}HandlerFromEndpoint); err != nil {
+		if err := s.restServer.WithGrpcProxyHandler(ctx, "{{ ServiceName $M.Service }}", Register{{ ServiceName $M.Service }}HandlerFromEndpoint); err != nil {
 			return err
 		}
 	{{- end }}
