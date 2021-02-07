@@ -267,7 +267,7 @@ func NewChannel(name string) *Channel {
 	channels[name] = &Channel{
 		name:        name,
 		level:       LvlInfo,
-		log:         log.New(os.Stderr, "", log.LstdFlags|log.Lshortfile),
+		log:         log.New(os.Stderr, "", log.LstdFlags),
 		nameTrace:   fmt.Sprintf("[Trace](%s):", name),
 		nameDebug:   fmt.Sprintf("[Debug](%s):", name),
 		nameInfo:    fmt.Sprintf("[Info](%s):", name),
