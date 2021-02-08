@@ -620,7 +620,7 @@ func (x *{{ MessageName .C.Message }}Queries) All() string {
 
 {{ with $state := . }}
 {{ range .C.Opts.Queries -}}
-	{{ QueryTemplate $state.C.Message . }}
+	{{ QueryTemplate $state.C.Message $state.C.Fields . }}
 {{ end }}
 {{ end }}
 `
@@ -691,12 +691,10 @@ func (c *Collection) defineMetrics() error {
 
 	tmpl, err := template.New("defineMetrics").
 		Funcs(template.FuncMap{
-			"ToCamelCase":                 generator.ToCamelCase,
-			"ToSnakeCase":                 generator.ToSnakeCase,
-			"ToTitleCase":                 generator.ToTitleCase,
-			"MessageName":                 generator.MessageName,
-			"QueryTemplateProviderMethod": generator_sql.QueryTemplateProviderMethod,
-			"QueryTemplate":               generator_sql.QueryTemplate,
+			"ToCamelCase": generator.ToCamelCase,
+			"ToSnakeCase": generator.ToSnakeCase,
+			"ToTitleCase": generator.ToTitleCase,
+			"MessageName": generator.MessageName,
 		}).
 		Parse(tmplSrc)
 

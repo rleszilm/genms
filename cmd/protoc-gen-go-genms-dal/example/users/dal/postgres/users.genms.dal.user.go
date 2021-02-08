@@ -63,7 +63,7 @@ func (x *UserCollection) String() string {
 // DoInsert provides the base logic for dal.UserCollection.Insert.
 // The user should use this as a base for dal.UserCollection.Insert, only having to add
 // code that interprets the returned values.
-func (x *UserCollection) DoInsert(ctx context.Context, arg *users.User) (sql1.Result, error) {
+func (x *UserCollection) DoInsert(ctx context.Context, arg interface{}) (sql1.Result, error) {
 	var err error
 	start := time.Now()
 	stats.Record(ctx, userInflight.M(1))
@@ -84,15 +84,13 @@ func (x *UserCollection) DoInsert(ctx context.Context, arg *users.User) (sql1.Re
 		stats.Record(ctx, userLatency.M(dur), userInflight.M(-1))
 	}()
 
-	writer := UserWriter{}
-	writer.FromUser(arg)
-	return x.db.ExecWithReplacements(ctx, x.execInsert, writer)
+	return x.db.ExecWithReplacements(ctx, x.execInsert, arg)
 }
 
 // DoUpsert provides the base logic for dal.UserCollection.Upsert.
 // The user should use this as a base for dal.UserCollection.Upsert, only having to add
 // code that interprets the returned values.
-func (x *UserCollection) DoUpsert(ctx context.Context, arg *users.User) (sql1.Result, error) {
+func (x *UserCollection) DoUpsert(ctx context.Context, arg interface{}) (sql1.Result, error) {
 	var err error
 	start := time.Now()
 	stats.Record(ctx, userInflight.M(1))
@@ -113,9 +111,7 @@ func (x *UserCollection) DoUpsert(ctx context.Context, arg *users.User) (sql1.Re
 		stats.Record(ctx, userLatency.M(dur), userInflight.M(-1))
 	}()
 
-	writer := UserWriter{}
-	writer.FromUser(arg)
-	return x.db.ExecWithReplacements(ctx, x.execUpsert, writer)
+	return x.db.ExecWithReplacements(ctx, x.execUpsert, arg)
 }
 
 // All implements dal.UserCollection.All
@@ -126,7 +122,7 @@ func (x *UserCollection) All(ctx context.Context) ([]*users.User, error) {
 
 // Filter implements dal.UserCollection.Filter
 func (x *UserCollection) Filter(ctx context.Context, arg *dal.UserFields) ([]*users.User, error) {
-	query := "SELECT id, name, division, lifetime_score, last_score, payout, point, phone, geo, kind, by_backend_postgres FROM " + x.config.TableName
+	query := "SELECT id, name, division, lifetime_score, last_score, payout, point, phone, geo, type, by_backend_postgres FROM " + x.config.TableName
 	fields := []string{}
 
 	if arg.Id != nil {
@@ -157,7 +153,7 @@ func (x *UserCollection) Filter(ctx context.Context, arg *dal.UserFields) ([]*us
 		fields = append(fields, "geo = :geo")
 	}
 	if arg.Kind != nil {
-		fields = append(fields, "kind = :kind")
+		fields = append(fields, "type = :type")
 	}
 	if arg.ByBackend != nil {
 		fields = append(fields, "by_backend_postgres = :by_backend_postgres")
@@ -259,8 +255,8 @@ func NewUserCollection(db sql.DB, queries UserQueryTemplateProvider, config *Use
 
 	queryReplacements := map[string]string{
 		"table":       config.TableName,
-		"fields":      "id, name, division, lifetime_score, last_score, payout, point, phone, geo, kind, by_backend_postgres",
-		"writeFields": ":id, :name, :division, :lifetime_score, :last_score, :payout, :point, :phone, :geo, :kind, :by_backend_postgres",
+		"fields":      "id, name, division, lifetime_score, last_score, payout, point, phone, geo, type, by_backend_postgres",
+		"writeFields": ":id, :name, :division, :lifetime_score, :last_score, :payout, :point, :phone, :geo, :type, :by_backend_postgres",
 	}
 
 	// generate Upsert exec
@@ -302,7 +298,7 @@ type UserScanner struct {
 	Point         *types.Point     `db:"point"`
 	Phone         *types.Phone     `db:"phone"`
 	Geo           *latlng.LatLng   `db:"geo"`
-	Kind          users.User_Kind  `db:"kind"`
+	Kind          users.User_Kind  `db:"type"`
 	ByBackend     sql1.NullString  `db:"by_backend_postgres"`
 }
 
@@ -335,7 +331,7 @@ type UserWriter struct {
 	Point         *types.Point    `db:"point"`
 	Phone         *types.Phone    `db:"phone"`
 	Geo           *latlng.LatLng  `db:"geo"`
-	Kind          users.User_Kind `db:"kind"`
+	Kind          users.User_Kind `db:"type"`
 	ByBackend     string          `db:"by_backend_postgres"`
 }
 
@@ -413,7 +409,7 @@ func (x *UserQueries) ByNameAndDivision() string {
 func (x *UserQueries) ByKind() string {
 	return `SELECT {{ .fields }} FROM {{ .table }}
 		WHERE 
-			kind = :kind;`
+			type = :kind;`
 }
 
 // ByPhone implements UserQueryTemplateProvider.ByPhone.

@@ -62,7 +62,7 @@ message User {
         Kind_User = 0;
         Kind_Admin = 1;
     }
-    Kind kind = 11;
+    Kind kind = 11 [(genms.dal.field_options) = {field: "type"}];
 
     string by_backend = 12 [
         (genms.dal.field_options) = {

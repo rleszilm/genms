@@ -374,7 +374,7 @@ type UserScanner struct {
 	Point         *types.Point    `json:"point"`
 	Phone         *types.Phone    `json:"phone"`
 	Geo           *latlng.LatLng  `json:"geo"`
-	Kind          users.User_Kind `json:"kind"`
+	Kind          users.User_Kind `json:"type"`
 	ByBackend     sql.NullString  `json:"by_backend_rest"`
 }
 

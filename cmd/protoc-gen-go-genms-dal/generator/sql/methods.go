@@ -118,7 +118,7 @@ func QueryImplementation(outfile *protogen.GeneratedFile, msg *protogen.Message,
 }
 
 // QueryTemplate returns the generated query template.
-func QueryTemplate(msg *protogen.Message, query *annotations.DalOptions_Query) (string, error) {
+func QueryTemplate(msg *protogen.Message, fields *generator.Fields, query *annotations.DalOptions_Query) (string, error) {
 	tmplSrc := `// {{ ToTitleCase .query.Name }} implements {{ MessageName .msg }}QueryTemplateProvider.{{ ToTitleCase .query.Name }}.
 func (x *{{ MessageName .msg }}Queries) {{ ToTitleCase .query.Name }}() string {
 	return ` + "`" + `SELECT {{ "{{ .fields }}" }} FROM {{ "{{ .table }}" }}
@@ -146,7 +146,9 @@ func (x *{{ MessageName .msg }}Queries) {{ ToTitleCase .query.Name }}() string {
 
 	queryArgs := []string{}
 	for _, arg := range query.Args {
-		queryArgs = append(queryArgs, fmt.Sprintf("%s = :%s", arg, arg))
+		qName := fields.QueryNameByFieldName(arg)
+		fName := arg
+		queryArgs = append(queryArgs, fmt.Sprintf("%s = :%s", qName, fName))
 	}
 
 	values := map[string]interface{}{
