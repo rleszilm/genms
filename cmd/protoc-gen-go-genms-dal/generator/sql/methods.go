@@ -15,7 +15,7 @@ import (
 func QueryMethod(outfile *protogen.GeneratedFile, msg *protogen.Message, fields *generator.Fields, query *annotations.DalOptions_Query) (string, error) {
 	tmplSrc := `// {{ ToTitleCase .Query.Name }} implements {{ QualifiedDalType .Outfile .Msg }}Collection.{{ ToTitleCase .Query.Name }}
 	func (x *{{ MessageName .Msg }}Collection){{ ToTitleCase .Query.Name }}({{ .FuncArgs }}) ([]*{{ QualifiedType .Outfile .Msg }}, error) {
-		filter := &{{ QualifiedDalType .Outfile .Msg }}Fields{
+		filter := &{{ QualifiedDalType .Outfile .Msg }}Filter{
 			{{ range .QueryArgs -}}
 				{{ . }},
 			{{ end -}}
@@ -147,8 +147,7 @@ func (x *{{ MessageName .msg }}Queries) {{ ToTitleCase .query.Name }}() string {
 	queryArgs := []string{}
 	for _, arg := range query.Args {
 		qName := fields.QueryNameByFieldName(arg)
-		fName := arg
-		queryArgs = append(queryArgs, fmt.Sprintf("%s = :%s", qName, fName))
+		queryArgs = append(queryArgs, fmt.Sprintf("%s = :%s", qName, qName))
 	}
 
 	values := map[string]interface{}{
