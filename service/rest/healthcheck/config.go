@@ -8,7 +8,7 @@ import (
 
 // Config is the struct used to parse configuration from environment variables.
 type Config struct {
-	Enabled       bool             `envconfig:"enable" default:"false"`
+	Enabled       bool             `envconfig:"enabled" default:"false"`
 	Name          string           `envconfig:"name" default:""`
 	RequestPrefix string           `envconfig:"request_path" default:"/health"`
 	HealthyFunc   http.HandlerFunc `ignored:"true"`
