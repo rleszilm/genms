@@ -201,6 +201,13 @@ func NullTypeToGoType(outfile *protogen.GeneratedFile, obj string, name string, 
 	case "string":
 		return fmt.Sprintf("%s%s.String", obj, name), nil
 	default:
+		if field.Enum != nil {
+			eType, err := generator.GoFieldType(outfile, field)
+			if err != nil {
+				return "", err
+			}
+			return fmt.Sprintf("%s(%s%s.Int32)", eType, obj, name), nil
+		}
 		return fmt.Sprintf("%s%s", obj, name), nil
 	}
 }

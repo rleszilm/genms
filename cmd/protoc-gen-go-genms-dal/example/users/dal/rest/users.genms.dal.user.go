@@ -390,7 +390,7 @@ func (x *UserScanner) User() *users.User {
 		Point:         x.Point,
 		Phone:         x.Phone,
 		Geo:           x.Geo,
-		Kind:          x.Kind,
+		Kind:          users.User_Kind(x.Kind.Int32),
 		ByBackend:     x.ByBackend.String,
 	}
 }
