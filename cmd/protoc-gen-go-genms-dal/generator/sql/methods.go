@@ -227,6 +227,9 @@ func ProtoToNullType(outfile *protogen.GeneratedFile, field *protogen.Field) (st
 	case "string":
 		return pkg + ".NullString", nil
 	default:
+		if field.Enum != nil {
+			return pkg + ".NullInt32", nil
+		}
 		return kind, nil
 	}
 }

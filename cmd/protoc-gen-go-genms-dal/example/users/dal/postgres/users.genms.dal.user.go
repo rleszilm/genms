@@ -355,7 +355,7 @@ type UserScanner struct {
 	Point         *types.Point     `db:"point"`
 	Phone         *types.Phone     `db:"phone"`
 	Geo           *latlng.LatLng   `db:"geo"`
-	Kind          users.User_Kind  `db:"type"`
+	Kind          sql1.NullInt32   `db:"type"`
 	ByBackend     sql1.NullString  `db:"by_backend_postgres"`
 }
 
@@ -466,7 +466,7 @@ func (x *UserQueries) ByNameAndDivision() string {
 func (x *UserQueries) ByKind() string {
 	return `SELECT {{ .fields }} FROM {{ .table }}
 		WHERE 
-			type = :kind;`
+			type = :type;`
 }
 
 // ByPhone implements UserQueryTemplateProvider.ByPhone.
