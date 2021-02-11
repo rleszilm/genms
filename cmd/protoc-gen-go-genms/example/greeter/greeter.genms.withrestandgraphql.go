@@ -43,7 +43,7 @@ func (s *WithRestAndGraphQLServerService) Shutdown(_ context.Context) error {
 
 // NameOf returns the name of the service
 func (s *WithRestAndGraphQLServerService) NameOf() string {
-	return "with_rest_and_graph_ql"
+	return "with-rest-and-graph-ql"
 }
 
 // String returns the string name of the service

@@ -38,7 +38,7 @@ func (s *WithRestServerService) Shutdown(_ context.Context) error {
 
 // NameOf returns the name of the service
 func (s *WithRestServerService) NameOf() string {
-	return "with_rest"
+	return "with-rest"
 }
 
 // String returns the string name of the service

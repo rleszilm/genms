@@ -38,8 +38,8 @@ test:
 
 tool-chain:
 	go get -u \
-		github.com/grpc-ecosystem/grpc-gateway/protoc-gen-grpc-gateway \
-		github.com/grpc-ecosystem/grpc-gateway/protoc-gen-swagger \
+		github.com/grpc-ecosystem/grpc-gateway/v2/protoc-gen-grpc-gateway \
+		github.com/grpc-ecosystem/grpc-gateway/v2/protoc-gen-openapiv2 \
 		github.com/envoyproxy/protoc-gen-validate \
 		github.com/awalterschulze/goderive \
 		github.com/rleszilm/grpc-graphql-gateway/protoc-gen-graphql \

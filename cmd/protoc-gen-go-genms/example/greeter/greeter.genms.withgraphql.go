@@ -38,7 +38,7 @@ func (s *WithGraphQLServerService) Shutdown(_ context.Context) error {
 
 // NameOf returns the name of the service
 func (s *WithGraphQLServerService) NameOf() string {
-	return "with_graph_ql"
+	return "with-graph-ql"
 }
 
 // String returns the string name of the service
