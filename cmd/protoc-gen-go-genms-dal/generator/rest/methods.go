@@ -22,10 +22,10 @@ func QueryProviderMethod(query *annotations.DalOptions_Query) string {
 }
 
 // QueryMethod returns the function code for a query.
-func QueryMethod(outfile *protogen.GeneratedFile, msg *protogen.Message, fields *generator.Fields, query *annotations.DalOptions_Query) (string, error) {
+func QueryMethod(outfile *protogen.GeneratedFile, msg *generator.Message, fields *generator.Fields, query *annotations.DalOptions_Query) (string, error) {
 	tmplSrc := `{{ with $state := . }}
-// {{ ToTitleCase .Query.Name }} implements {{ QualifiedDalType .Outfile .Msg }}Collection.{{ ToTitleCase .Query.Name }}
-func (x *{{ MessageName .Msg }}Collection){{ ToTitleCase .Query.Name }}({{ .FuncArgs }}) ([]*{{ QualifiedType .Outfile .Msg }}, error) {
+// {{ ToTitleCase .Query.Name }} implements {{ .Msg.QualifiedDalType }}Collection.{{ ToTitleCase .Query.Name }}
+func (x *{{ .Msg.Name }}Collection){{ ToTitleCase .Query.Name }}({{ .FuncArgs }}) ([]*{{ .Msg.QualifiedType }}, error) {
 	scheme, method, host, path, headers, args, body := x.queries.{{ ToTitleCase .Query.Name }}()
 
 	values := {{ .P.URL }}.Values{}
@@ -78,12 +78,9 @@ func (x *{{ MessageName .Msg }}Collection){{ ToTitleCase .Query.Name }}({{ .Func
 
 	tmpl, err := template.New("queryMethod").
 		Funcs(template.FuncMap{
-			"MessageName":      generator.MessageName,
-			"QualifiedType":    generator.QualifiedType,
-			"QualifiedDalType": generator.QualifiedDalType,
-			"ToSnakeCase":      generator.ToSnakeCase,
-			"ToTitleCase":      generator.ToTitleCase,
-			"ToLower":          strings.ToLower,
+			"ToSnakeCase": generator.ToSnakeCase,
+			"ToTitleCase": generator.ToTitleCase,
+			"ToLower":     strings.ToLower,
 		}).
 		Parse(tmplSrc)
 

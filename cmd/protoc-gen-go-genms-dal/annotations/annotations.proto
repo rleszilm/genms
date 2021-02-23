@@ -47,7 +47,8 @@ message DalFieldOptions {
     string field = 2;
 
     message BackendFieldOptions{
-        string field = 1;
+        bool ignore = 1;
+        string field = 2;
     }
     BackendFieldOptions postgres = 3;
     BackendFieldOptions rest = 4;
