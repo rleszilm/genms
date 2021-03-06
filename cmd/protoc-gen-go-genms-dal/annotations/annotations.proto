@@ -16,6 +16,17 @@ message DalOptions {
             QueryMode_InterfaceStub = 2;
         }
         QueryMode mode = 3;
+
+        message RestOptions {
+            message Arg {
+                string arg = 1;
+                string field = 2;
+            }
+            repeated Arg headers = 1;
+            repeated string inline = 2;
+            repeated Arg query = 3;
+            repeated string body = 4;
+        }
     }
     repeated Query queries = 1;
 
