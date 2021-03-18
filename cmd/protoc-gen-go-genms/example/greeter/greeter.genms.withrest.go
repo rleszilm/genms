@@ -3,9 +3,9 @@ package greeter
 
 import (
 	context "context"
-	service "github.com/rleszilm/gen_microservice/service"
-	grpc "github.com/rleszilm/gen_microservice/service/grpc"
-	rest "github.com/rleszilm/gen_microservice/service/rest"
+	service "github.com/rleszilm/genms/service"
+	grpc "github.com/rleszilm/genms/service/grpc"
+	rest "github.com/rleszilm/genms/service/rest"
 	grpc1 "google.golang.org/grpc"
 )
 

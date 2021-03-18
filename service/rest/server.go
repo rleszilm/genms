@@ -6,7 +6,7 @@ import (
 	"net/http"
 
 	"github.com/grpc-ecosystem/grpc-gateway/v2/runtime"
-	"github.com/rleszilm/gen_microservice/service"
+	"github.com/rleszilm/genms/service"
 	"google.golang.org/grpc"
 )
 

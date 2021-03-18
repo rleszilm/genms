@@ -8,13 +8,13 @@ type Fields struct {
 }
 
 // Fields returns the field names.
-func (f *Fields) Fields() []string {
+func (f *Fields) Names() []string {
 	return f.fieldNames
 }
 
 // ByName returns the specified field.
 func (f *Fields) ByName(n string) *Field {
-	return f.fieldsByName["f:-"+n]
+	return f.fieldsByName[n]
 }
 
 // NewFields returns a new Fields.
@@ -23,8 +23,8 @@ func NewFields(msg *Message) *Fields {
 	fieldNames := []string{}
 	fieldsByName := map[string]*Field{}
 
-	for _, f := range msg.Message.Fields {
-		field := NewField(msg.Outfile, msg.Message, f)
+	for _, f := range msg.message.Fields {
+		field := NewField(msg, f)
 		fields = append(fields, field)
 		fieldNames = append(fieldNames, field.Name())
 		fieldsByName[field.Name()] = field

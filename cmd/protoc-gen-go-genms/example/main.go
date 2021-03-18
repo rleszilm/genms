@@ -4,12 +4,12 @@ import (
 	"context"
 	"log"
 
-	"github.com/rleszilm/gen_microservice/cmd/protoc-gen-go-genms/example/greeter"
-	"github.com/rleszilm/gen_microservice/service"
-	graphql_service "github.com/rleszilm/gen_microservice/service/graphql"
-	grpc_service "github.com/rleszilm/gen_microservice/service/grpc"
-	rest_service "github.com/rleszilm/gen_microservice/service/rest"
-	"github.com/rleszilm/gen_microservice/service/rest/healthcheck"
+	"github.com/rleszilm/genms/cmd/protoc-gen-go-genms/example/greeter"
+	"github.com/rleszilm/genms/service"
+	graphql_service "github.com/rleszilm/genms/service/graphql"
+	grpc_service "github.com/rleszilm/genms/service/grpc"
+	rest_service "github.com/rleszilm/genms/service/rest"
+	"github.com/rleszilm/genms/service/rest/healthcheck"
 )
 
 type greets struct {

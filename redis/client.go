@@ -4,7 +4,7 @@ import (
 	"context"
 
 	"github.com/go-redis/redis/v8"
-	"github.com/rleszilm/gen_microservice/service"
+	"github.com/rleszilm/genms/service"
 )
 
 // Client is a wrapper for a redis.Client that allows it to be manages as a service.

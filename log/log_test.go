@@ -5,8 +5,8 @@ import (
 	"reflect"
 	"testing"
 
-	"github.com/rleszilm/gen_microservice/log"
-	testLog "github.com/rleszilm/gen_microservice/log"
+	"github.com/rleszilm/genms/log"
+	testLog "github.com/rleszilm/genms/log"
 )
 
 func TestLevels(t *testing.T) {

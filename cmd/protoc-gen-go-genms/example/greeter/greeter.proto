@@ -1,7 +1,7 @@
 syntax = "proto3";
 
 package greeter;
-option go_package = "github.com/rleszilm/gen_microservice/cmd/protoc-gen-go-genms/example/greeter";
+option go_package = "github.com/rleszilm/genms/cmd/protoc-gen-go-genms/example/greeter";
 
 import "graphql/graphql.proto";
 import "google/api/annotations.proto";

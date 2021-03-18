@@ -5,8 +5,8 @@ import (
 
 	"github.com/jmoiron/sqlx"
 	_ "github.com/lib/pq"
-	"github.com/rleszilm/gen_microservice/service"
-	"github.com/rleszilm/gen_microservice/sql"
+	"github.com/rleszilm/genms/service"
+	"github.com/rleszilm/genms/sql"
 )
 
 // DB is a sql.DB that uses sqlx under the hood.

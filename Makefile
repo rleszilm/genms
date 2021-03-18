@@ -43,7 +43,7 @@ tool-chain:
 		github.com/envoyproxy/protoc-gen-validate \
 		github.com/awalterschulze/goderive \
 		github.com/rleszilm/grpc-graphql-gateway/protoc-gen-graphql \
-		github.com/rleszilm/gen_microservice/cmd/protoc-gen-go-genms \
-		github.com/rleszilm/gen_microservice/cmd/protoc-gen-go-genms-dal
+		github.com/rleszilm/genms/cmd/protoc-gen-go-genms \
+		github.com/rleszilm/genms/cmd/protoc-gen-go-genms-dal
 
 .DEFAULT: codegen test

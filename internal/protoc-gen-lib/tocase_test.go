@@ -1,4 +1,4 @@
-package generator_test
+package protocgenlib_test
 
 import (
 	"reflect"
@@ -6,7 +6,7 @@ import (
 	"testing"
 
 	"github.com/go-test/deep"
-	"github.com/rleszilm/gen_microservice/cmd/protoc-gen-go-genms-dal/generator"
+	protocgenlib "github.com/rleszilm/genms/internal/protoc-gen-lib"
 )
 
 func TestTokenize(t *testing.T) {
@@ -29,7 +29,7 @@ func TestTokenize(t *testing.T) {
 
 	for _, tc := range testcases {
 		t.Run(tc.desc, func(t *testing.T) {
-			actual := generator.Tokenize(tc.input)
+			actual := protocgenlib.Tokenize(tc.input)
 			if !reflect.DeepEqual(tc.expect, actual) {
 				t.Errorf("Tokens not as expected.\nDiff:\n    %s\n", strings.Join(deep.Equal(tc.expect, actual), "\n    "))
 			}

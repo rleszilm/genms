@@ -4,8 +4,8 @@ import (
 	"context"
 
 	"github.com/jinzhu/copier"
-	"github.com/rleszilm/gen_microservice/service"
-	rest_service "github.com/rleszilm/gen_microservice/service/rest"
+	"github.com/rleszilm/genms/service"
+	rest_service "github.com/rleszilm/genms/service/rest"
 	"github.com/rleszilm/grpc-graphql-gateway/options"
 	"github.com/rleszilm/grpc-graphql-gateway/runtime"
 )

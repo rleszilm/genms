@@ -1,8 +1,9 @@
 package generator
 
 import (
-	"github.com/rleszilm/gen_microservice/cmd/protoc-gen-go-genms-dal/annotations"
-	protocgenlib "github.com/rleszilm/gen_microservice/internal/protoc-gen-lib"
+	"github.com/rleszilm/genms/cmd/protoc-gen-go-genms-dal/annotations"
+	protocgenlib "github.com/rleszilm/genms/internal/protoc-gen-lib"
+	"google.golang.org/protobuf/compiler/protogen"
 	"google.golang.org/protobuf/proto"
 )
 
@@ -13,14 +14,19 @@ type Field struct {
 	typeOptions *annotations.DalFieldOptions_BackendFieldOptions
 }
 
-// AsRestField returns a new Field.
-func AsRestField(f *protocgenlib.Field) *Field {
+// NewField returns a new Field.
+func NewField(msg *Message, field *protogen.Field) *Field {
+	return AsField(protocgenlib.NewField(msg.Message, field))
+}
+
+// AsField wraps a Field.
+func AsField(f *protocgenlib.Field) *Field {
 	field := &Field{
 		Field: f,
 	}
 
-	opts := f.Field.Desc.Options()
-	if proto.HasExtension(f.Field.Desc.Options(), annotations.E_FieldOptions) {
+	opts := f.Proto().Desc.Options()
+	if proto.HasExtension(f.Proto().Desc.Options(), annotations.E_FieldOptions) {
 		dalOptions := proto.GetExtension(opts, annotations.E_FieldOptions).(*annotations.DalFieldOptions)
 		field.dalOptions = dalOptions
 		field.typeOptions = dalOptions.GetRest()
@@ -31,12 +37,16 @@ func AsRestField(f *protocgenlib.Field) *Field {
 
 // QueryName returns the name of the field as it should appear in database queries.
 func (f *Field) QueryName() string {
-	if name := f.typeOptions.GetField(); name != "" {
-		return name
+	if f.typeOptions != nil {
+		if name := f.typeOptions.GetField(); name != "" {
+			return name
+		}
 	}
 
-	if name := f.dalOptions.GetField(); name != "" {
-		return name
+	if f.dalOptions != nil {
+		if name := f.dalOptions.GetField(); name != "" {
+			return name
+		}
 	}
 
 	return f.Name()
@@ -44,5 +54,8 @@ func (f *Field) QueryName() string {
 
 // Ignore returns whether the field should be skipped during processing.
 func (f *Field) Ignore() bool {
-	return f.dalOptions.Ignore
+	if f.dalOptions != nil {
+		return f.dalOptions.Ignore
+	}
+	return false
 }

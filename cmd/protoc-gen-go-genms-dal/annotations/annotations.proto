@@ -1,7 +1,7 @@
 syntax = "proto3";
 
 package genms.dal;
-option go_package = "github.com/rleszilm/gen_microservice/cmd/protoc-gen-go-genms-dal/annotations";
+option go_package = "github.com/rleszilm/genms/cmd/protoc-gen-go-genms-dal/annotations";
 
 import "google/protobuf/descriptor.proto";
 
@@ -27,6 +27,7 @@ message DalOptions {
             repeated Arg query = 3;
             repeated string body = 4;
         }
+        RestOptions rest = 4;
     }
     repeated Query queries = 1;
 

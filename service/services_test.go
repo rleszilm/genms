@@ -4,8 +4,8 @@ import (
 	"reflect"
 	"testing"
 
-	"github.com/rleszilm/gen_microservice/service"
-	"github.com/rleszilm/gen_microservice/service/servicefakes"
+	"github.com/rleszilm/genms/service"
+	"github.com/rleszilm/genms/service/servicefakes"
 )
 
 func TestServicesSort(t *testing.T) {

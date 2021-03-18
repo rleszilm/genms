@@ -4,7 +4,7 @@ import (
 	"context"
 
 	"github.com/Shopify/sarama"
-	"github.com/rleszilm/gen_microservice/service"
+	"github.com/rleszilm/genms/service"
 )
 
 // ConsumerFunc is a handler for a consumer claim.

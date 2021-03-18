@@ -1,11 +1,10 @@
 package rest
 
 import (
-	"fmt"
 	"path"
 	"strings"
 
-	"github.com/rleszilm/gen_microservice/cmd/protoc-gen-go-genms-dal/generator"
+	"github.com/rleszilm/genms/cmd/protoc-gen-go-genms-dal/generator"
 	"google.golang.org/protobuf/compiler/protogen"
 )
 
@@ -16,34 +15,24 @@ type File struct {
 }
 
 // NewFile returns a new File.
-func NewFile(plugin *protogen.Plugin, file *protogen.File, msg *protogen.Message) *File {
-	base := path.Base(file.GeneratedFilenamePrefix)
-	dir := path.Dir(file.GeneratedFilenamePrefix)
-	filename := path.Join(dir, fmt.Sprintf("dal/rest/%s.genms.dal.%s.go", base, strings.ToLower(msg.GoIdent.GoName)))
-	outfile := plugin.NewGeneratedFile(filename, ".")
+func NewFile(outfile *protogen.GeneratedFile, file *protogen.File) *File {
+	return AsFile(generator.NewFile(outfile, file))
+}
 
+// AsFile wraps a File.
+func AsFile(file *generator.File) *File {
 	return &File{
-		File: generator.NewFile(outfile, file),
-		name: filename,
+		File: file,
 	}
 }
 
-// Outfile returns the underlying generated file of the file.
-func (f *File) Outfile() *protogen.GeneratedFile {
-	return f.File.Outfile
+// RestDalPackageName returns the name of the dal  package.
+func (f *File) RestDalPackageName() string {
+	return "dal_" + f.File.PackageName()
 }
 
-// Name returns the name of the file.
-func (f *File) Name() string {
-	return f.name
-}
-
-// BaseName returns the base name of the file.
-func (f *File) BaseName() string {
-	return path.Base(f.name)
-}
-
-// DirName returns the directory name of the file.
-func (f *File) DirName() string {
-	return path.Dir(f.name)
+// RestDalPackagePath returns the path of the package.
+func (f *File) RestDalPackagePath() string {
+	toks := append([]string{strings.ReplaceAll(f.Proto().GoImportPath.String(), "\"", "")}, "dal")
+	return path.Join(toks...)
 }

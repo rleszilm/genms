@@ -5,8 +5,8 @@ import (
 	"context"
 	"sync"
 
-	"github.com/rleszilm/gen_microservice/kafka"
-	"github.com/rleszilm/gen_microservice/service"
+	"github.com/rleszilm/genms/kafka"
+	"github.com/rleszilm/genms/service"
 )
 
 type FakeProducer struct {

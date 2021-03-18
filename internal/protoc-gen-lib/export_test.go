@@ -1,4 +1,4 @@
-package generator
+package protocgenlib
 
 var (
 	Tokenize = tokenize

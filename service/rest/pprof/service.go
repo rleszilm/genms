@@ -5,8 +5,8 @@ import (
 	"net/http/pprof"
 	"runtime"
 
-	"github.com/rleszilm/gen_microservice/service"
-	rest_service "github.com/rleszilm/gen_microservice/service/rest"
+	"github.com/rleszilm/genms/service"
+	rest_service "github.com/rleszilm/genms/service/rest"
 )
 
 // Service function returns an http.Handler that handles system status request.

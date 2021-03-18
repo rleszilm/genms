@@ -6,24 +6,44 @@ import (
 
 // Message adds functionality to the underlying message.
 type Message struct {
-	Outfile *protogen.GeneratedFile
-	Message *protogen.Message
+	file    *File
+	message *protogen.Message
 }
 
 // NewMessage returns a new Message.
-func NewMessage(outfile *protogen.GeneratedFile, message *protogen.Message) *Message {
+func NewMessage(file *File, message *protogen.Message) *Message {
 	return &Message{
-		Outfile: outfile,
-		Message: message,
+		file:    file,
+		message: message,
 	}
+}
+
+// Proto returns the base protogen object.
+func (m *Message) Proto() *protogen.Message {
+	return m.message
+}
+
+// File returns the base File object.
+func (m *Message) File() *File {
+	return m.file
+}
+
+// Outfile returns the file to which this field would be written.
+func (m *Message) Outfile() *protogen.GeneratedFile {
+	return m.file.Outfile()
 }
 
 // Name returns the name of the message.
 func (m *Message) Name() string {
-	return m.Message.GoIdent.GoName
+	return m.message.GoIdent.GoName
 }
 
-// QualifiedType returns the fully qualified type within the dal.
-func (m *Message) QualifiedType() string {
-	return m.Outfile.QualifiedGoIdent(m.Message.GoIdent)
+// Kind returns the fields go type.
+func (m *Message) Kind() string {
+	return m.message.GoIdent.GoName
+}
+
+// QualifiedKind returns the fully qualified type.
+func (m *Message) QualifiedKind() string {
+	return m.file.QualifiedKind(m.message.GoIdent)
 }

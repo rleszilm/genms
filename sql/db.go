@@ -3,7 +3,7 @@ package sql
 import (
 	"context"
 
-	"github.com/rleszilm/gen_microservice/service"
+	"github.com/rleszilm/genms/service"
 )
 
 // DB defines the interface to use when getting database connections.

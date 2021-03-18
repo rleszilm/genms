@@ -1,7 +1,7 @@
 syntax = "proto3";
 
 package genms.dal.types;
-option go_package = "github.com/rleszilm/gen_microservice/cmd/protoc-gen-go-genms-dal/annotations/types";
+option go_package = "github.com/rleszilm/genms/cmd/protoc-gen-go-genms-dal/annotations/types";
 
 message Point {
     double X = 1;

@@ -3,7 +3,7 @@ package metrics
 import (
 	"context"
 
-	"github.com/rleszilm/gen_microservice/metrics/exporter"
+	"github.com/rleszilm/genms/metrics/exporter"
 )
 
 // Service is the object which manages the metrics exporter.

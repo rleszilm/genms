@@ -5,8 +5,8 @@ import (
 	"context"
 	"sync"
 
-	"github.com/rleszilm/gen_microservice/service"
-	"github.com/rleszilm/gen_microservice/sql"
+	"github.com/rleszilm/genms/service"
+	"github.com/rleszilm/genms/sql"
 )
 
 type FakeDB struct {

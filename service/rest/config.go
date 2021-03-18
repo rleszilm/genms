@@ -2,7 +2,7 @@ package rest_service
 
 import (
 	"github.com/kelseyhightower/envconfig"
-	"github.com/rleszilm/gen_microservice/service"
+	"github.com/rleszilm/genms/service"
 )
 
 // Config is the struct used to parse configuration from environment variables.

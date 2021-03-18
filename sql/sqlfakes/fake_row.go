@@ -4,7 +4,7 @@ package sqlfakes
 import (
 	"sync"
 
-	"github.com/rleszilm/gen_microservice/sql"
+	"github.com/rleszilm/genms/sql"
 )
 
 type FakeRow struct {

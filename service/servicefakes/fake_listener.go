@@ -5,7 +5,7 @@ import (
 	"context"
 	"sync"
 
-	"github.com/rleszilm/gen_microservice/service"
+	"github.com/rleszilm/genms/service"
 )
 
 type FakeListener struct {

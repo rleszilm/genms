@@ -3,7 +3,7 @@ package kafka
 import (
 	"context"
 
-	"github.com/rleszilm/gen_microservice/service"
+	"github.com/rleszilm/genms/service"
 )
 
 // Producer is an interface that describes a Kafka producer.

@@ -5,9 +5,9 @@ import (
 	"net/http"
 	"path"
 
-	"github.com/rleszilm/gen_microservice/log"
-	"github.com/rleszilm/gen_microservice/service"
-	rest_service "github.com/rleszilm/gen_microservice/service/rest"
+	"github.com/rleszilm/genms/log"
+	"github.com/rleszilm/genms/service"
+	rest_service "github.com/rleszilm/genms/service/rest"
 )
 
 var (

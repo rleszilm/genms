@@ -4,9 +4,9 @@ import (
 	"context"
 	"log"
 
-	"github.com/rleszilm/gen_microservice/sql"
-	postgres_sql "github.com/rleszilm/gen_microservice/sql/postgres"
-	"github.com/rleszilm/gen_microservice/sql/sqlx"
+	"github.com/rleszilm/genms/sql"
+	postgres_sql "github.com/rleszilm/genms/sql/postgres"
+	"github.com/rleszilm/genms/sql/sqlx"
 )
 
 func main() {

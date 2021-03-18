@@ -5,8 +5,8 @@ import (
 	"log"
 	"os"
 
-	"github.com/rleszilm/gen_microservice/cmd/protoc-gen-go-genms/annotations"
-	"github.com/rleszilm/gen_microservice/cmd/protoc-gen-go-genms/generator"
+	"github.com/rleszilm/genms/cmd/protoc-gen-go-genms/annotations"
+	"github.com/rleszilm/genms/cmd/protoc-gen-go-genms/generator"
 	"google.golang.org/protobuf/compiler/protogen"
 	"google.golang.org/protobuf/proto"
 	"google.golang.org/protobuf/types/pluginpb"
