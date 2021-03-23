@@ -1,24 +1,25 @@
-package generator
+package postgres
 
 import (
+	"github.com/rleszilm/genms/cmd/protoc-gen-go-genms-dal/generator"
 	protocgenlib "github.com/rleszilm/genms/internal/protoc-gen-lib"
 	"google.golang.org/protobuf/compiler/protogen"
 )
 
 // Message adds functionality to the underlying message.
 type Message struct {
-	*protocgenlib.Message
+	*generator.Message
 }
 
 // NewMessage returns a new Message.
 func NewMessage(file *File, msg *protogen.Message) *Message {
-	return AsMessage(protocgenlib.NewMessage(file.File, msg))
+	return AsMessage(protocgenlib.NewMessage(file.ProtocGenLib(), msg))
 }
 
 // AsMessage wraps a Message.
 func AsMessage(msg *protocgenlib.Message) *Message {
 	return &Message{
-		Message: msg,
+		Message: generator.AsMessage(msg),
 	}
 }
 

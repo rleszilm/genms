@@ -21,8 +21,8 @@ type Service interface {
 	// String returns a string identifier for the service.
 	String() string
 
-	// Dependencies returns the servers dependencies.
-	Dependencies() Services
+	// Dependants returns the servers dependencies.
+	Dependants() Services
 
 	// WithDependency adds a dependency to the service.
 	WithDependencies(...Service)

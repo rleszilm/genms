@@ -23,6 +23,11 @@ func (m *Message) Proto() *protogen.Message {
 	return m.message
 }
 
+// ProtocGenLib returns the base protogen object.
+func (m *Message) ProtocGenLib() *Message {
+	return m
+}
+
 // File returns the base File object.
 func (m *Message) File() *File {
 	return m.file

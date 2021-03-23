@@ -15,7 +15,7 @@ type GrpcProxy func(context.Context, *runtime.ServeMux, string, []grpc.DialOptio
 
 // Server is a service.Service that handles rest requests.
 type Server struct {
-	service.Deps
+	service.Dependencies
 	name    string
 	config  *Config
 	proxies map[string]*ProxyGrpc

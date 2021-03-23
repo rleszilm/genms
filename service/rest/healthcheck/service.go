@@ -16,7 +16,7 @@ var (
 
 // Service function returns an http.Handler that handles system status request.
 type Service struct {
-	service.Deps
+	service.Dependencies
 
 	healthyFunc http.HandlerFunc
 	readyFunc   http.HandlerFunc

@@ -44,7 +44,7 @@ func (s *Services) traverse(node Service, visited map[Service]struct{}, cycle []
 	}
 
 	// dependencies must be satisfied before this node can be added
-	for _, node := range node.Dependencies() {
+	for _, node := range node.Dependants() {
 		// If the node is visited skip it.
 		if _, ok := visited[node]; !ok {
 			tVisited, tCycle, tPath, err := s.traverse(node, visited, cycle, []Service{})

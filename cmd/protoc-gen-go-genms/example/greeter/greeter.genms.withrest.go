@@ -11,7 +11,7 @@ import (
 
 // WithRestServerService implements WithRestService
 type WithRestServerService struct {
-	service.Deps
+	service.Dependencies
 
 	impl       WithRestServer
 	grpcServer *grpc.Server

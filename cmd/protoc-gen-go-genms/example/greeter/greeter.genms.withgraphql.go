@@ -11,7 +11,7 @@ import (
 
 // WithGraphQLServerService implements WithGraphQLService
 type WithGraphQLServerService struct {
-	service.Deps
+	service.Dependencies
 
 	impl       WithGraphQLServer
 	grpcServer *grpc.Server

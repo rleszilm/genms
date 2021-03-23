@@ -21,6 +21,16 @@ func (f *Field) Proto() *protogen.Field {
 	return f.field
 }
 
+// ProtocGenLib returns the base protogen object.
+func (f *Field) ProtocGenLib() *Field {
+	return f
+}
+
+// Message returns the underlying Message.
+func (f *Field) Message() *Message {
+	return f.message
+}
+
 // Outfile returns the file to which this field would be written.
 func (f *Field) Outfile() *protogen.GeneratedFile {
 	return f.message.Outfile()

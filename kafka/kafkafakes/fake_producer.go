@@ -10,14 +10,14 @@ import (
 )
 
 type FakeProducer struct {
-	DependenciesStub        func() service.Services
-	dependenciesMutex       sync.RWMutex
-	dependenciesArgsForCall []struct {
+	DependantsStub        func() service.Services
+	dependantsMutex       sync.RWMutex
+	dependantsArgsForCall []struct {
 	}
-	dependenciesReturns struct {
+	dependantsReturns struct {
 		result1 service.Services
 	}
-	dependenciesReturnsOnCall map[int]struct {
+	dependantsReturnsOnCall map[int]struct {
 		result1 service.Services
 	}
 	InitializeStub        func(context.Context) error
@@ -83,54 +83,54 @@ type FakeProducer struct {
 	invocationsMutex sync.RWMutex
 }
 
-func (fake *FakeProducer) Dependencies() service.Services {
-	fake.dependenciesMutex.Lock()
-	ret, specificReturn := fake.dependenciesReturnsOnCall[len(fake.dependenciesArgsForCall)]
-	fake.dependenciesArgsForCall = append(fake.dependenciesArgsForCall, struct {
+func (fake *FakeProducer) Dependants() service.Services {
+	fake.dependantsMutex.Lock()
+	ret, specificReturn := fake.dependantsReturnsOnCall[len(fake.dependantsArgsForCall)]
+	fake.dependantsArgsForCall = append(fake.dependantsArgsForCall, struct {
 	}{})
-	fake.recordInvocation("Dependencies", []interface{}{})
-	fake.dependenciesMutex.Unlock()
-	if fake.DependenciesStub != nil {
-		return fake.DependenciesStub()
+	fake.recordInvocation("Dependants", []interface{}{})
+	fake.dependantsMutex.Unlock()
+	if fake.DependantsStub != nil {
+		return fake.DependantsStub()
 	}
 	if specificReturn {
 		return ret.result1
 	}
-	fakeReturns := fake.dependenciesReturns
+	fakeReturns := fake.dependantsReturns
 	return fakeReturns.result1
 }
 
-func (fake *FakeProducer) DependenciesCallCount() int {
-	fake.dependenciesMutex.RLock()
-	defer fake.dependenciesMutex.RUnlock()
-	return len(fake.dependenciesArgsForCall)
+func (fake *FakeProducer) DependantsCallCount() int {
+	fake.dependantsMutex.RLock()
+	defer fake.dependantsMutex.RUnlock()
+	return len(fake.dependantsArgsForCall)
 }
 
-func (fake *FakeProducer) DependenciesCalls(stub func() service.Services) {
-	fake.dependenciesMutex.Lock()
-	defer fake.dependenciesMutex.Unlock()
-	fake.DependenciesStub = stub
+func (fake *FakeProducer) DependantsCalls(stub func() service.Services) {
+	fake.dependantsMutex.Lock()
+	defer fake.dependantsMutex.Unlock()
+	fake.DependantsStub = stub
 }
 
-func (fake *FakeProducer) DependenciesReturns(result1 service.Services) {
-	fake.dependenciesMutex.Lock()
-	defer fake.dependenciesMutex.Unlock()
-	fake.DependenciesStub = nil
-	fake.dependenciesReturns = struct {
+func (fake *FakeProducer) DependantsReturns(result1 service.Services) {
+	fake.dependantsMutex.Lock()
+	defer fake.dependantsMutex.Unlock()
+	fake.DependantsStub = nil
+	fake.dependantsReturns = struct {
 		result1 service.Services
 	}{result1}
 }
 
-func (fake *FakeProducer) DependenciesReturnsOnCall(i int, result1 service.Services) {
-	fake.dependenciesMutex.Lock()
-	defer fake.dependenciesMutex.Unlock()
-	fake.DependenciesStub = nil
-	if fake.dependenciesReturnsOnCall == nil {
-		fake.dependenciesReturnsOnCall = make(map[int]struct {
+func (fake *FakeProducer) DependantsReturnsOnCall(i int, result1 service.Services) {
+	fake.dependantsMutex.Lock()
+	defer fake.dependantsMutex.Unlock()
+	fake.DependantsStub = nil
+	if fake.dependantsReturnsOnCall == nil {
+		fake.dependantsReturnsOnCall = make(map[int]struct {
 			result1 service.Services
 		})
 	}
-	fake.dependenciesReturnsOnCall[i] = struct {
+	fake.dependantsReturnsOnCall[i] = struct {
 		result1 service.Services
 	}{result1}
 }
@@ -454,8 +454,8 @@ func (fake *FakeProducer) WithDependenciesArgsForCall(i int) []service.Service {
 func (fake *FakeProducer) Invocations() map[string][][]interface{} {
 	fake.invocationsMutex.RLock()
 	defer fake.invocationsMutex.RUnlock()
-	fake.dependenciesMutex.RLock()
-	defer fake.dependenciesMutex.RUnlock()
+	fake.dependantsMutex.RLock()
+	defer fake.dependantsMutex.RUnlock()
 	fake.initializeMutex.RLock()
 	defer fake.initializeMutex.RUnlock()
 	fake.nameOfMutex.RLock()

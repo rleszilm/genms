@@ -15,7 +15,7 @@ type GraphqlProxy func(*runtime.ServeMux, *options.ServerOptions) error
 
 // Server is a service.Service that handles rest requests.
 type Server struct {
-	service.Deps
+	service.Dependencies
 	name       string
 	config     *Config
 	restServer *rest_service.Server

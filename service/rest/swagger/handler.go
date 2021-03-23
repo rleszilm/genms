@@ -10,7 +10,7 @@ import (
 
 // Service function returns an http.Handler that handles system status request.
 type Service struct {
-	service.Deps
+	service.Dependencies
 
 	config  *Config
 	server  *rest_service.Server

@@ -11,7 +11,7 @@ import (
 
 // DB is a sql.DB that uses sqlx under the hood.
 type DB struct {
-	service.Deps
+	service.Dependencies
 
 	db  *sqlx.DB
 	cfg sql.Config

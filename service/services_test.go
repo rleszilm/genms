@@ -88,7 +88,7 @@ func TestServicesSort(t *testing.T) {
 	for _, tc := range testcases {
 		t.Run(tc.desc, func(t *testing.T) {
 			for svc, deps := range tc.deps {
-				svc.DependenciesReturns(deps)
+				svc.DependantsReturns(deps)
 			}
 
 			svcs := service.Services(tc.svcs)

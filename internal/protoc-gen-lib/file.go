@@ -25,6 +25,11 @@ func (f *File) Proto() *protogen.File {
 	return f.file
 }
 
+// ProtocGenLib returns the base protogen object.
+func (f *File) ProtocGenLib() *File {
+	return f
+}
+
 // Outfile returns the file to which this field would be written.
 func (f *File) Outfile() *protogen.GeneratedFile {
 	return f.outfile

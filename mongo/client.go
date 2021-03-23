@@ -11,7 +11,7 @@ import (
 
 // Client is a wrapper for a mongo.Client that allows it to be managed as a service.
 type Client struct {
-	service.Deps
+	service.Dependencies
 	*mongo.Client
 
 	config *Config

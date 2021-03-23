@@ -9,7 +9,7 @@ import (
 
 // Client is a wrapper for a redis.Client that allows it to be manages as a service.
 type Client struct {
-	service.Deps
+	service.Dependencies
 	*redis.Client
 }
 
