@@ -2,7 +2,6 @@ package protocgenlib
 
 // Fields is a struct that contains data about the messages fields.
 type Fields struct {
-	fields       []*Field
 	fieldNames   []string
 	fieldsByName map[string]*Field
 }
@@ -19,19 +18,16 @@ func (f *Fields) ByName(n string) *Field {
 
 // NewFields returns a new Fields.
 func NewFields(msg *Message) *Fields {
-	fields := []*Field{}
 	fieldNames := []string{}
 	fieldsByName := map[string]*Field{}
 
 	for _, f := range msg.message.Fields {
 		field := NewField(msg, f)
-		fields = append(fields, field)
 		fieldNames = append(fieldNames, field.Name())
 		fieldsByName[field.Name()] = field
 	}
 
 	return &Fields{
-		fields:       fields,
 		fieldNames:   fieldNames,
 		fieldsByName: fieldsByName,
 	}

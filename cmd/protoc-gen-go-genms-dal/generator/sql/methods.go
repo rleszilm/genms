@@ -1,9 +1,7 @@
 package generator_sql
 
 import (
-	"bytes"
 	"fmt"
-	"text/template"
 
 	"github.com/rleszilm/genms/cmd/protoc-gen-go-genms-dal/annotations"
 	"github.com/rleszilm/genms/cmd/protoc-gen-go-genms-dal/generator"
@@ -166,21 +164,6 @@ func QueryTemplate(msg *protogen.Message, fields *generator.Fields, query *annot
 		return buf.String(), nil
 	*/
 	return "", nil
-}
-
-// MustGenerateQuery panics if unble to render the query.
-func MustGenerateQuery(name string, source string, replacements interface{}) string {
-	tmpl, err := template.New(name).Parse(source)
-	if err != nil {
-		panic(err)
-	}
-
-	buf := &bytes.Buffer{}
-	if err := tmpl.Execute(buf, replacements); err != nil {
-		panic(err)
-	}
-
-	return buf.String()
 }
 
 // NullTypeToGoType returns a statement that gives the value of the sql nulltype as the

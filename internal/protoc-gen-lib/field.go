@@ -62,3 +62,11 @@ func (f *Field) QualifiedKind() string {
 	}
 	return ToGoKind(f.field.Desc.Kind())
 }
+
+// ToRef returns the string needed to make a reference of the field.
+func (f *Field) ToRef() string {
+	if f.field.Message != nil {
+		return ""
+	}
+	return "&"
+}
