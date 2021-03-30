@@ -1,4 +1,4 @@
-package postgres
+package rest
 
 import (
 	"github.com/rleszilm/genms/cmd/protoc-gen-go-genms-dal/generator"

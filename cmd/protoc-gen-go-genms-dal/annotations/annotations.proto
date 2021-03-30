@@ -18,14 +18,22 @@ message DalOptions {
         QueryMode mode = 3;
 
         message RestOptions {
+            enum Method {
+                GET = 0;
+                POST = 1;
+                PUT = 2;
+                PATCH = 3;
+                DELETE = 4;
+            }
             message Arg {
                 string arg = 1;
                 string field = 2;
             }
-            repeated Arg headers = 1;
-            repeated string inline = 2;
-            repeated Arg query = 3;
-            repeated string body = 4;
+            Method method = 1;
+            repeated Arg headers = 2;
+            repeated string path = 3;
+            repeated Arg query = 4;
+            repeated string body = 5;
         }
         RestOptions rest = 4;
     }

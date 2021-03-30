@@ -7,6 +7,7 @@ import (
 
 	"github.com/rleszilm/genms/cmd/protoc-gen-go-genms-dal/annotations"
 	"github.com/rleszilm/genms/cmd/protoc-gen-go-genms-dal/generator"
+	"github.com/rleszilm/genms/cmd/protoc-gen-go-genms-dal/generator/rest"
 	"github.com/rleszilm/genms/cmd/protoc-gen-go-genms-dal/generator/sql/postgres"
 	"google.golang.org/protobuf/compiler/protogen"
 	"google.golang.org/protobuf/proto"
@@ -86,14 +87,11 @@ func generate(plugin *protogen.Plugin, file *protogen.File, msg *protogen.Messag
 			if err := postgres.GenerateCollection(plugin, file, msg, dalOpts); err != nil {
 				return err
 			}
-			/*
-				case annotations.DalOptions_BackEnd_Rest:
-							if err := rest.GenerateCollection(plugin, file, msg, dalOpts); err != nil {
-								return err
-							}
-			*/
+		case annotations.DalOptions_BackEnd_Rest:
+			if err := rest.GenerateCollection(plugin, file, msg, dalOpts); err != nil {
+				return err
+			}
 		}
-
 	}
 	return nil
 }

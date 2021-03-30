@@ -22,6 +22,11 @@ func (q *Query) Method() string {
 	return protocgenlib.ToTitleCase(q.Name)
 }
 
+// RestMethod returns the rest method of hte query.
+func (q *Query) RestMethod() string {
+	return annotations.DalOptions_Query_RestOptions_Method_name[int32(q.GetRest().GetMethod())]
+}
+
 // QueryProvided returns whether a query should be formatted and stored.
 func (q *Query) QueryProvided() bool {
 	switch q.Mode {

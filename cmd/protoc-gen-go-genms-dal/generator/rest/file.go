@@ -26,13 +26,19 @@ func AsFile(file *generator.File) *File {
 	}
 }
 
-// RestDalPackageName returns the name of the dal  package.
-func (f *File) RestDalPackageName() string {
-	return "dal_" + f.File.PackageName()
+// RestPackageName returns the name of the dal  package.
+func (f *File) RestPackageName() string {
+	return "rest_" + f.File.DalPackageName()
 }
 
 // RestDalPackagePath returns the path of the package.
 func (f *File) RestDalPackagePath() string {
 	toks := append([]string{strings.ReplaceAll(f.Proto().GoImportPath.String(), "\"", "")}, "dal")
+	return path.Join(toks...)
+}
+
+// RestPackagePath returns the path of the package.
+func (f *File) RestPackagePath() string {
+	toks := append([]string{strings.ReplaceAll(f.Proto().GoImportPath.String(), "\"", "")}, "dal", "rest")
 	return path.Join(toks...)
 }
