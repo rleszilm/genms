@@ -555,7 +555,7 @@ type {{ .C.Message.Name }}Scanner struct {
 	{{ range $n := .C.Fields.Names -}}
 		{{- $f := ($C.Fields.ByName $n) -}}
 		{{- if not $f.Ignore -}}
-			{{ ToTitleCase $f.Name }} {{ $f.SQLNilKind }}
+			{{ ToTitleCase $f.Name }} {{ $f.SQLNilKind }} ` + "`" + `db:"{{ $f.QueryName }}"` + "`" + `
 		{{- end }}
 	{{ end -}}
 }
