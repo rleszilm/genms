@@ -498,10 +498,12 @@ func New{{ .C.Message.Name }}Collection(db {{ .P.GenmsSQL }}.DB, queries {{ .C.M
 
 	fields := []string{}
 	queryFields := []string{}
+	writeFields := []string{}
 	for _, n := range c.Fields.Names() {
 		f := c.Fields.ByName(n)
 		fields = append(fields, f.Name())
 		queryFields = append(queryFields, f.QueryName())
+		writeFields = append(writeFields, ":"+f.QueryName())
 	}
 
 	buf := &bytes.Buffer{}
@@ -511,6 +513,7 @@ func New{{ .C.Message.Name }}Collection(db {{ .P.GenmsSQL }}.DB, queries {{ .C.M
 		"V": map[string]string{
 			"Fields":      strings.Join(fields, ", "),
 			"QueryFields": strings.Join(queryFields, ", "),
+			"WriteFields": strings.Join(writeFields, ", "),
 		},
 	}); err != nil {
 		return err
