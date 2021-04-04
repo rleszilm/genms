@@ -233,8 +233,7 @@ func (x *{{ .C.Message.Name }}Collection) find(ctx {{ .P.Context }}.Context, lab
 		{{ .P.Stats }}.Record(ctx, {{ ToCamelCase (.C.Message.Name) }}Latency.M(dur), {{ ToCamelCase (.C.Message.Name) }}Inflight.M(-1))
 	}()
 
-	req.WithContext(ctx)
-	resp, err := x.client.Do(req)
+	resp, err := x.client.Do(req.WithContext(ctx))
 	if err != nil {
 		return nil, err
 	}

@@ -21,6 +21,7 @@ type Server struct {
 	proxies map[string]*ProxyGrpc
 	server  *http.Server
 	mux     *http.ServeMux
+	grpcMux *runtime.ServeMux
 }
 
 // Initialize implements the Server.Initialize interface for Server.
@@ -101,10 +102,12 @@ func (s *Server) WithGrpcProxyHandler(ctx context.Context, proxyName string, pro
 		proxyOpts = append(proxyOpts, grpc.WithInsecure())
 	}
 
-	proxyMux := runtime.NewServeMux()
-	s.mux.Handle(proxy.Pattern, http.StripPrefix(proxy.Pattern[:len(proxy.Pattern)-1], proxyMux))
+	if s.grpcMux == nil {
+		s.grpcMux = runtime.NewServeMux()
+		s.mux.Handle("/", s.grpcMux)
+	}
 
-	if err := proxyFunc(ctx, proxyMux, proxy.Addr, proxyOpts); err != nil {
+	if err := proxyFunc(ctx, s.grpcMux, proxy.Addr, proxyOpts); err != nil {
 		return err
 	}
 
