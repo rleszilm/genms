@@ -2,7 +2,7 @@ package prometheus_exporter
 
 import (
 	"contrib.go.opencensus.io/exporter/prometheus"
-	rest_service "github.com/rleszilm/gen_microservice/service/rest"
+	rest_service "github.com/rleszilm/genms/service/rest"
 )
 
 // Exporter is the prometheus metric exporter.

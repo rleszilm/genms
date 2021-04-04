@@ -1,59 +1,79 @@
 syntax = "proto3";
 
-package annotations;
-option go_package = "github.com/rleszilm/gen_microservice/cmd/protoc-gen-go-genms-dal/annotations";
+package genms.dal;
+option go_package = "github.com/rleszilm/genms/cmd/protoc-gen-go-genms-dal/annotations";
 
 import "google/protobuf/descriptor.proto";
 
 message DalOptions {
     message Query {
         string name = 1;
-        repeated string fields = 2;
-        bool stub_only = 3;
+        repeated string args = 2;
+
+        enum QueryMode {
+            QueryMode_Auto = 0;
+            QueryMode_ProviderStub = 1;
+            QueryMode_InterfaceStub = 2;
+        }
+        QueryMode mode = 3;
+
+        message RestOptions {
+            enum Method {
+                GET = 0;
+                POST = 1;
+                PUT = 2;
+                PATCH = 3;
+                DELETE = 4;
+            }
+            message Arg {
+                string arg = 1;
+                string field = 2;
+            }
+            Method method = 1;
+            repeated Arg headers = 2;
+            repeated string path = 3;
+            repeated Arg query = 4;
+            repeated string body = 5;
+        }
+        RestOptions rest = 4;
     }
     repeated Query queries = 1;
 
-    message SQL {
-        bool enabled = 1;
-        
-        string primary_key = 2;
-
-        message SQLConstraint {
-            string name = 1;
-            string key = 2;
-        }
-        repeated SQLConstraint constraints = 3;
-
-        enum SQLVariant {
-            SQLVariant_Default = 0;
-            SQLVariant_Postgres = 1;
-        }
-        SQLVariant variant = 4;
-        
-        message SQLQuery {
-            string name = 1;
-            string clause = 2;
-            bool stub_only = 3;
-        }
-        repeated SQLQuery queries = 5;
+    enum Backend {
+        BackEnd_None = 0;
+        BackEnd_Postgres = 1;
+        BackEnd_Rest = 2;
     }
-    SQL sql = 2;
+    repeated Backend backends = 2;
+
+    message BackendOptions {
+        enum ReadMode {
+            ReadMode_ReadWrite = 0;
+            ReadMode_ReadOnly = 1;
+            ReadMode_WriteOnly = 2;
+        }
+        ReadMode mode = 1;
+    }
+
+    map<string,BackendOptions> options = 3;
 }
 
 extend google.protobuf.MessageOptions {
-    DalOptions genms_dal = 50000;
+    DalOptions message_options = 51000;
 }
 
 message DalFieldOptions {
     bool ignore = 1;
-    message SQL {
+    string field = 2;
+
+    message BackendFieldOptions{
         bool ignore = 1;
-        string column = 2;
+        string field = 2;
     }
-    SQL sql = 2;
-    string field_name = 3;
+    BackendFieldOptions postgres = 3;
+    BackendFieldOptions rest = 4;
 }
 
 extend google.protobuf.FieldOptions {
-    DalFieldOptions genms_dal_field = 50000;
+    DalFieldOptions field_options = 51000;
 }

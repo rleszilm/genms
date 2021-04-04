@@ -4,8 +4,8 @@ import (
 	"context"
 
 	"github.com/jinzhu/copier"
-	"github.com/rleszilm/gen_microservice/service"
-	rest_service "github.com/rleszilm/gen_microservice/service/rest"
+	"github.com/rleszilm/genms/service"
+	rest_service "github.com/rleszilm/genms/service/rest"
 	"github.com/rleszilm/grpc-graphql-gateway/options"
 	"github.com/rleszilm/grpc-graphql-gateway/runtime"
 )
@@ -15,7 +15,7 @@ type GraphqlProxy func(*runtime.ServeMux, *options.ServerOptions) error
 
 // Server is a service.Service that handles rest requests.
 type Server struct {
-	service.Deps
+	service.Dependencies
 	name       string
 	config     *Config
 	restServer *rest_service.Server
@@ -31,8 +31,8 @@ func (s *Server) Shutdown(ctx context.Context) error {
 	return nil
 }
 
-// Name implements Server.Name()
-func (s *Server) Name() string {
+// NameOf implements Server.NameOf()
+func (s *Server) NameOf() string {
 	return s.name
 }
 

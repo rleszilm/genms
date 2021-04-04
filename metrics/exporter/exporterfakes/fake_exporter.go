@@ -4,7 +4,7 @@ package exporterfakes
 import (
 	"sync"
 
-	"github.com/rleszilm/gen_microservice/metrics/exporter"
+	"github.com/rleszilm/genms/metrics/exporter"
 )
 
 type FakeExporter struct {

@@ -1,31 +1,41 @@
 syntax = "proto3";
 
 package greeter;
-option go_package = "github.com/rleszilm/gen_microservice/cmd/protoc-gen-go-genms-dal/example/users";
+option go_package = "github.com/rleszilm/genms/cmd/protoc-gen-go-genms-dal/example/users";
 
+import "google/type/latlng.proto";
 import "protoc-gen-go-genms-dal/annotations/annotations.proto";
+import "protoc-gen-go-genms-dal/annotations/types/types.proto";
 
 message User {
-    option (annotations.genms_dal) = {
+    option (genms.dal.message_options) = {
         queries: [
             {
                 name: "by id"
-                fields: ["id"]
+                args: ["id"]
             },
             {
                 name: "by name and division"
-                fields: ["name", "division"]
+                args: ["name", "division"]
             },
             {
-                name: "stub only"
-                fields: []
-                stub_only: true
+                name: "by kind"
+                args: ["kind"]
+            },
+            {
+                name: "by phone"
+                args: ["phone"]
+            },
+            {
+                name: "provider stub only"
+                mode: QueryMode_ProviderStub
+            },
+            {
+                name: "interface stub only"
+                mode: QueryMode_InterfaceStub
             }
         ]
-        sql: {
-            enabled: true
-            variant: SQLVariant_Postgres
-        }
+        backends: [BackEnd_Postgres,BackEnd_Rest]
     };
 
     int64 id = 1;
@@ -34,13 +44,34 @@ message User {
     double lifetime_score = 4;
     float last_score = 5;
     int64 lifetime_winnings = 6 [
-        (annotations.genms_dal_field) = {
+        (genms.dal.field_options) = {
             ignore: true
         }
     ];
     int32 last_winnings = 7 [
-        (annotations.genms_dal_field) = {
-            field_name: "payout"
+        (genms.dal.field_options) = {
+            field: "payout"
+        }
+    ];
+
+    genms.dal.types.Point point = 8;
+    genms.dal.types.Phone phone = 9;
+    google.type.LatLng geo = 10;
+
+    enum Kind {
+        Kind_User = 0;
+        Kind_Admin = 1;
+    }
+    Kind kind = 11 [(genms.dal.field_options) = {field: "type"}];
+
+    string by_backend = 12 [
+        (genms.dal.field_options) = {
+            postgres: {
+                field: "by_backend_postgres"
+            }
+            rest: {
+                field: "by_backend_rest"
+            }
         }
     ];
 }

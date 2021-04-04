@@ -5,11 +5,14 @@ import (
 
 	"github.com/jmoiron/sqlx"
 	_ "github.com/lib/pq"
-	"github.com/rleszilm/gen_microservice/sql"
+	"github.com/rleszilm/genms/service"
+	"github.com/rleszilm/genms/sql"
 )
 
 // DB is a sql.DB that uses sqlx under the hood.
 type DB struct {
+	service.Dependencies
+
 	db  *sqlx.DB
 	cfg sql.Config
 }
@@ -30,9 +33,14 @@ func (d *DB) Shutdown(_ context.Context) error {
 	return d.db.Close()
 }
 
-// Name implements service.Service.Name.
-func (d *DB) Name() string {
+// NameOf implements service.Service.NameOf.
+func (d *DB) NameOf() string {
 	return "sqlx"
+}
+
+// String implements service.Service.String
+func (d *DB) String() string {
+	return d.NameOf()
 }
 
 // Bind implements sql.DB.Bind
@@ -46,12 +54,22 @@ func (d *DB) Rebind(query string) string {
 }
 
 // Query implements sql.DB.Query
-func (d *DB) Query(ctx context.Context, query string, arg interface{}) (sql.Rows, error) {
+func (d *DB) Query(ctx context.Context, query string, args ...interface{}) (sql.Rows, error) {
+	return d.db.QueryxContext(ctx, query, args...)
+}
+
+// QueryWithReplacements implements sql.DB.QueryWithReplacements
+func (d *DB) QueryWithReplacements(ctx context.Context, query string, arg interface{}) (sql.Rows, error) {
 	return d.db.NamedQueryContext(ctx, query, arg)
 }
 
 // Exec implements sql.DB.Exec
-func (d *DB) Exec(ctx context.Context, query string, arg interface{}) (sql.Result, error) {
+func (d *DB) Exec(ctx context.Context, query string, args ...interface{}) (sql.Result, error) {
+	return d.db.ExecContext(ctx, query, args...)
+}
+
+// ExecWithReplacements implements sql.DB.ExecWithReplacements
+func (d *DB) ExecWithReplacements(ctx context.Context, query string, arg interface{}) (sql.Result, error) {
 	return d.db.NamedExecContext(ctx, query, arg)
 }
 

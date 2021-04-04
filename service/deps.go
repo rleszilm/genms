@@ -1,10 +1,10 @@
 package service
 
-// Deps manages a services dependencies.
-type Deps Services
+// Dependencies manages a services dependencies.
+type Dependencies Services
 
-// Dependencies returns the services dependencies.
-func (d *Deps) Dependencies() Services {
+// Dependants returns the services dependencies.
+func (d *Dependencies) Dependants() Services {
 	if d == nil {
 		return nil
 	}
@@ -13,7 +13,7 @@ func (d *Deps) Dependencies() Services {
 }
 
 // WithDependencies adds dependencies to the service.
-func (d *Deps) WithDependencies(svcs ...Service) {
+func (d *Dependencies) WithDependencies(svcs ...Service) {
 	if d == nil {
 		return
 	}

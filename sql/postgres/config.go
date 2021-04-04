@@ -4,7 +4,7 @@ import (
 	"fmt"
 
 	"github.com/kelseyhightower/envconfig"
-	"github.com/rleszilm/gen_microservice/sql"
+	"github.com/rleszilm/genms/sql"
 )
 
 // Config implements sql.Config

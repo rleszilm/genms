@@ -6,7 +6,7 @@ import (
 	"sync"
 
 	"github.com/Shopify/sarama"
-	"github.com/rleszilm/gen_microservice/kafka"
+	"github.com/rleszilm/genms/kafka"
 )
 
 type FakeConsumerGroup struct {
