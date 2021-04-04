@@ -708,7 +708,7 @@ func (x *{{ .C.Message.Name }}Queries) All() string {
 			{{- range $a := $q.Args -}}
 				{{- $f := $C.Fields.ByName $a -}}	
 				{{- "" }} AND
-				{{ $f.QueryName }} = :{{ $f.Name }}
+				{{ $f.QueryName }} = :{{ $f.QueryName }}
 			{{- end -}};` + "`" + `
 		}
 	{{ end -}}
