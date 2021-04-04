@@ -14,15 +14,15 @@ type Service interface {
 	// Shutdown closes the long-running instance, or service.
 	Shutdown(context.Context) error
 
-	// Name returns the name of a service. This must be unique if there are multiple instances of the same
+	// NameOf returns the name of a service. This must be unique if there are multiple instances of the same
 	// service.
-	Name() string
+	NameOf() string
 
 	// String returns a string identifier for the service.
 	String() string
 
-	// Dependencies returns the servers dependencies.
-	Dependencies() Services
+	// Dependants returns the servers dependencies.
+	Dependants() Services
 
 	// WithDependency adds a dependency to the service.
 	WithDependencies(...Service)

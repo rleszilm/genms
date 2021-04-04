@@ -2,9 +2,9 @@ package graphql_service
 
 import (
 	"github.com/kelseyhightower/envconfig"
-	"github.com/rleszilm/gen_microservice/config"
-	"github.com/rleszilm/gen_microservice/service"
-	rest_service "github.com/rleszilm/gen_microservice/service/rest"
+	"github.com/rleszilm/genms/config"
+	"github.com/rleszilm/genms/service"
+	rest_service "github.com/rleszilm/genms/service/rest"
 )
 
 // Config is the struct used to parse configuration from environment variables.

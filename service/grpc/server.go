@@ -7,7 +7,7 @@ import (
 	"net"
 
 	grpc_middleware "github.com/grpc-ecosystem/go-grpc-middleware"
-	"github.com/rleszilm/gen_microservice/service"
+	"github.com/rleszilm/genms/service"
 	"google.golang.org/grpc"
 )
 
@@ -16,7 +16,7 @@ type GrpcService func(*grpc.Server)
 
 // Server is a service.Service that handles grpc requests.
 type Server struct {
-	service.Deps
+	service.Dependencies
 	name       string
 	config     *Config
 	grpc       *grpc.Server
@@ -66,8 +66,8 @@ func (s *Server) Shutdown(_ context.Context) error {
 	return nil
 }
 
-// Name implements Server.Name()
-func (s *Server) Name() string {
+// NameOf implements Server.NameOf()
+func (s *Server) NameOf() string {
 	return s.name
 }
 

@@ -5,8 +5,8 @@ import (
 	"log"
 	"net/http"
 
-	"github.com/grpc-ecosystem/grpc-gateway/runtime"
-	"github.com/rleszilm/gen_microservice/service"
+	"github.com/grpc-ecosystem/grpc-gateway/v2/runtime"
+	"github.com/rleszilm/genms/service"
 	"google.golang.org/grpc"
 )
 
@@ -15,11 +15,13 @@ type GrpcProxy func(context.Context, *runtime.ServeMux, string, []grpc.DialOptio
 
 // Server is a service.Service that handles rest requests.
 type Server struct {
-	service.Deps
-	name   string
-	config *Config
-	server *http.Server
-	mux    *http.ServeMux
+	service.Dependencies
+	name    string
+	config  *Config
+	proxies map[string]*ProxyGrpc
+	server  *http.Server
+	mux     *http.ServeMux
+	grpcMux *runtime.ServeMux
 }
 
 // Initialize implements the Server.Initialize interface for Server.
@@ -44,8 +46,8 @@ func (s *Server) Shutdown(_ context.Context) error {
 	return s.server.Close()
 }
 
-// Name implements Server.Name()
-func (s *Server) Name() string {
+// NameOf implements Server.NameOf()
+func (s *Server) NameOf() string {
 	return s.name
 }
 
@@ -80,8 +82,13 @@ func (s *Server) WithRouteFunc(pattern string, handler http.HandlerFunc) error {
 }
 
 // WithGrpcProxy adds rest methods that proxy to a grpc server.
-func (s *Server) WithGrpcProxy(ctx context.Context, proxyName string, proxyFunc GrpcProxy) error {
-	proxy, ok := s.config.Proxies[proxyName]
+func (s *Server) WithGrpcProxy(ctx context.Context, proxy *ProxyGrpc) {
+	s.proxies[proxy.Name] = proxy
+}
+
+// WithGrpcProxyHandler adds rest methods that proxy to a grpc server.
+func (s *Server) WithGrpcProxyHandler(ctx context.Context, proxyName string, proxyFunc GrpcProxy) error {
+	proxy, ok := s.proxies[proxyName]
 	if !ok {
 		return service.ErrNoProxy
 	}
@@ -95,10 +102,12 @@ func (s *Server) WithGrpcProxy(ctx context.Context, proxyName string, proxyFunc 
 		proxyOpts = append(proxyOpts, grpc.WithInsecure())
 	}
 
-	proxyMux := runtime.NewServeMux()
-	s.mux.Handle(proxy.Pattern, http.StripPrefix(proxy.Pattern[:len(proxy.Pattern)-1], proxyMux))
+	if s.grpcMux == nil {
+		s.grpcMux = runtime.NewServeMux()
+		s.mux.Handle("/", s.grpcMux)
+	}
 
-	if err := proxyFunc(ctx, proxyMux, proxy.Addr, proxyOpts); err != nil {
+	if err := proxyFunc(ctx, s.grpcMux, proxy.Addr, proxyOpts); err != nil {
 		return err
 	}
 
@@ -110,8 +119,9 @@ func NewServer(name string, config *Config) (*Server, error) {
 	mux := http.NewServeMux()
 
 	s := &Server{
-		name:   name,
-		config: config,
+		name:    name,
+		config:  config,
+		proxies: map[string]*ProxyGrpc{},
 		server: &http.Server{
 			Addr:    config.Addr,
 			Handler: mux,

@@ -5,7 +5,7 @@ import (
 	"context"
 	"sync"
 
-	"github.com/rleszilm/gen_microservice/service"
+	"github.com/rleszilm/genms/service"
 )
 
 type FakeListener struct {
@@ -19,14 +19,14 @@ type FakeListener struct {
 	addrReturnsOnCall map[int]struct {
 		result1 string
 	}
-	DependenciesStub        func() service.Services
-	dependenciesMutex       sync.RWMutex
-	dependenciesArgsForCall []struct {
+	DependantsStub        func() service.Services
+	dependantsMutex       sync.RWMutex
+	dependantsArgsForCall []struct {
 	}
-	dependenciesReturns struct {
+	dependantsReturns struct {
 		result1 service.Services
 	}
-	dependenciesReturnsOnCall map[int]struct {
+	dependantsReturnsOnCall map[int]struct {
 		result1 service.Services
 	}
 	InitializeStub        func(context.Context) error
@@ -40,14 +40,14 @@ type FakeListener struct {
 	initializeReturnsOnCall map[int]struct {
 		result1 error
 	}
-	NameStub        func() string
-	nameMutex       sync.RWMutex
-	nameArgsForCall []struct {
+	NameOfStub        func() string
+	nameOfMutex       sync.RWMutex
+	nameOfArgsForCall []struct {
 	}
-	nameReturns struct {
+	nameOfReturns struct {
 		result1 string
 	}
-	nameReturnsOnCall map[int]struct {
+	nameOfReturnsOnCall map[int]struct {
 		result1 string
 	}
 	SchemeStub        func() string
@@ -142,54 +142,54 @@ func (fake *FakeListener) AddrReturnsOnCall(i int, result1 string) {
 	}{result1}
 }
 
-func (fake *FakeListener) Dependencies() service.Services {
-	fake.dependenciesMutex.Lock()
-	ret, specificReturn := fake.dependenciesReturnsOnCall[len(fake.dependenciesArgsForCall)]
-	fake.dependenciesArgsForCall = append(fake.dependenciesArgsForCall, struct {
+func (fake *FakeListener) Dependants() service.Services {
+	fake.dependantsMutex.Lock()
+	ret, specificReturn := fake.dependantsReturnsOnCall[len(fake.dependantsArgsForCall)]
+	fake.dependantsArgsForCall = append(fake.dependantsArgsForCall, struct {
 	}{})
-	fake.recordInvocation("Dependencies", []interface{}{})
-	fake.dependenciesMutex.Unlock()
-	if fake.DependenciesStub != nil {
-		return fake.DependenciesStub()
+	fake.recordInvocation("Dependants", []interface{}{})
+	fake.dependantsMutex.Unlock()
+	if fake.DependantsStub != nil {
+		return fake.DependantsStub()
 	}
 	if specificReturn {
 		return ret.result1
 	}
-	fakeReturns := fake.dependenciesReturns
+	fakeReturns := fake.dependantsReturns
 	return fakeReturns.result1
 }
 
-func (fake *FakeListener) DependenciesCallCount() int {
-	fake.dependenciesMutex.RLock()
-	defer fake.dependenciesMutex.RUnlock()
-	return len(fake.dependenciesArgsForCall)
+func (fake *FakeListener) DependantsCallCount() int {
+	fake.dependantsMutex.RLock()
+	defer fake.dependantsMutex.RUnlock()
+	return len(fake.dependantsArgsForCall)
 }
 
-func (fake *FakeListener) DependenciesCalls(stub func() service.Services) {
-	fake.dependenciesMutex.Lock()
-	defer fake.dependenciesMutex.Unlock()
-	fake.DependenciesStub = stub
+func (fake *FakeListener) DependantsCalls(stub func() service.Services) {
+	fake.dependantsMutex.Lock()
+	defer fake.dependantsMutex.Unlock()
+	fake.DependantsStub = stub
 }
 
-func (fake *FakeListener) DependenciesReturns(result1 service.Services) {
-	fake.dependenciesMutex.Lock()
-	defer fake.dependenciesMutex.Unlock()
-	fake.DependenciesStub = nil
-	fake.dependenciesReturns = struct {
+func (fake *FakeListener) DependantsReturns(result1 service.Services) {
+	fake.dependantsMutex.Lock()
+	defer fake.dependantsMutex.Unlock()
+	fake.DependantsStub = nil
+	fake.dependantsReturns = struct {
 		result1 service.Services
 	}{result1}
 }
 
-func (fake *FakeListener) DependenciesReturnsOnCall(i int, result1 service.Services) {
-	fake.dependenciesMutex.Lock()
-	defer fake.dependenciesMutex.Unlock()
-	fake.DependenciesStub = nil
-	if fake.dependenciesReturnsOnCall == nil {
-		fake.dependenciesReturnsOnCall = make(map[int]struct {
+func (fake *FakeListener) DependantsReturnsOnCall(i int, result1 service.Services) {
+	fake.dependantsMutex.Lock()
+	defer fake.dependantsMutex.Unlock()
+	fake.DependantsStub = nil
+	if fake.dependantsReturnsOnCall == nil {
+		fake.dependantsReturnsOnCall = make(map[int]struct {
 			result1 service.Services
 		})
 	}
-	fake.dependenciesReturnsOnCall[i] = struct {
+	fake.dependantsReturnsOnCall[i] = struct {
 		result1 service.Services
 	}{result1}
 }
@@ -254,54 +254,54 @@ func (fake *FakeListener) InitializeReturnsOnCall(i int, result1 error) {
 	}{result1}
 }
 
-func (fake *FakeListener) Name() string {
-	fake.nameMutex.Lock()
-	ret, specificReturn := fake.nameReturnsOnCall[len(fake.nameArgsForCall)]
-	fake.nameArgsForCall = append(fake.nameArgsForCall, struct {
+func (fake *FakeListener) NameOf() string {
+	fake.nameOfMutex.Lock()
+	ret, specificReturn := fake.nameOfReturnsOnCall[len(fake.nameOfArgsForCall)]
+	fake.nameOfArgsForCall = append(fake.nameOfArgsForCall, struct {
 	}{})
-	fake.recordInvocation("Name", []interface{}{})
-	fake.nameMutex.Unlock()
-	if fake.NameStub != nil {
-		return fake.NameStub()
+	fake.recordInvocation("NameOf", []interface{}{})
+	fake.nameOfMutex.Unlock()
+	if fake.NameOfStub != nil {
+		return fake.NameOfStub()
 	}
 	if specificReturn {
 		return ret.result1
 	}
-	fakeReturns := fake.nameReturns
+	fakeReturns := fake.nameOfReturns
 	return fakeReturns.result1
 }
 
-func (fake *FakeListener) NameCallCount() int {
-	fake.nameMutex.RLock()
-	defer fake.nameMutex.RUnlock()
-	return len(fake.nameArgsForCall)
+func (fake *FakeListener) NameOfCallCount() int {
+	fake.nameOfMutex.RLock()
+	defer fake.nameOfMutex.RUnlock()
+	return len(fake.nameOfArgsForCall)
 }
 
-func (fake *FakeListener) NameCalls(stub func() string) {
-	fake.nameMutex.Lock()
-	defer fake.nameMutex.Unlock()
-	fake.NameStub = stub
+func (fake *FakeListener) NameOfCalls(stub func() string) {
+	fake.nameOfMutex.Lock()
+	defer fake.nameOfMutex.Unlock()
+	fake.NameOfStub = stub
 }
 
-func (fake *FakeListener) NameReturns(result1 string) {
-	fake.nameMutex.Lock()
-	defer fake.nameMutex.Unlock()
-	fake.NameStub = nil
-	fake.nameReturns = struct {
+func (fake *FakeListener) NameOfReturns(result1 string) {
+	fake.nameOfMutex.Lock()
+	defer fake.nameOfMutex.Unlock()
+	fake.NameOfStub = nil
+	fake.nameOfReturns = struct {
 		result1 string
 	}{result1}
 }
 
-func (fake *FakeListener) NameReturnsOnCall(i int, result1 string) {
-	fake.nameMutex.Lock()
-	defer fake.nameMutex.Unlock()
-	fake.NameStub = nil
-	if fake.nameReturnsOnCall == nil {
-		fake.nameReturnsOnCall = make(map[int]struct {
+func (fake *FakeListener) NameOfReturnsOnCall(i int, result1 string) {
+	fake.nameOfMutex.Lock()
+	defer fake.nameOfMutex.Unlock()
+	fake.NameOfStub = nil
+	if fake.nameOfReturnsOnCall == nil {
+		fake.nameOfReturnsOnCall = make(map[int]struct {
 			result1 string
 		})
 	}
-	fake.nameReturnsOnCall[i] = struct {
+	fake.nameOfReturnsOnCall[i] = struct {
 		result1 string
 	}{result1}
 }
@@ -506,12 +506,12 @@ func (fake *FakeListener) Invocations() map[string][][]interface{} {
 	defer fake.invocationsMutex.RUnlock()
 	fake.addrMutex.RLock()
 	defer fake.addrMutex.RUnlock()
-	fake.dependenciesMutex.RLock()
-	defer fake.dependenciesMutex.RUnlock()
+	fake.dependantsMutex.RLock()
+	defer fake.dependantsMutex.RUnlock()
 	fake.initializeMutex.RLock()
 	defer fake.initializeMutex.RUnlock()
-	fake.nameMutex.RLock()
-	defer fake.nameMutex.RUnlock()
+	fake.nameOfMutex.RLock()
+	defer fake.nameOfMutex.RUnlock()
 	fake.schemeMutex.RLock()
 	defer fake.schemeMutex.RUnlock()
 	fake.shutdownMutex.RLock()

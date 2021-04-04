@@ -26,6 +26,11 @@ proto-annotations:
 		--go_out=. \
 		--go_opt=paths=source_relative \
 		`ls cmd/protoc-gen-go-genms-dal/annotations/*.proto`
+	protoc \
+		-I . \
+		--go_out=. \
+		--go_opt=paths=source_relative \
+		`ls cmd/protoc-gen-go-genms-dal/annotations/types/*.proto`
 
 ## Test runs all project unit tests.
 test:
@@ -33,12 +38,12 @@ test:
 
 tool-chain:
 	go get -u \
-		github.com/grpc-ecosystem/grpc-gateway/protoc-gen-grpc-gateway \
-		github.com/grpc-ecosystem/grpc-gateway/protoc-gen-swagger \
+		github.com/grpc-ecosystem/grpc-gateway/v2/protoc-gen-grpc-gateway \
+		github.com/grpc-ecosystem/grpc-gateway/v2/protoc-gen-openapiv2 \
 		github.com/envoyproxy/protoc-gen-validate \
 		github.com/awalterschulze/goderive \
 		github.com/rleszilm/grpc-graphql-gateway/protoc-gen-graphql \
-		github.com/rleszilm/gen_microservice/cmd/protoc-gen-go-genms \
-		github.com/rleszilm/gen_microservice/cmd/protoc-gen-go-genms-dal
+		github.com/rleszilm/genms/cmd/protoc-gen-go-genms \
+		github.com/rleszilm/genms/cmd/protoc-gen-go-genms-dal
 
 .DEFAULT: codegen test

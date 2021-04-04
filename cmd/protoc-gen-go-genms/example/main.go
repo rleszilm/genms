@@ -4,12 +4,12 @@ import (
 	"context"
 	"log"
 
-	"github.com/rleszilm/gen_microservice/cmd/protoc-gen-go-genms/example/greeter"
-	"github.com/rleszilm/gen_microservice/service"
-	graphql_service "github.com/rleszilm/gen_microservice/service/graphql"
-	grpc_service "github.com/rleszilm/gen_microservice/service/grpc"
-	rest_service "github.com/rleszilm/gen_microservice/service/rest"
-	"github.com/rleszilm/gen_microservice/service/rest/healthcheck"
+	"github.com/rleszilm/genms/cmd/protoc-gen-go-genms/example/greeter"
+	"github.com/rleszilm/genms/service"
+	graphql_service "github.com/rleszilm/genms/service/graphql"
+	grpc_service "github.com/rleszilm/genms/service/grpc"
+	rest_service "github.com/rleszilm/genms/service/rest"
+	"github.com/rleszilm/genms/service/rest/healthcheck"
 )
 
 type greets struct {
@@ -32,22 +32,21 @@ func main() {
 				Transport: "tcp",
 				Addr:      ":8081",
 			},
-			Proxies: map[string]*rest_service.ProxyGrpc{
-				"WithRestAndGraphQL": {
-					Enabled:  true,
-					Pattern:  "/rest/",
-					Addr:     ":8080",
-					Insecure: true,
-				},
-			},
 		},
 	)
 	if err != nil {
 		log.Fatalln("Unable to instantiate rest api server: ", err)
 	}
+	restServer.WithGrpcProxy(ctx, &rest_service.ProxyGrpc{
+		Name:     "WithRestAndGraphQL",
+		Enabled:  true,
+		Pattern:  "/rest/",
+		Addr:     ":8080",
+		Insecure: true,
+	})
 	manager.Register(restServer)
 
-	health := healthcheck.NewService(&healthcheck.Config{RequestPath: "/health"}, restServer)
+	health := healthcheck.NewService(&healthcheck.Config{RequestPrefix: "/health"}, restServer)
 	manager.Register(health)
 
 	graphqlServer, err := graphql_service.NewServer("graphql-api",
