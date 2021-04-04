@@ -440,7 +440,7 @@ func New{{ .C.Message.Name }}Collection(db {{ .P.GenmsSQL }}.DB, queries {{ .C.M
 	queryReplacements := map[string]string{
 		"table": config.TableName,
 		"fields": "{{ .V.QueryFields }}",
-		"writeFields": "{{ .V.QueryFields }}",
+		"writeFields": "{{ .V.WriteFields }}",
 	}
 
 	// generate Upsert exec
