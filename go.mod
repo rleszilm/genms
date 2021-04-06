@@ -6,10 +6,10 @@ require (
 	contrib.go.opencensus.io/exporter/prometheus v0.2.0
 	github.com/Shopify/sarama v1.27.2
 	github.com/awalterschulze/goderive v0.0.0-20201024082847-dcd8fe800b1e
-	github.com/envoyproxy/protoc-gen-validate v0.5.0 // indirect
+	github.com/envoyproxy/protoc-gen-validate v0.5.1 // indirect
 	github.com/go-redis/redis/v8 v8.4.11
 	github.com/go-test/deep v1.0.7
-	github.com/golang/protobuf v1.5.1
+	github.com/golang/protobuf v1.5.2
 	github.com/graphql-go/graphql v0.7.9
 	github.com/grpc-ecosystem/go-grpc-middleware v1.2.2
 	github.com/grpc-ecosystem/grpc-gateway/v2 v2.3.0
@@ -27,11 +27,12 @@ require (
 	go.opencensus.io v0.22.6
 	golang.org/x/lint v0.0.0-20201208152925-83fdc39ff7b5 // indirect
 	golang.org/x/mod v0.4.2 // indirect
-	golang.org/x/net v0.0.0-20210326220855-61e056675ecf // indirect
-	golang.org/x/sys v0.0.0-20210326220804-49726bf1d181 // indirect
+	golang.org/x/net v0.0.0-20210405180319-a5a99cb37ef4 // indirect
+	golang.org/x/sys v0.0.0-20210403161142-5e06dd20ab57 // indirect
+	golang.org/x/text v0.3.6 // indirect
 	golang.org/x/tools v0.1.0 // indirect
-	google.golang.org/genproto v0.0.0-20210325224202-eed09b1b5210
-	google.golang.org/grpc v1.36.0
+	google.golang.org/genproto v0.0.0-20210405174219-a39eb2f71cb9
+	google.golang.org/grpc v1.36.1
 	google.golang.org/protobuf v1.26.0
 	gopkg.in/yaml.v2 v2.4.0 // indirect
 )

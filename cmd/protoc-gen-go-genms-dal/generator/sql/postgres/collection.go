@@ -254,6 +254,33 @@ func (x *{{ .C.Message.Name }}Collection) DoUpsert(ctx {{ .P.Context }}.Context,
 	return x.db.ExecWithReplacements(ctx, x.execUpsert, arg)
 }
 
+// DoUpdate provides the base logic for {{ .C.Message.QualifiedDalKind }}Collection.Upsert.
+// The user should use this as a base for {{ .C.Message.QualifiedDalKind }}Collection.Upsert, only having to add
+// code that interprets the returned values.
+func (x *{{ .C.Message.Name }}Collection) DoUpdate(ctx {{ .P.Context }}.Context, arg interface{}) ({{ .P.SQL }}.Result, error) {
+	var err error
+	start := {{ .P.Time }}.Now()
+	{{ .P.Stats }}.Record(ctx, {{ ToCamelCase .C.Message.Name }}Inflight.M(1))
+	defer func() {
+		stop := {{ .P.Time }}.Now()
+		dur := float64(stop.Sub(start).Nanoseconds()) / float64({{ .P.Time }}.Millisecond)
+
+		if err != nil {
+			ctx, err = {{ .P.Tag }}.New(ctx,
+				{{ .P.Tag }}.Upsert({{ ToCamelCase .C.Message.Name }}QueryError, "{{ ToSnakeCase .C.Message.Name }}_update"),
+			)
+		}
+
+		ctx, err = {{ .P.Tag }}.New(ctx,
+			{{ .P.Tag }}.Upsert({{ ToCamelCase .C.Message.Name }}QueryName, "{{ ToSnakeCase .C.Message.Name }}_update"),
+		)
+
+		{{ .P.Stats }}.Record(ctx, {{ ToCamelCase .C.Message.Name }}Latency.M(dur), {{ ToCamelCase .C.Message.Name }}Inflight.M(-1))
+	}()
+
+	return x.db.ExecWithReplacements(ctx, x.execUpdate, arg)
+}
+
 // All implements {{ .C.Message.QualifiedDalKind }}Collection.All
 func (x *{{ .C.Message.Name }}Collection) All(ctx {{ .P.Context }}.Context) ([]*{{ .C.Message.QualifiedKind }}, error) {
 	filter := &{{ .C.Message.QualifiedDalKind }}Filter{}
@@ -443,7 +470,7 @@ func New{{ .C.Message.Name }}Collection(db {{ .P.GenmsSQL }}.DB, queries {{ .C.M
 		"writeFields": "{{ .V.WriteFields }}",
 	}
 
-	// generate Upsert exec
+	// generate Insert exec
 	execInsert, err := {{ .P.Dal }}.RenderQuery("{{ .C.Message.QualifiedDalKind }}-Exec-Insert", queries.Insert(), queryReplacements)
 	if err != nil {
 		return nil, err
@@ -456,6 +483,13 @@ func New{{ .C.Message.Name }}Collection(db {{ .P.GenmsSQL }}.DB, queries {{ .C.M
 		return nil, err
 	}	
 	coll.execUpsert = execUpsert
+	
+	// generate Update exec
+	execUpdate, err := {{ .P.Dal }}.RenderQuery("{{ .C.Message.QualifiedDalKind }}-Exec-Update", queries.Update(), queryReplacements)
+	if err != nil {
+		return nil, err
+	}	
+	coll.execUpdate = execUpdate
 
 	// generate All query
 	queryAll, err := {{ .P.Dal }}.RenderQuery("{{ .C.Message.QualifiedDalKind }}-Query-All", queries.All(), queryReplacements)
