@@ -524,7 +524,7 @@ func New{{ .C.Message.Name }}Collection(db {{ .P.GenmsSQL }}.DB, queries {{ .C.M
 		{{- $q := ($C.Queries.ByName $qn) -}}
 		{{- if $q.QueryProvided -}}
 			// generate {{ ToTitleCase $qn }} query
-			query{{ ToTitleCase $qn }}, err := {{ $P.Dal }}.RenderQuery("{{ $C.Message.QualifiedDalKind }}-Query-{{ ToTitleCase $qn }}", queries.{{ ToTitleCase $qn }}(), queryReplacements)
+			query{{ ToTitleCase $qn }}, err := {{ $P.Dal }}.RenderQuery("{{ $C.Message.QualifiedDalKind }}-query-{{ ToSnakeCase $qn }}", queries.{{ ToTitleCase $qn }}(), queryReplacements)
 			if err != nil {
 				return nil, err
 			}	
@@ -538,6 +538,7 @@ func New{{ .C.Message.Name }}Collection(db {{ .P.GenmsSQL }}.DB, queries {{ .C.M
 
 	tmpl, err := template.New("definePostgresNewCollection").
 		Funcs(template.FuncMap{
+			"ToSnakeCase": protocgenlib.ToSnakeCase,
 			"ToTitleCase": protocgenlib.ToTitleCase,
 		}).
 		Parse(tmplSrc)

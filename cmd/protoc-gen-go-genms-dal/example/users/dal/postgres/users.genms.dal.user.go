@@ -374,35 +374,35 @@ func NewUserCollection(db sql.DB, queries UserQueryTemplateProvider, config *Use
 	coll.queryAll = queryAll
 
 	// generate ById query
-	queryById, err := dal1.RenderQuery("dal.User-Query-ById", queries.ById(), queryReplacements)
+	queryById, err := dal1.RenderQuery("dal.User-query-by_id", queries.ById(), queryReplacements)
 	if err != nil {
 		return nil, err
 	}
 	coll.queryById = queryById
 
 	// generate ByNameAndDivision query
-	queryByNameAndDivision, err := dal1.RenderQuery("dal.User-Query-ByNameAndDivision", queries.ByNameAndDivision(), queryReplacements)
+	queryByNameAndDivision, err := dal1.RenderQuery("dal.User-query-by_name_and_division", queries.ByNameAndDivision(), queryReplacements)
 	if err != nil {
 		return nil, err
 	}
 	coll.queryByNameAndDivision = queryByNameAndDivision
 
 	// generate ByKind query
-	queryByKind, err := dal1.RenderQuery("dal.User-Query-ByKind", queries.ByKind(), queryReplacements)
+	queryByKind, err := dal1.RenderQuery("dal.User-query-by_kind", queries.ByKind(), queryReplacements)
 	if err != nil {
 		return nil, err
 	}
 	coll.queryByKind = queryByKind
 
 	// generate ByPhone query
-	queryByPhone, err := dal1.RenderQuery("dal.User-Query-ByPhone", queries.ByPhone(), queryReplacements)
+	queryByPhone, err := dal1.RenderQuery("dal.User-query-by_phone", queries.ByPhone(), queryReplacements)
 	if err != nil {
 		return nil, err
 	}
 	coll.queryByPhone = queryByPhone
 
 	// generate ProviderStubOnly query
-	queryProviderStubOnly, err := dal1.RenderQuery("dal.User-Query-ProviderStubOnly", queries.ProviderStubOnly(), queryReplacements)
+	queryProviderStubOnly, err := dal1.RenderQuery("dal.User-query-provider_stub_only", queries.ProviderStubOnly(), queryReplacements)
 	if err != nil {
 		return nil, err
 	}
