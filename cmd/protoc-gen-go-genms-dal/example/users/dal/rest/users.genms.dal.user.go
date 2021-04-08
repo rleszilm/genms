@@ -96,8 +96,7 @@ func (x *UserCollection) find(ctx context.Context, label string, req *http.Reque
 		stats.Record(ctx, userLatency.M(dur), userInflight.M(-1))
 	}()
 
-	req.WithContext(ctx)
-	resp, err := x.client.Do(req)
+	resp, err := x.client.Do(req.WithContext(ctx))
 	if err != nil {
 		return nil, err
 	}

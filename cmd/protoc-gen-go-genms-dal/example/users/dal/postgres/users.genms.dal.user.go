@@ -2,6 +2,7 @@
 package postgres_dal_users
 
 import (
+	bytes "bytes"
 	context "context"
 	sql1 "database/sql"
 	fmt "fmt"
@@ -17,6 +18,7 @@ import (
 	log "log"
 	strings "strings"
 	sync "sync"
+	template "text/template"
 	time "time"
 )
 
@@ -30,6 +32,8 @@ type UserCollection struct {
 	execInsert string
 	execUpsert string
 	queryAll   string
+
+	execUpdateTmpl *template.Template
 
 	queryById              string
 	queryByNameAndDivision string
@@ -63,7 +67,7 @@ func (x *UserCollection) String() string {
 // DoInsert provides the base logic for dal.UserCollection.Insert.
 // The user should use this as a base for dal.UserCollection.Insert, only having to add
 // code that interprets the returned values.
-func (x *UserCollection) DoInsert(ctx context.Context, arg interface{}) (sql1.Result, error) {
+func (x *UserCollection) DoInsert(ctx context.Context, arg *users.User) (sql1.Result, error) {
 	var err error
 	start := time.Now()
 	stats.Record(ctx, userInflight.M(1))
@@ -84,13 +88,13 @@ func (x *UserCollection) DoInsert(ctx context.Context, arg interface{}) (sql1.Re
 		stats.Record(ctx, userLatency.M(dur), userInflight.M(-1))
 	}()
 
-	return x.db.ExecWithReplacements(ctx, x.execInsert, arg)
+	return x.db.ExecWithReplacements(ctx, x.execInsert, writerFromGeneric(arg))
 }
 
 // DoUpsert provides the base logic for dal.UserCollection.Upsert.
 // The user should use this as a base for dal.UserCollection.Upsert, only having to add
 // code that interprets the returned values.
-func (x *UserCollection) DoUpsert(ctx context.Context, arg interface{}) (sql1.Result, error) {
+func (x *UserCollection) DoUpsert(ctx context.Context, arg *users.User) (sql1.Result, error) {
 	var err error
 	start := time.Now()
 	stats.Record(ctx, userInflight.M(1))
@@ -111,62 +115,143 @@ func (x *UserCollection) DoUpsert(ctx context.Context, arg interface{}) (sql1.Re
 		stats.Record(ctx, userLatency.M(dur), userInflight.M(-1))
 	}()
 
-	return x.db.ExecWithReplacements(ctx, x.execUpsert, arg)
+	return x.db.ExecWithReplacements(ctx, x.execUpsert, writerFromGeneric(arg))
+}
+
+// DoUpdate provides the base logic for dal.UserCollection.Upsert.
+// The user should use this as a base for dal.UserCollection.Upsert, only having to add
+// code that interprets the returned values.
+func (x *UserCollection) DoUpdate(ctx context.Context, fvs *dal.UserFieldValues, clause string) (sql1.Result, error) {
+	var err error
+	start := time.Now()
+	stats.Record(ctx, userInflight.M(1))
+	defer func() {
+		stop := time.Now()
+		dur := float64(stop.Sub(start).Nanoseconds()) / float64(time.Millisecond)
+
+		if err != nil {
+			ctx, err = tag.New(ctx,
+				tag.Upsert(userQueryError, "user_update"),
+			)
+		}
+
+		ctx, err = tag.New(ctx,
+			tag.Upsert(userQueryName, "user_update"),
+		)
+
+		stats.Record(ctx, userLatency.M(dur), userInflight.M(-1))
+	}()
+
+	updates := []string{}
+
+	if fvs.Id != nil {
+		updates = append(updates, "id = :id")
+	}
+
+	if fvs.Name != nil {
+		updates = append(updates, "name = :name")
+	}
+
+	if fvs.Division != nil {
+		updates = append(updates, "division = :division")
+	}
+
+	if fvs.LifetimeScore != nil {
+		updates = append(updates, "lifetime_score = :lifetime_score")
+	}
+
+	if fvs.LastScore != nil {
+		updates = append(updates, "last_score = :last_score")
+	}
+
+	if fvs.LastWinnings != nil {
+		updates = append(updates, "payout = :payout")
+	}
+
+	if fvs.Point != nil {
+		updates = append(updates, "point = :point")
+	}
+
+	if fvs.Phone != nil {
+		updates = append(updates, "phone = :phone")
+	}
+
+	if fvs.Geo != nil {
+		updates = append(updates, "geo = :geo")
+	}
+
+	if fvs.Kind != nil {
+		updates = append(updates, "type = :type")
+	}
+
+	if fvs.ByBackend != nil {
+		updates = append(updates, "by_backend_rest = :by_backend_rest")
+	}
+	buf := &bytes.Buffer{}
+	if err := x.execUpdateTmpl.Execute(buf, map[string]interface{}{
+		"clause":  clause,
+		"table":   x.config.TableName,
+		"updates": strings.Join(updates, ", "),
+	}); err != nil {
+		return nil, err
+	}
+
+	return x.db.ExecWithReplacements(ctx, string(buf.Bytes()), fieldValuesFromGeneric(fvs))
 }
 
 // All implements dal.UserCollection.All
 func (x *UserCollection) All(ctx context.Context) ([]*users.User, error) {
-	filter := &dal.UserFilter{}
-	return x.find(ctx, "all", x.queryAll, filter)
+	fvs := &dal.UserFieldValues{}
+	return x.find(ctx, "all", x.queryAll, fvs)
 }
 
 // Filter implements dal.UserCollection.Filter
-func (x *UserCollection) Filter(ctx context.Context, arg *dal.UserFilter) ([]*users.User, error) {
+func (x *UserCollection) Filter(ctx context.Context, fvs *dal.UserFieldValues) ([]*users.User, error) {
 	query := "SELECT id, name, division, lifetime_score, last_score, lifetime_winnings, payout, point, phone, geo, type, by_backend_rest FROM " + x.config.TableName
 
 	fields := []string{}
-	if arg.Id != nil {
+	if fvs.Id != nil {
 		fields = append(fields, "id = :id")
 	}
-	if arg.Name != nil {
+	if fvs.Name != nil {
 		fields = append(fields, "name = :name")
 	}
-	if arg.Division != nil {
+	if fvs.Division != nil {
 		fields = append(fields, "division = :division")
 	}
-	if arg.LifetimeScore != nil {
+	if fvs.LifetimeScore != nil {
 		fields = append(fields, "lifetime_score = :lifetime_score")
 	}
-	if arg.LastScore != nil {
+	if fvs.LastScore != nil {
 		fields = append(fields, "last_score = :last_score")
 	}
 
-	if arg.LastWinnings != nil {
+	if fvs.LastWinnings != nil {
 		fields = append(fields, "payout = :payout")
 	}
-	if arg.Point != nil {
+	if fvs.Point != nil {
 		fields = append(fields, "point = :point")
 	}
-	if arg.Phone != nil {
+	if fvs.Phone != nil {
 		fields = append(fields, "phone = :phone")
 	}
-	if arg.Geo != nil {
+	if fvs.Geo != nil {
 		fields = append(fields, "geo = :geo")
 	}
-	if arg.Kind != nil {
+	if fvs.Kind != nil {
 		fields = append(fields, "type = :type")
 	}
-	if arg.ByBackend != nil {
+	if fvs.ByBackend != nil {
 		fields = append(fields, "by_backend_rest = :by_backend_rest")
 	}
 	if len(fields) > 0 {
 		query = fmt.Sprintf("%s WHERE %s", query, strings.Join(fields, " AND "))
 	}
 
-	return x.find(ctx, "filter", query, arg)
+	return x.find(ctx, "filter", query, fvs)
 }
 
-func (x *UserCollection) find(ctx context.Context, label string, query string, arg *dal.UserFilter) ([]*users.User, error) {
+func (x *UserCollection) find(ctx context.Context, label string, query string, fvs *dal.UserFieldValues) ([]*users.User, error) {
 	var err error
 	start := time.Now()
 	stats.Record(ctx, userInflight.M(1))
@@ -187,10 +272,7 @@ func (x *UserCollection) find(ctx context.Context, label string, query string, a
 		stats.Record(ctx, userLatency.M(dur), userInflight.M(-1))
 	}()
 
-	filter := &UserFilter{}
-	filter.fromGeneric(arg)
-
-	rows, err := x.db.QueryWithReplacements(ctx, query, filter)
+	rows, err := x.db.QueryWithReplacements(ctx, query, fieldValuesFromGeneric(fvs))
 	if err != nil {
 		return nil, err
 	}
@@ -209,41 +291,41 @@ func (x *UserCollection) find(ctx context.Context, label string, query string, a
 
 // ById implements dal.UserCollection.ById
 func (x *UserCollection) ById(ctx context.Context, id int64) ([]*users.User, error) {
-	filter := &dal.UserFilter{
+	fvs := &dal.UserFieldValues{
 		Id: &id,
 	}
-	return x.find(ctx, "by_id", x.queryById, filter)
+	return x.find(ctx, "by_id", x.queryById, fvs)
 }
 
 // ByNameAndDivision implements dal.UserCollection.ByNameAndDivision
 func (x *UserCollection) ByNameAndDivision(ctx context.Context, name string, division string) ([]*users.User, error) {
-	filter := &dal.UserFilter{
+	fvs := &dal.UserFieldValues{
 		Name:     &name,
 		Division: &division,
 	}
-	return x.find(ctx, "by_name_and_division", x.queryByNameAndDivision, filter)
+	return x.find(ctx, "by_name_and_division", x.queryByNameAndDivision, fvs)
 }
 
 // ByKind implements dal.UserCollection.ByKind
 func (x *UserCollection) ByKind(ctx context.Context, kind users.User_Kind) ([]*users.User, error) {
-	filter := &dal.UserFilter{
+	fvs := &dal.UserFieldValues{
 		Kind: &kind,
 	}
-	return x.find(ctx, "by_kind", x.queryByKind, filter)
+	return x.find(ctx, "by_kind", x.queryByKind, fvs)
 }
 
 // ByPhone implements dal.UserCollection.ByPhone
 func (x *UserCollection) ByPhone(ctx context.Context, phone *types.Phone) ([]*users.User, error) {
-	filter := &dal.UserFilter{
+	fvs := &dal.UserFieldValues{
 		Phone: phone,
 	}
-	return x.find(ctx, "by_phone", x.queryByPhone, filter)
+	return x.find(ctx, "by_phone", x.queryByPhone, fvs)
 }
 
 // ProviderStubOnly implements dal.UserCollection.ProviderStubOnly
 func (x *UserCollection) ProviderStubOnly(ctx context.Context) ([]*users.User, error) {
-	filter := &dal.UserFilter{}
-	return x.find(ctx, "provider_stub_only", x.queryProviderStubOnly, filter)
+	fvs := &dal.UserFieldValues{}
+	return x.find(ctx, "provider_stub_only", x.queryProviderStubOnly, fvs)
 }
 
 // NewUserCollection returns a new UserCollection.
@@ -258,60 +340,69 @@ func NewUserCollection(db sql.DB, queries UserQueryTemplateProvider, config *Use
 	queryReplacements := map[string]string{
 		"table":       config.TableName,
 		"fields":      "id, name, division, lifetime_score, last_score, lifetime_winnings, payout, point, phone, geo, type, by_backend_rest",
-		"writeFields": "id, name, division, lifetime_score, last_score, lifetime_winnings, payout, point, phone, geo, type, by_backend_rest",
+		"writeFields": ":id, :name, :division, :lifetime_score, :last_score, :lifetime_winnings, :payout, :point, :phone, :geo, :type, :by_backend_rest",
 	}
 
-	// generate Upsert exec
-	execInsert, err := dal1.RenderQuery("dal.User-Exec-Insert", queries.Insert(), queryReplacements)
+	// generate Insert exec
+	execInsert, err := dal1.RenderQuery("dal.User-exec-insert", queries.Insert(), queryReplacements)
 	if err != nil {
 		return nil, err
 	}
 	coll.execInsert = execInsert
 
 	// generate Upsert exec
-	execUpsert, err := dal1.RenderQuery("dal.User-Exec-Upsert", queries.Upsert(), queryReplacements)
+	execUpsert, err := dal1.RenderQuery("dal.User-exec-upsert", queries.Upsert(), queryReplacements)
 	if err != nil {
 		return nil, err
 	}
 	coll.execUpsert = execUpsert
 
+	execUpdateTmpl, err := template.New("dal.User-exec-update").
+		Funcs(template.FuncMap{}).
+		Parse(queries.Update())
+
+	if err != nil {
+		return nil, err
+	}
+	coll.execUpdateTmpl = execUpdateTmpl
+
 	// generate All query
-	queryAll, err := dal1.RenderQuery("dal.User-Query-All", queries.All(), queryReplacements)
+	queryAll, err := dal1.RenderQuery("dal.User-query-all", queries.All(), queryReplacements)
 	if err != nil {
 		return nil, err
 	}
 	coll.queryAll = queryAll
 
 	// generate ById query
-	queryById, err := dal1.RenderQuery("dal.User-Query-ById", queries.ById(), queryReplacements)
+	queryById, err := dal1.RenderQuery("dal.User-query-by_id", queries.ById(), queryReplacements)
 	if err != nil {
 		return nil, err
 	}
 	coll.queryById = queryById
 
 	// generate ByNameAndDivision query
-	queryByNameAndDivision, err := dal1.RenderQuery("dal.User-Query-ByNameAndDivision", queries.ByNameAndDivision(), queryReplacements)
+	queryByNameAndDivision, err := dal1.RenderQuery("dal.User-query-by_name_and_division", queries.ByNameAndDivision(), queryReplacements)
 	if err != nil {
 		return nil, err
 	}
 	coll.queryByNameAndDivision = queryByNameAndDivision
 
 	// generate ByKind query
-	queryByKind, err := dal1.RenderQuery("dal.User-Query-ByKind", queries.ByKind(), queryReplacements)
+	queryByKind, err := dal1.RenderQuery("dal.User-query-by_kind", queries.ByKind(), queryReplacements)
 	if err != nil {
 		return nil, err
 	}
 	coll.queryByKind = queryByKind
 
 	// generate ByPhone query
-	queryByPhone, err := dal1.RenderQuery("dal.User-Query-ByPhone", queries.ByPhone(), queryReplacements)
+	queryByPhone, err := dal1.RenderQuery("dal.User-query-by_phone", queries.ByPhone(), queryReplacements)
 	if err != nil {
 		return nil, err
 	}
 	coll.queryByPhone = queryByPhone
 
 	// generate ProviderStubOnly query
-	queryProviderStubOnly, err := dal1.RenderQuery("dal.User-Query-ProviderStubOnly", queries.ProviderStubOnly(), queryReplacements)
+	queryProviderStubOnly, err := dal1.RenderQuery("dal.User-query-provider_stub_only", queries.ProviderStubOnly(), queryReplacements)
 	if err != nil {
 		return nil, err
 	}
@@ -320,9 +411,8 @@ func NewUserCollection(db sql.DB, queries UserQueryTemplateProvider, config *Use
 	return coll, nil
 }
 
-// UserFilter is an autogenerated struct that
-// is used in generic User queries.
-type UserFilter struct {
+// UserFieldValues is an autogenerated struct that is used in generic User queries.
+type UserFieldValues struct {
 	Id            *int64   `db:"id"`
 	Name          *string  `db:"name"`
 	Division      *string  `db:"division"`
@@ -337,58 +427,60 @@ type UserFilter struct {
 	ByBackend    *string          `db:"by_backend_rest"`
 }
 
-func (x *UserFilter) fromGeneric(y *dal.UserFilter) {
+func fieldValuesFromGeneric(y *dal.UserFieldValues) *UserFieldValues {
+	f := &UserFieldValues{}
 	if y.Id != nil {
-		x.Id = y.Id
+		f.Id = y.Id
 	}
 	if y.Name != nil {
-		x.Name = y.Name
+		f.Name = y.Name
 	}
 	if y.Division != nil {
-		x.Division = y.Division
+		f.Division = y.Division
 	}
 	if y.LifetimeScore != nil {
-		x.LifetimeScore = y.LifetimeScore
+		f.LifetimeScore = y.LifetimeScore
 	}
 	if y.LastScore != nil {
-		x.LastScore = y.LastScore
+		f.LastScore = y.LastScore
 	}
 
 	if y.LastWinnings != nil {
-		x.LastWinnings = y.LastWinnings
+		f.LastWinnings = y.LastWinnings
 	}
 	if y.Point != nil {
-		x.Point = y.Point
+		f.Point = y.Point
 	}
 	if y.Phone != nil {
-		x.Phone = y.Phone
+		f.Phone = y.Phone
 	}
 	if y.Geo != nil {
-		x.Geo = y.Geo
+		f.Geo = y.Geo
 	}
 	if y.Kind != nil {
-		x.Kind = y.Kind
+		f.Kind = y.Kind
 	}
 	if y.ByBackend != nil {
-		x.ByBackend = y.ByBackend
+		f.ByBackend = y.ByBackend
 	}
+	return f
 }
 
 // UserScanner is an autogenerated struct that
 // is used to parse query results.
 type UserScanner struct {
-	Id            sql1.NullInt64
-	Name          sql1.NullString
-	Division      sql1.NullString
-	LifetimeScore sql1.NullFloat64
-	LastScore     sql1.NullFloat64
+	Id            sql1.NullInt64   `db:"id"`
+	Name          sql1.NullString  `db:"name"`
+	Division      sql1.NullString  `db:"division"`
+	LifetimeScore sql1.NullFloat64 `db:"lifetime_score"`
+	LastScore     sql1.NullFloat64 `db:"last_score"`
 
-	LastWinnings sql1.NullInt32
-	Point        *types.Point
-	Phone        *types.Phone
-	Geo          *latlng.LatLng
-	Kind         sql1.NullInt32
-	ByBackend    sql1.NullString
+	LastWinnings sql1.NullInt32  `db:"payout"`
+	Point        *types.Point    `db:"point"`
+	Phone        *types.Phone    `db:"phone"`
+	Geo          *latlng.LatLng  `db:"geo"`
+	Kind         sql1.NullInt32  `db:"type"`
+	ByBackend    sql1.NullString `db:"by_backend_rest"`
 }
 
 // User returns a new users.User populated with scanned values.
@@ -442,8 +534,8 @@ type UserWriter struct {
 	ByBackend    string          `db:"by_backend_rest"`
 }
 
-// FromUser populates the struct with values from the base type.
-func (x *UserWriter) FromUser(y *users.User) {
+func writerFromGeneric(y *users.User) *UserWriter {
+	x := &UserWriter{}
 	x.Id = y.Id
 	x.Name = y.Name
 	x.Division = y.Division
@@ -456,6 +548,7 @@ func (x *UserWriter) FromUser(y *users.User) {
 	x.Geo = y.Geo
 	x.Kind = y.Kind
 	x.ByBackend = y.ByBackend
+	return x
 }
 
 // UserConfig is a struct that can be used to configure a UserCollection
@@ -469,6 +562,7 @@ type UserConfig struct {
 type UserQueryTemplateProvider interface {
 	Insert() string
 	Upsert() string
+	Update() string
 	All() string
 	ById() string
 	ByNameAndDivision() string
@@ -490,6 +584,11 @@ func (x *UserQueries) Insert() string {
 // Upsert implements UserQueryTemplateProvider.Upsert.
 func (x *UserQueries) Upsert() string {
 	return `INSERT INTO {{ .table }}({{ .fields }}) VALUES({{ .writeFields }});`
+}
+
+// Update implements UserQueryTemplateProvider.Update.
+func (x *UserQueries) Update() string {
+	return `UPDATE {{ .table }} SET {{ .updates }}{{ if .clause }} WHERE {{ .clause }}{{ end }};`
 }
 
 // All implements UserQueryTemplateProvider.All.
@@ -516,7 +615,7 @@ func (x *UserQueries) ByNameAndDivision() string {
 func (x *UserQueries) ByKind() string {
 	return `SELECT {{ .fields }} FROM {{ .table }} WHERE
 			1 = 1 AND
-				type = :kind;`
+				type = :type;`
 }
 
 //ByPhoneimplements UserQueryTemplateProvider.ByPhone.
