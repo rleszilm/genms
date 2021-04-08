@@ -70,3 +70,11 @@ func (f *Field) ToRef() string {
 	}
 	return "&"
 }
+
+// IsRef returns whether the field is a reference.
+func (f *Field) IsRef() bool {
+	if f.field.Message != nil {
+		return true
+	}
+	return false
+}

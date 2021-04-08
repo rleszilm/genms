@@ -63,7 +63,7 @@ package {{ .File.PackageName }}
 func (m *MicroService) defineMicroService() error {
 	tmplSrc := `// {{ .M.Service.Name }}ServerService implements {{ .M.Service.Name }}Service
 type {{ .M.Service.Name }}ServerService struct {
-	{{ .P.Service }}.Deps
+	{{ .P.Service }}.Dependencies
 	
 	impl {{ .M.Service.Name }}Server
 	grpcServer *{{ .P.GRPCService }}.Server
