@@ -17,6 +17,12 @@ message DalOptions {
         }
         QueryMode mode = 3;
 
+        enum Returning {
+            Returning_Many = 0;
+            Returning_One = 1;
+        }
+        Returning returning = 4;
+
         message RestOptions {
             enum Method {
                 GET = 0;
@@ -35,7 +41,7 @@ message DalOptions {
             repeated Arg query = 4;
             repeated string body = 5;
         }
-        RestOptions rest = 4;
+        RestOptions rest = 5;
     }
     repeated Query queries = 1;
 
