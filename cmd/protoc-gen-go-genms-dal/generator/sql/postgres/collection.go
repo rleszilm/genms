@@ -31,7 +31,7 @@ func NewCollection(plugin *protogen.Plugin, file *protogen.File, msg *protogen.M
 	cfile := NewFile(outfile, file)
 	cmsg := NewMessage(cfile, msg)
 	cfields := NewFields(cmsg)
-	cqueries := NewQueries(opts)
+	cqueries := NewQueries(cfile.Generator(), opts)
 
 	return &Collection{
 		File:    cfile,
@@ -427,13 +427,13 @@ func (c *Collection) defineQueries() error {
 		// {{ ToTitleCase $q.Name }} implements {{ $C.Message.QualifiedDalKind }}Collection.{{ ToTitleCase $q.Name }}
 		func (x *{{ $C.Message.Name }}Collection){{ ToTitleCase $q.Name }}(ctx {{ $P.Context }}.Context
 			{{- range $a := $q.Args -}}
-				{{- $f := ($C.Fields.ByName $a) -}}
+				{{- $f := ($C.Fields.ByName $a.Name) -}}
 				, {{ ToSnakeCase $f.Name }} {{ $f.QualifiedKind }}
 			{{- end -}}
 		) ([]*{{ $C.Message.QualifiedKind }}, error) {
 			fvs := &{{ $C.Message.QualifiedDalKind }}FieldValues{
 				{{- range $a := $q.Args -}}
-				{{- $f := ($C.Fields.ByName $a) }}
+					{{- $f := ($C.Fields.ByName $a.Name) }}
 					{{ ToTitleCase $f.Name }}: {{ $f.ToRef }}{{ ToSnakeCase $f.Name }},
 				{{- end }}
 			}
@@ -772,7 +772,7 @@ func (x *{{ .C.Message.Name }}Queries) All() string {
 			return ` + "`" + `SELECT {{ "{{ .fields }}" }} FROM {{ "{{ .table }}" }} WHERE
 			1 = 1
 			{{- range $a := $q.Args -}}
-				{{- $f := $C.Fields.ByName $a -}}	
+				{{- $f := $C.Fields.ByName $a.Name -}}	
 				{{- "" }} AND
 				{{ $f.QueryName }} = :{{ $f.QueryName }}
 			{{- end -}};` + "`" + `

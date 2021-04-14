@@ -12,19 +12,22 @@ message User {
         queries: [
             {
                 name: "by id"
-                args: ["id"]
+                args: [{name: "id"}]
             },
             {
                 name: "by name and division"
-                args: ["name", "division"]
+                args: [
+                    {name: "name"},
+                    {name: "division"}
+                ]
             },
             {
                 name: "by kind"
-                args: ["kind"]
+                args: [{name: "kind"}]
             },
             {
                 name: "by phone"
-                args: ["phone"]
+                args: [{name: "phone"}]
             },
             {
                 name: "provider stub only"

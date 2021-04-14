@@ -8,7 +8,19 @@ import "google/protobuf/descriptor.proto";
 message DalOptions {
     message Query {
         string name = 1;
-        repeated string args = 2;
+
+        message QueryArg {
+            enum QueryArgMode {
+                QueryArgMode_Field = 0;
+                QueryArgMode_Interface = 1;
+                QueryArgMode_Type = 2;
+            }
+            QueryArgMode mode = 1;
+
+            string name = 2;
+            string type = 3;
+        }
+        repeated QueryArg args = 2;
 
         enum QueryMode {
             QueryMode_Auto = 0;

@@ -6,54 +6,54 @@ import (
 	"sync"
 
 	"github.com/rleszilm/genms/cmd/protoc-gen-go-genms-dal/annotations/types"
-	usersa "github.com/rleszilm/genms/cmd/protoc-gen-go-genms-dal/example/users"
-	users "github.com/rleszilm/genms/cmd/protoc-gen-go-genms-dal/example/users/dal"
+	"github.com/rleszilm/genms/cmd/protoc-gen-go-genms-dal/example/users"
+	dal_users "github.com/rleszilm/genms/cmd/protoc-gen-go-genms-dal/example/users/dal"
 	"github.com/rleszilm/genms/service"
 )
 
 type FakeUserCollection struct {
-	AllStub        func(context.Context) ([]*usersa.User, error)
+	AllStub        func(context.Context) ([]*users.User, error)
 	allMutex       sync.RWMutex
 	allArgsForCall []struct {
 		arg1 context.Context
 	}
 	allReturns struct {
-		result1 []*usersa.User
+		result1 []*users.User
 		result2 error
 	}
 	allReturnsOnCall map[int]struct {
-		result1 []*usersa.User
+		result1 []*users.User
 		result2 error
 	}
-	ByIdStub        func(context.Context, int64) ([]*usersa.User, error)
+	ByIdStub        func(context.Context, int64) ([]*users.User, error)
 	byIdMutex       sync.RWMutex
 	byIdArgsForCall []struct {
 		arg1 context.Context
 		arg2 int64
 	}
 	byIdReturns struct {
-		result1 []*usersa.User
+		result1 []*users.User
 		result2 error
 	}
 	byIdReturnsOnCall map[int]struct {
-		result1 []*usersa.User
+		result1 []*users.User
 		result2 error
 	}
-	ByKindStub        func(context.Context, usersa.User_Kind) ([]*usersa.User, error)
+	ByKindStub        func(context.Context, users.User_Kind) ([]*users.User, error)
 	byKindMutex       sync.RWMutex
 	byKindArgsForCall []struct {
 		arg1 context.Context
-		arg2 usersa.User_Kind
+		arg2 users.User_Kind
 	}
 	byKindReturns struct {
-		result1 []*usersa.User
+		result1 []*users.User
 		result2 error
 	}
 	byKindReturnsOnCall map[int]struct {
-		result1 []*usersa.User
+		result1 []*users.User
 		result2 error
 	}
-	ByNameAndDivisionStub        func(context.Context, string, string) ([]*usersa.User, error)
+	ByNameAndDivisionStub        func(context.Context, string, string) ([]*users.User, error)
 	byNameAndDivisionMutex       sync.RWMutex
 	byNameAndDivisionArgsForCall []struct {
 		arg1 context.Context
@@ -61,25 +61,25 @@ type FakeUserCollection struct {
 		arg3 string
 	}
 	byNameAndDivisionReturns struct {
-		result1 []*usersa.User
+		result1 []*users.User
 		result2 error
 	}
 	byNameAndDivisionReturnsOnCall map[int]struct {
-		result1 []*usersa.User
+		result1 []*users.User
 		result2 error
 	}
-	ByPhoneStub        func(context.Context, *types.Phone) ([]*usersa.User, error)
+	ByPhoneStub        func(context.Context, *types.Phone) ([]*users.User, error)
 	byPhoneMutex       sync.RWMutex
 	byPhoneArgsForCall []struct {
 		arg1 context.Context
 		arg2 *types.Phone
 	}
 	byPhoneReturns struct {
-		result1 []*usersa.User
+		result1 []*users.User
 		result2 error
 	}
 	byPhoneReturnsOnCall map[int]struct {
-		result1 []*usersa.User
+		result1 []*users.User
 		result2 error
 	}
 	DependantsStub        func() service.Services
@@ -92,18 +92,18 @@ type FakeUserCollection struct {
 	dependantsReturnsOnCall map[int]struct {
 		result1 service.Services
 	}
-	FilterStub        func(context.Context, *users.UserFilter) ([]*usersa.User, error)
+	FilterStub        func(context.Context, *dal_users.UserFieldValues) ([]*users.User, error)
 	filterMutex       sync.RWMutex
 	filterArgsForCall []struct {
 		arg1 context.Context
-		arg2 *users.UserFilter
+		arg2 *dal_users.UserFieldValues
 	}
 	filterReturns struct {
-		result1 []*usersa.User
+		result1 []*users.User
 		result2 error
 	}
 	filterReturnsOnCall map[int]struct {
-		result1 []*usersa.User
+		result1 []*users.User
 		result2 error
 	}
 	InitializeStub        func(context.Context) error
@@ -117,31 +117,31 @@ type FakeUserCollection struct {
 	initializeReturnsOnCall map[int]struct {
 		result1 error
 	}
-	InsertStub        func(context.Context, *usersa.User) (*usersa.User, error)
+	InsertStub        func(context.Context, *users.User) (*users.User, error)
 	insertMutex       sync.RWMutex
 	insertArgsForCall []struct {
 		arg1 context.Context
-		arg2 *usersa.User
+		arg2 *users.User
 	}
 	insertReturns struct {
-		result1 *usersa.User
+		result1 *users.User
 		result2 error
 	}
 	insertReturnsOnCall map[int]struct {
-		result1 *usersa.User
+		result1 *users.User
 		result2 error
 	}
-	InterfaceStubOnlyStub        func(context.Context) ([]*usersa.User, error)
+	InterfaceStubOnlyStub        func(context.Context) ([]*users.User, error)
 	interfaceStubOnlyMutex       sync.RWMutex
 	interfaceStubOnlyArgsForCall []struct {
 		arg1 context.Context
 	}
 	interfaceStubOnlyReturns struct {
-		result1 []*usersa.User
+		result1 []*users.User
 		result2 error
 	}
 	interfaceStubOnlyReturnsOnCall map[int]struct {
-		result1 []*usersa.User
+		result1 []*users.User
 		result2 error
 	}
 	NameOfStub        func() string
@@ -154,17 +154,17 @@ type FakeUserCollection struct {
 	nameOfReturnsOnCall map[int]struct {
 		result1 string
 	}
-	ProviderStubOnlyStub        func(context.Context) ([]*usersa.User, error)
+	ProviderStubOnlyStub        func(context.Context) ([]*users.User, error)
 	providerStubOnlyMutex       sync.RWMutex
 	providerStubOnlyArgsForCall []struct {
 		arg1 context.Context
 	}
 	providerStubOnlyReturns struct {
-		result1 []*usersa.User
+		result1 []*users.User
 		result2 error
 	}
 	providerStubOnlyReturnsOnCall map[int]struct {
-		result1 []*usersa.User
+		result1 []*users.User
 		result2 error
 	}
 	ShutdownStub        func(context.Context) error
@@ -188,18 +188,33 @@ type FakeUserCollection struct {
 	stringReturnsOnCall map[int]struct {
 		result1 string
 	}
-	UpsertStub        func(context.Context, *usersa.User) (*usersa.User, error)
+	UpdateStub        func(context.Context, *users.User, *dal_users.UserFieldValues) (*users.User, error)
+	updateMutex       sync.RWMutex
+	updateArgsForCall []struct {
+		arg1 context.Context
+		arg2 *users.User
+		arg3 *dal_users.UserFieldValues
+	}
+	updateReturns struct {
+		result1 *users.User
+		result2 error
+	}
+	updateReturnsOnCall map[int]struct {
+		result1 *users.User
+		result2 error
+	}
+	UpsertStub        func(context.Context, *users.User) (*users.User, error)
 	upsertMutex       sync.RWMutex
 	upsertArgsForCall []struct {
 		arg1 context.Context
-		arg2 *usersa.User
+		arg2 *users.User
 	}
 	upsertReturns struct {
-		result1 *usersa.User
+		result1 *users.User
 		result2 error
 	}
 	upsertReturnsOnCall map[int]struct {
-		result1 *usersa.User
+		result1 *users.User
 		result2 error
 	}
 	WithDependenciesStub        func(...service.Service)
@@ -211,7 +226,7 @@ type FakeUserCollection struct {
 	invocationsMutex sync.RWMutex
 }
 
-func (fake *FakeUserCollection) All(arg1 context.Context) ([]*usersa.User, error) {
+func (fake *FakeUserCollection) All(arg1 context.Context) ([]*users.User, error) {
 	fake.allMutex.Lock()
 	ret, specificReturn := fake.allReturnsOnCall[len(fake.allArgsForCall)]
 	fake.allArgsForCall = append(fake.allArgsForCall, struct {
@@ -235,7 +250,7 @@ func (fake *FakeUserCollection) AllCallCount() int {
 	return len(fake.allArgsForCall)
 }
 
-func (fake *FakeUserCollection) AllCalls(stub func(context.Context) ([]*usersa.User, error)) {
+func (fake *FakeUserCollection) AllCalls(stub func(context.Context) ([]*users.User, error)) {
 	fake.allMutex.Lock()
 	defer fake.allMutex.Unlock()
 	fake.AllStub = stub
@@ -248,33 +263,33 @@ func (fake *FakeUserCollection) AllArgsForCall(i int) context.Context {
 	return argsForCall.arg1
 }
 
-func (fake *FakeUserCollection) AllReturns(result1 []*usersa.User, result2 error) {
+func (fake *FakeUserCollection) AllReturns(result1 []*users.User, result2 error) {
 	fake.allMutex.Lock()
 	defer fake.allMutex.Unlock()
 	fake.AllStub = nil
 	fake.allReturns = struct {
-		result1 []*usersa.User
+		result1 []*users.User
 		result2 error
 	}{result1, result2}
 }
 
-func (fake *FakeUserCollection) AllReturnsOnCall(i int, result1 []*usersa.User, result2 error) {
+func (fake *FakeUserCollection) AllReturnsOnCall(i int, result1 []*users.User, result2 error) {
 	fake.allMutex.Lock()
 	defer fake.allMutex.Unlock()
 	fake.AllStub = nil
 	if fake.allReturnsOnCall == nil {
 		fake.allReturnsOnCall = make(map[int]struct {
-			result1 []*usersa.User
+			result1 []*users.User
 			result2 error
 		})
 	}
 	fake.allReturnsOnCall[i] = struct {
-		result1 []*usersa.User
+		result1 []*users.User
 		result2 error
 	}{result1, result2}
 }
 
-func (fake *FakeUserCollection) ById(arg1 context.Context, arg2 int64) ([]*usersa.User, error) {
+func (fake *FakeUserCollection) ById(arg1 context.Context, arg2 int64) ([]*users.User, error) {
 	fake.byIdMutex.Lock()
 	ret, specificReturn := fake.byIdReturnsOnCall[len(fake.byIdArgsForCall)]
 	fake.byIdArgsForCall = append(fake.byIdArgsForCall, struct {
@@ -299,7 +314,7 @@ func (fake *FakeUserCollection) ByIdCallCount() int {
 	return len(fake.byIdArgsForCall)
 }
 
-func (fake *FakeUserCollection) ByIdCalls(stub func(context.Context, int64) ([]*usersa.User, error)) {
+func (fake *FakeUserCollection) ByIdCalls(stub func(context.Context, int64) ([]*users.User, error)) {
 	fake.byIdMutex.Lock()
 	defer fake.byIdMutex.Unlock()
 	fake.ByIdStub = stub
@@ -312,38 +327,38 @@ func (fake *FakeUserCollection) ByIdArgsForCall(i int) (context.Context, int64) 
 	return argsForCall.arg1, argsForCall.arg2
 }
 
-func (fake *FakeUserCollection) ByIdReturns(result1 []*usersa.User, result2 error) {
+func (fake *FakeUserCollection) ByIdReturns(result1 []*users.User, result2 error) {
 	fake.byIdMutex.Lock()
 	defer fake.byIdMutex.Unlock()
 	fake.ByIdStub = nil
 	fake.byIdReturns = struct {
-		result1 []*usersa.User
+		result1 []*users.User
 		result2 error
 	}{result1, result2}
 }
 
-func (fake *FakeUserCollection) ByIdReturnsOnCall(i int, result1 []*usersa.User, result2 error) {
+func (fake *FakeUserCollection) ByIdReturnsOnCall(i int, result1 []*users.User, result2 error) {
 	fake.byIdMutex.Lock()
 	defer fake.byIdMutex.Unlock()
 	fake.ByIdStub = nil
 	if fake.byIdReturnsOnCall == nil {
 		fake.byIdReturnsOnCall = make(map[int]struct {
-			result1 []*usersa.User
+			result1 []*users.User
 			result2 error
 		})
 	}
 	fake.byIdReturnsOnCall[i] = struct {
-		result1 []*usersa.User
+		result1 []*users.User
 		result2 error
 	}{result1, result2}
 }
 
-func (fake *FakeUserCollection) ByKind(arg1 context.Context, arg2 usersa.User_Kind) ([]*usersa.User, error) {
+func (fake *FakeUserCollection) ByKind(arg1 context.Context, arg2 users.User_Kind) ([]*users.User, error) {
 	fake.byKindMutex.Lock()
 	ret, specificReturn := fake.byKindReturnsOnCall[len(fake.byKindArgsForCall)]
 	fake.byKindArgsForCall = append(fake.byKindArgsForCall, struct {
 		arg1 context.Context
-		arg2 usersa.User_Kind
+		arg2 users.User_Kind
 	}{arg1, arg2})
 	fake.recordInvocation("ByKind", []interface{}{arg1, arg2})
 	fake.byKindMutex.Unlock()
@@ -363,46 +378,46 @@ func (fake *FakeUserCollection) ByKindCallCount() int {
 	return len(fake.byKindArgsForCall)
 }
 
-func (fake *FakeUserCollection) ByKindCalls(stub func(context.Context, usersa.User_Kind) ([]*usersa.User, error)) {
+func (fake *FakeUserCollection) ByKindCalls(stub func(context.Context, users.User_Kind) ([]*users.User, error)) {
 	fake.byKindMutex.Lock()
 	defer fake.byKindMutex.Unlock()
 	fake.ByKindStub = stub
 }
 
-func (fake *FakeUserCollection) ByKindArgsForCall(i int) (context.Context, usersa.User_Kind) {
+func (fake *FakeUserCollection) ByKindArgsForCall(i int) (context.Context, users.User_Kind) {
 	fake.byKindMutex.RLock()
 	defer fake.byKindMutex.RUnlock()
 	argsForCall := fake.byKindArgsForCall[i]
 	return argsForCall.arg1, argsForCall.arg2
 }
 
-func (fake *FakeUserCollection) ByKindReturns(result1 []*usersa.User, result2 error) {
+func (fake *FakeUserCollection) ByKindReturns(result1 []*users.User, result2 error) {
 	fake.byKindMutex.Lock()
 	defer fake.byKindMutex.Unlock()
 	fake.ByKindStub = nil
 	fake.byKindReturns = struct {
-		result1 []*usersa.User
+		result1 []*users.User
 		result2 error
 	}{result1, result2}
 }
 
-func (fake *FakeUserCollection) ByKindReturnsOnCall(i int, result1 []*usersa.User, result2 error) {
+func (fake *FakeUserCollection) ByKindReturnsOnCall(i int, result1 []*users.User, result2 error) {
 	fake.byKindMutex.Lock()
 	defer fake.byKindMutex.Unlock()
 	fake.ByKindStub = nil
 	if fake.byKindReturnsOnCall == nil {
 		fake.byKindReturnsOnCall = make(map[int]struct {
-			result1 []*usersa.User
+			result1 []*users.User
 			result2 error
 		})
 	}
 	fake.byKindReturnsOnCall[i] = struct {
-		result1 []*usersa.User
+		result1 []*users.User
 		result2 error
 	}{result1, result2}
 }
 
-func (fake *FakeUserCollection) ByNameAndDivision(arg1 context.Context, arg2 string, arg3 string) ([]*usersa.User, error) {
+func (fake *FakeUserCollection) ByNameAndDivision(arg1 context.Context, arg2 string, arg3 string) ([]*users.User, error) {
 	fake.byNameAndDivisionMutex.Lock()
 	ret, specificReturn := fake.byNameAndDivisionReturnsOnCall[len(fake.byNameAndDivisionArgsForCall)]
 	fake.byNameAndDivisionArgsForCall = append(fake.byNameAndDivisionArgsForCall, struct {
@@ -428,7 +443,7 @@ func (fake *FakeUserCollection) ByNameAndDivisionCallCount() int {
 	return len(fake.byNameAndDivisionArgsForCall)
 }
 
-func (fake *FakeUserCollection) ByNameAndDivisionCalls(stub func(context.Context, string, string) ([]*usersa.User, error)) {
+func (fake *FakeUserCollection) ByNameAndDivisionCalls(stub func(context.Context, string, string) ([]*users.User, error)) {
 	fake.byNameAndDivisionMutex.Lock()
 	defer fake.byNameAndDivisionMutex.Unlock()
 	fake.ByNameAndDivisionStub = stub
@@ -441,33 +456,33 @@ func (fake *FakeUserCollection) ByNameAndDivisionArgsForCall(i int) (context.Con
 	return argsForCall.arg1, argsForCall.arg2, argsForCall.arg3
 }
 
-func (fake *FakeUserCollection) ByNameAndDivisionReturns(result1 []*usersa.User, result2 error) {
+func (fake *FakeUserCollection) ByNameAndDivisionReturns(result1 []*users.User, result2 error) {
 	fake.byNameAndDivisionMutex.Lock()
 	defer fake.byNameAndDivisionMutex.Unlock()
 	fake.ByNameAndDivisionStub = nil
 	fake.byNameAndDivisionReturns = struct {
-		result1 []*usersa.User
+		result1 []*users.User
 		result2 error
 	}{result1, result2}
 }
 
-func (fake *FakeUserCollection) ByNameAndDivisionReturnsOnCall(i int, result1 []*usersa.User, result2 error) {
+func (fake *FakeUserCollection) ByNameAndDivisionReturnsOnCall(i int, result1 []*users.User, result2 error) {
 	fake.byNameAndDivisionMutex.Lock()
 	defer fake.byNameAndDivisionMutex.Unlock()
 	fake.ByNameAndDivisionStub = nil
 	if fake.byNameAndDivisionReturnsOnCall == nil {
 		fake.byNameAndDivisionReturnsOnCall = make(map[int]struct {
-			result1 []*usersa.User
+			result1 []*users.User
 			result2 error
 		})
 	}
 	fake.byNameAndDivisionReturnsOnCall[i] = struct {
-		result1 []*usersa.User
+		result1 []*users.User
 		result2 error
 	}{result1, result2}
 }
 
-func (fake *FakeUserCollection) ByPhone(arg1 context.Context, arg2 *types.Phone) ([]*usersa.User, error) {
+func (fake *FakeUserCollection) ByPhone(arg1 context.Context, arg2 *types.Phone) ([]*users.User, error) {
 	fake.byPhoneMutex.Lock()
 	ret, specificReturn := fake.byPhoneReturnsOnCall[len(fake.byPhoneArgsForCall)]
 	fake.byPhoneArgsForCall = append(fake.byPhoneArgsForCall, struct {
@@ -492,7 +507,7 @@ func (fake *FakeUserCollection) ByPhoneCallCount() int {
 	return len(fake.byPhoneArgsForCall)
 }
 
-func (fake *FakeUserCollection) ByPhoneCalls(stub func(context.Context, *types.Phone) ([]*usersa.User, error)) {
+func (fake *FakeUserCollection) ByPhoneCalls(stub func(context.Context, *types.Phone) ([]*users.User, error)) {
 	fake.byPhoneMutex.Lock()
 	defer fake.byPhoneMutex.Unlock()
 	fake.ByPhoneStub = stub
@@ -505,28 +520,28 @@ func (fake *FakeUserCollection) ByPhoneArgsForCall(i int) (context.Context, *typ
 	return argsForCall.arg1, argsForCall.arg2
 }
 
-func (fake *FakeUserCollection) ByPhoneReturns(result1 []*usersa.User, result2 error) {
+func (fake *FakeUserCollection) ByPhoneReturns(result1 []*users.User, result2 error) {
 	fake.byPhoneMutex.Lock()
 	defer fake.byPhoneMutex.Unlock()
 	fake.ByPhoneStub = nil
 	fake.byPhoneReturns = struct {
-		result1 []*usersa.User
+		result1 []*users.User
 		result2 error
 	}{result1, result2}
 }
 
-func (fake *FakeUserCollection) ByPhoneReturnsOnCall(i int, result1 []*usersa.User, result2 error) {
+func (fake *FakeUserCollection) ByPhoneReturnsOnCall(i int, result1 []*users.User, result2 error) {
 	fake.byPhoneMutex.Lock()
 	defer fake.byPhoneMutex.Unlock()
 	fake.ByPhoneStub = nil
 	if fake.byPhoneReturnsOnCall == nil {
 		fake.byPhoneReturnsOnCall = make(map[int]struct {
-			result1 []*usersa.User
+			result1 []*users.User
 			result2 error
 		})
 	}
 	fake.byPhoneReturnsOnCall[i] = struct {
-		result1 []*usersa.User
+		result1 []*users.User
 		result2 error
 	}{result1, result2}
 }
@@ -583,12 +598,12 @@ func (fake *FakeUserCollection) DependantsReturnsOnCall(i int, result1 service.S
 	}{result1}
 }
 
-func (fake *FakeUserCollection) Filter(arg1 context.Context, arg2 *users.UserFilter) ([]*usersa.User, error) {
+func (fake *FakeUserCollection) Filter(arg1 context.Context, arg2 *dal_users.UserFieldValues) ([]*users.User, error) {
 	fake.filterMutex.Lock()
 	ret, specificReturn := fake.filterReturnsOnCall[len(fake.filterArgsForCall)]
 	fake.filterArgsForCall = append(fake.filterArgsForCall, struct {
 		arg1 context.Context
-		arg2 *users.UserFilter
+		arg2 *dal_users.UserFieldValues
 	}{arg1, arg2})
 	fake.recordInvocation("Filter", []interface{}{arg1, arg2})
 	fake.filterMutex.Unlock()
@@ -608,41 +623,41 @@ func (fake *FakeUserCollection) FilterCallCount() int {
 	return len(fake.filterArgsForCall)
 }
 
-func (fake *FakeUserCollection) FilterCalls(stub func(context.Context, *users.UserFilter) ([]*usersa.User, error)) {
+func (fake *FakeUserCollection) FilterCalls(stub func(context.Context, *dal_users.UserFieldValues) ([]*users.User, error)) {
 	fake.filterMutex.Lock()
 	defer fake.filterMutex.Unlock()
 	fake.FilterStub = stub
 }
 
-func (fake *FakeUserCollection) FilterArgsForCall(i int) (context.Context, *users.UserFilter) {
+func (fake *FakeUserCollection) FilterArgsForCall(i int) (context.Context, *dal_users.UserFieldValues) {
 	fake.filterMutex.RLock()
 	defer fake.filterMutex.RUnlock()
 	argsForCall := fake.filterArgsForCall[i]
 	return argsForCall.arg1, argsForCall.arg2
 }
 
-func (fake *FakeUserCollection) FilterReturns(result1 []*usersa.User, result2 error) {
+func (fake *FakeUserCollection) FilterReturns(result1 []*users.User, result2 error) {
 	fake.filterMutex.Lock()
 	defer fake.filterMutex.Unlock()
 	fake.FilterStub = nil
 	fake.filterReturns = struct {
-		result1 []*usersa.User
+		result1 []*users.User
 		result2 error
 	}{result1, result2}
 }
 
-func (fake *FakeUserCollection) FilterReturnsOnCall(i int, result1 []*usersa.User, result2 error) {
+func (fake *FakeUserCollection) FilterReturnsOnCall(i int, result1 []*users.User, result2 error) {
 	fake.filterMutex.Lock()
 	defer fake.filterMutex.Unlock()
 	fake.FilterStub = nil
 	if fake.filterReturnsOnCall == nil {
 		fake.filterReturnsOnCall = make(map[int]struct {
-			result1 []*usersa.User
+			result1 []*users.User
 			result2 error
 		})
 	}
 	fake.filterReturnsOnCall[i] = struct {
-		result1 []*usersa.User
+		result1 []*users.User
 		result2 error
 	}{result1, result2}
 }
@@ -707,12 +722,12 @@ func (fake *FakeUserCollection) InitializeReturnsOnCall(i int, result1 error) {
 	}{result1}
 }
 
-func (fake *FakeUserCollection) Insert(arg1 context.Context, arg2 *usersa.User) (*usersa.User, error) {
+func (fake *FakeUserCollection) Insert(arg1 context.Context, arg2 *users.User) (*users.User, error) {
 	fake.insertMutex.Lock()
 	ret, specificReturn := fake.insertReturnsOnCall[len(fake.insertArgsForCall)]
 	fake.insertArgsForCall = append(fake.insertArgsForCall, struct {
 		arg1 context.Context
-		arg2 *usersa.User
+		arg2 *users.User
 	}{arg1, arg2})
 	fake.recordInvocation("Insert", []interface{}{arg1, arg2})
 	fake.insertMutex.Unlock()
@@ -732,46 +747,46 @@ func (fake *FakeUserCollection) InsertCallCount() int {
 	return len(fake.insertArgsForCall)
 }
 
-func (fake *FakeUserCollection) InsertCalls(stub func(context.Context, *usersa.User) (*usersa.User, error)) {
+func (fake *FakeUserCollection) InsertCalls(stub func(context.Context, *users.User) (*users.User, error)) {
 	fake.insertMutex.Lock()
 	defer fake.insertMutex.Unlock()
 	fake.InsertStub = stub
 }
 
-func (fake *FakeUserCollection) InsertArgsForCall(i int) (context.Context, *usersa.User) {
+func (fake *FakeUserCollection) InsertArgsForCall(i int) (context.Context, *users.User) {
 	fake.insertMutex.RLock()
 	defer fake.insertMutex.RUnlock()
 	argsForCall := fake.insertArgsForCall[i]
 	return argsForCall.arg1, argsForCall.arg2
 }
 
-func (fake *FakeUserCollection) InsertReturns(result1 *usersa.User, result2 error) {
+func (fake *FakeUserCollection) InsertReturns(result1 *users.User, result2 error) {
 	fake.insertMutex.Lock()
 	defer fake.insertMutex.Unlock()
 	fake.InsertStub = nil
 	fake.insertReturns = struct {
-		result1 *usersa.User
+		result1 *users.User
 		result2 error
 	}{result1, result2}
 }
 
-func (fake *FakeUserCollection) InsertReturnsOnCall(i int, result1 *usersa.User, result2 error) {
+func (fake *FakeUserCollection) InsertReturnsOnCall(i int, result1 *users.User, result2 error) {
 	fake.insertMutex.Lock()
 	defer fake.insertMutex.Unlock()
 	fake.InsertStub = nil
 	if fake.insertReturnsOnCall == nil {
 		fake.insertReturnsOnCall = make(map[int]struct {
-			result1 *usersa.User
+			result1 *users.User
 			result2 error
 		})
 	}
 	fake.insertReturnsOnCall[i] = struct {
-		result1 *usersa.User
+		result1 *users.User
 		result2 error
 	}{result1, result2}
 }
 
-func (fake *FakeUserCollection) InterfaceStubOnly(arg1 context.Context) ([]*usersa.User, error) {
+func (fake *FakeUserCollection) InterfaceStubOnly(arg1 context.Context) ([]*users.User, error) {
 	fake.interfaceStubOnlyMutex.Lock()
 	ret, specificReturn := fake.interfaceStubOnlyReturnsOnCall[len(fake.interfaceStubOnlyArgsForCall)]
 	fake.interfaceStubOnlyArgsForCall = append(fake.interfaceStubOnlyArgsForCall, struct {
@@ -795,7 +810,7 @@ func (fake *FakeUserCollection) InterfaceStubOnlyCallCount() int {
 	return len(fake.interfaceStubOnlyArgsForCall)
 }
 
-func (fake *FakeUserCollection) InterfaceStubOnlyCalls(stub func(context.Context) ([]*usersa.User, error)) {
+func (fake *FakeUserCollection) InterfaceStubOnlyCalls(stub func(context.Context) ([]*users.User, error)) {
 	fake.interfaceStubOnlyMutex.Lock()
 	defer fake.interfaceStubOnlyMutex.Unlock()
 	fake.InterfaceStubOnlyStub = stub
@@ -808,28 +823,28 @@ func (fake *FakeUserCollection) InterfaceStubOnlyArgsForCall(i int) context.Cont
 	return argsForCall.arg1
 }
 
-func (fake *FakeUserCollection) InterfaceStubOnlyReturns(result1 []*usersa.User, result2 error) {
+func (fake *FakeUserCollection) InterfaceStubOnlyReturns(result1 []*users.User, result2 error) {
 	fake.interfaceStubOnlyMutex.Lock()
 	defer fake.interfaceStubOnlyMutex.Unlock()
 	fake.InterfaceStubOnlyStub = nil
 	fake.interfaceStubOnlyReturns = struct {
-		result1 []*usersa.User
+		result1 []*users.User
 		result2 error
 	}{result1, result2}
 }
 
-func (fake *FakeUserCollection) InterfaceStubOnlyReturnsOnCall(i int, result1 []*usersa.User, result2 error) {
+func (fake *FakeUserCollection) InterfaceStubOnlyReturnsOnCall(i int, result1 []*users.User, result2 error) {
 	fake.interfaceStubOnlyMutex.Lock()
 	defer fake.interfaceStubOnlyMutex.Unlock()
 	fake.InterfaceStubOnlyStub = nil
 	if fake.interfaceStubOnlyReturnsOnCall == nil {
 		fake.interfaceStubOnlyReturnsOnCall = make(map[int]struct {
-			result1 []*usersa.User
+			result1 []*users.User
 			result2 error
 		})
 	}
 	fake.interfaceStubOnlyReturnsOnCall[i] = struct {
-		result1 []*usersa.User
+		result1 []*users.User
 		result2 error
 	}{result1, result2}
 }
@@ -886,7 +901,7 @@ func (fake *FakeUserCollection) NameOfReturnsOnCall(i int, result1 string) {
 	}{result1}
 }
 
-func (fake *FakeUserCollection) ProviderStubOnly(arg1 context.Context) ([]*usersa.User, error) {
+func (fake *FakeUserCollection) ProviderStubOnly(arg1 context.Context) ([]*users.User, error) {
 	fake.providerStubOnlyMutex.Lock()
 	ret, specificReturn := fake.providerStubOnlyReturnsOnCall[len(fake.providerStubOnlyArgsForCall)]
 	fake.providerStubOnlyArgsForCall = append(fake.providerStubOnlyArgsForCall, struct {
@@ -910,7 +925,7 @@ func (fake *FakeUserCollection) ProviderStubOnlyCallCount() int {
 	return len(fake.providerStubOnlyArgsForCall)
 }
 
-func (fake *FakeUserCollection) ProviderStubOnlyCalls(stub func(context.Context) ([]*usersa.User, error)) {
+func (fake *FakeUserCollection) ProviderStubOnlyCalls(stub func(context.Context) ([]*users.User, error)) {
 	fake.providerStubOnlyMutex.Lock()
 	defer fake.providerStubOnlyMutex.Unlock()
 	fake.ProviderStubOnlyStub = stub
@@ -923,28 +938,28 @@ func (fake *FakeUserCollection) ProviderStubOnlyArgsForCall(i int) context.Conte
 	return argsForCall.arg1
 }
 
-func (fake *FakeUserCollection) ProviderStubOnlyReturns(result1 []*usersa.User, result2 error) {
+func (fake *FakeUserCollection) ProviderStubOnlyReturns(result1 []*users.User, result2 error) {
 	fake.providerStubOnlyMutex.Lock()
 	defer fake.providerStubOnlyMutex.Unlock()
 	fake.ProviderStubOnlyStub = nil
 	fake.providerStubOnlyReturns = struct {
-		result1 []*usersa.User
+		result1 []*users.User
 		result2 error
 	}{result1, result2}
 }
 
-func (fake *FakeUserCollection) ProviderStubOnlyReturnsOnCall(i int, result1 []*usersa.User, result2 error) {
+func (fake *FakeUserCollection) ProviderStubOnlyReturnsOnCall(i int, result1 []*users.User, result2 error) {
 	fake.providerStubOnlyMutex.Lock()
 	defer fake.providerStubOnlyMutex.Unlock()
 	fake.ProviderStubOnlyStub = nil
 	if fake.providerStubOnlyReturnsOnCall == nil {
 		fake.providerStubOnlyReturnsOnCall = make(map[int]struct {
-			result1 []*usersa.User
+			result1 []*users.User
 			result2 error
 		})
 	}
 	fake.providerStubOnlyReturnsOnCall[i] = struct {
-		result1 []*usersa.User
+		result1 []*users.User
 		result2 error
 	}{result1, result2}
 }
@@ -1061,12 +1076,77 @@ func (fake *FakeUserCollection) StringReturnsOnCall(i int, result1 string) {
 	}{result1}
 }
 
-func (fake *FakeUserCollection) Upsert(arg1 context.Context, arg2 *usersa.User) (*usersa.User, error) {
+func (fake *FakeUserCollection) Update(arg1 context.Context, arg2 *users.User, arg3 *dal_users.UserFieldValues) (*users.User, error) {
+	fake.updateMutex.Lock()
+	ret, specificReturn := fake.updateReturnsOnCall[len(fake.updateArgsForCall)]
+	fake.updateArgsForCall = append(fake.updateArgsForCall, struct {
+		arg1 context.Context
+		arg2 *users.User
+		arg3 *dal_users.UserFieldValues
+	}{arg1, arg2, arg3})
+	fake.recordInvocation("Update", []interface{}{arg1, arg2, arg3})
+	fake.updateMutex.Unlock()
+	if fake.UpdateStub != nil {
+		return fake.UpdateStub(arg1, arg2, arg3)
+	}
+	if specificReturn {
+		return ret.result1, ret.result2
+	}
+	fakeReturns := fake.updateReturns
+	return fakeReturns.result1, fakeReturns.result2
+}
+
+func (fake *FakeUserCollection) UpdateCallCount() int {
+	fake.updateMutex.RLock()
+	defer fake.updateMutex.RUnlock()
+	return len(fake.updateArgsForCall)
+}
+
+func (fake *FakeUserCollection) UpdateCalls(stub func(context.Context, *users.User, *dal_users.UserFieldValues) (*users.User, error)) {
+	fake.updateMutex.Lock()
+	defer fake.updateMutex.Unlock()
+	fake.UpdateStub = stub
+}
+
+func (fake *FakeUserCollection) UpdateArgsForCall(i int) (context.Context, *users.User, *dal_users.UserFieldValues) {
+	fake.updateMutex.RLock()
+	defer fake.updateMutex.RUnlock()
+	argsForCall := fake.updateArgsForCall[i]
+	return argsForCall.arg1, argsForCall.arg2, argsForCall.arg3
+}
+
+func (fake *FakeUserCollection) UpdateReturns(result1 *users.User, result2 error) {
+	fake.updateMutex.Lock()
+	defer fake.updateMutex.Unlock()
+	fake.UpdateStub = nil
+	fake.updateReturns = struct {
+		result1 *users.User
+		result2 error
+	}{result1, result2}
+}
+
+func (fake *FakeUserCollection) UpdateReturnsOnCall(i int, result1 *users.User, result2 error) {
+	fake.updateMutex.Lock()
+	defer fake.updateMutex.Unlock()
+	fake.UpdateStub = nil
+	if fake.updateReturnsOnCall == nil {
+		fake.updateReturnsOnCall = make(map[int]struct {
+			result1 *users.User
+			result2 error
+		})
+	}
+	fake.updateReturnsOnCall[i] = struct {
+		result1 *users.User
+		result2 error
+	}{result1, result2}
+}
+
+func (fake *FakeUserCollection) Upsert(arg1 context.Context, arg2 *users.User) (*users.User, error) {
 	fake.upsertMutex.Lock()
 	ret, specificReturn := fake.upsertReturnsOnCall[len(fake.upsertArgsForCall)]
 	fake.upsertArgsForCall = append(fake.upsertArgsForCall, struct {
 		arg1 context.Context
-		arg2 *usersa.User
+		arg2 *users.User
 	}{arg1, arg2})
 	fake.recordInvocation("Upsert", []interface{}{arg1, arg2})
 	fake.upsertMutex.Unlock()
@@ -1086,41 +1166,41 @@ func (fake *FakeUserCollection) UpsertCallCount() int {
 	return len(fake.upsertArgsForCall)
 }
 
-func (fake *FakeUserCollection) UpsertCalls(stub func(context.Context, *usersa.User) (*usersa.User, error)) {
+func (fake *FakeUserCollection) UpsertCalls(stub func(context.Context, *users.User) (*users.User, error)) {
 	fake.upsertMutex.Lock()
 	defer fake.upsertMutex.Unlock()
 	fake.UpsertStub = stub
 }
 
-func (fake *FakeUserCollection) UpsertArgsForCall(i int) (context.Context, *usersa.User) {
+func (fake *FakeUserCollection) UpsertArgsForCall(i int) (context.Context, *users.User) {
 	fake.upsertMutex.RLock()
 	defer fake.upsertMutex.RUnlock()
 	argsForCall := fake.upsertArgsForCall[i]
 	return argsForCall.arg1, argsForCall.arg2
 }
 
-func (fake *FakeUserCollection) UpsertReturns(result1 *usersa.User, result2 error) {
+func (fake *FakeUserCollection) UpsertReturns(result1 *users.User, result2 error) {
 	fake.upsertMutex.Lock()
 	defer fake.upsertMutex.Unlock()
 	fake.UpsertStub = nil
 	fake.upsertReturns = struct {
-		result1 *usersa.User
+		result1 *users.User
 		result2 error
 	}{result1, result2}
 }
 
-func (fake *FakeUserCollection) UpsertReturnsOnCall(i int, result1 *usersa.User, result2 error) {
+func (fake *FakeUserCollection) UpsertReturnsOnCall(i int, result1 *users.User, result2 error) {
 	fake.upsertMutex.Lock()
 	defer fake.upsertMutex.Unlock()
 	fake.UpsertStub = nil
 	if fake.upsertReturnsOnCall == nil {
 		fake.upsertReturnsOnCall = make(map[int]struct {
-			result1 *usersa.User
+			result1 *users.User
 			result2 error
 		})
 	}
 	fake.upsertReturnsOnCall[i] = struct {
-		result1 *usersa.User
+		result1 *users.User
 		result2 error
 	}{result1, result2}
 }
@@ -1187,6 +1267,8 @@ func (fake *FakeUserCollection) Invocations() map[string][][]interface{} {
 	defer fake.shutdownMutex.RUnlock()
 	fake.stringMutex.RLock()
 	defer fake.stringMutex.RUnlock()
+	fake.updateMutex.RLock()
+	defer fake.updateMutex.RUnlock()
 	fake.upsertMutex.RLock()
 	defer fake.upsertMutex.RUnlock()
 	fake.withDependenciesMutex.RLock()
@@ -1210,4 +1292,4 @@ func (fake *FakeUserCollection) recordInvocation(key string, args []interface{})
 	fake.invocations[key] = append(fake.invocations[key], args)
 }
 
-var _ users.UserCollection = new(FakeUserCollection)
+var _ dal_users.UserCollection = new(FakeUserCollection)

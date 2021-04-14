@@ -33,7 +33,7 @@ func NewInterface(plugin *protogen.Plugin, file *protogen.File, msg *protogen.Me
 
 	return &Interface{
 		File:    ifile,
-		Message: imsg,
+		Message: imsg, 
 		Fields:  ifields,
 		Opts:    opts,
 	}
@@ -155,7 +155,7 @@ type {{ .I.Message.Name }}CollectionReader interface {
 	{{ range $Q := .I.Opts.Queries -}}
 		{{ ToTitleCase $Q.Name }}(_ {{ $P.Context }}.Context
 			{{- range $A := .Args -}}
-				{{- $F := ($I.Fields.ByName $A) -}}
+				{{- $F := ($I.Fields.ByName $A.Name) -}}
 				, _ {{ $F.QualifiedKind }}
 			{{- end }}) ([]*{{ $I.Message.QualifiedKind }}, error)
 	{{ end }}	
@@ -268,7 +268,7 @@ func (x *Unimplemented{{ .I.Message.Name }}Collection) Filter(_ {{ .P.Context }}
 	// {{ ToTitleCase $Q.Name }} implements {{ $I.Message.Name }}Collection.{{ ToTitleCase $Q.Name }}
 	func (x *Unimplemented{{ $I.Message.Name }}Collection){{ ToTitleCase $Q.Name }}(_ {{ $P.Context }}.Context
 		{{- range $A := .Args -}}
-			{{- $F := ($I.Fields.ByName $A) -}}
+			{{- $F := ($I.Fields.ByName $A.Name) -}}
 			, _ {{ $F.QualifiedKind }}
 		{{- end }}) ([]*{{ $I.Message.QualifiedKind }}, error) {
 		return nil, Err{{ $I.Message.Name }}CollectionMethodImpl
