@@ -39,7 +39,6 @@ func main() {
 		if err := rows.StructScan(&obj); err != nil {
 			log.Fatal(err)
 		}
-		log.Println(obj)
 	}
 }
 

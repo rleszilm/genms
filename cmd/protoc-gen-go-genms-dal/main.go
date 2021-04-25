@@ -83,11 +83,11 @@ func generate(plugin *protogen.Plugin, file *protogen.File, msg *protogen.Messag
 
 	for _, be := range dalOpts.Backends {
 		switch be {
-		case annotations.DalOptions_BackEnd_Postgres:
+		case annotations.DalOptions_Postgres:
 			if err := postgres.GenerateCollection(plugin, file, msg, dalOpts); err != nil {
 				return err
 			}
-		case annotations.DalOptions_BackEnd_Rest:
+		case annotations.DalOptions_Rest:
 			if err := rest.GenerateCollection(plugin, file, msg, dalOpts); err != nil {
 				return err
 			}

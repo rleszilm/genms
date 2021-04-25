@@ -11,8 +11,8 @@ type Queries struct {
 }
 
 // AsQueries wraps a Queries.
-func NewQueries(file *generator.File, opts *annotations.DalOptions) *Queries {
+func NewQueries(file *File, fields *Fields, opts *annotations.DalOptions) *Queries {
 	return &Queries{
-		Queries: generator.NewQueries(file, opts),
+		Queries: generator.NewQueries(file.Generator(), fields.Generator(), opts),
 	}
 }

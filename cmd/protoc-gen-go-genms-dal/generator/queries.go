@@ -19,12 +19,12 @@ func (q *Queries) ByName(n string) *Query {
 }
 
 // NewQueries returns a new queries.
-func NewQueries(file *File, opts *annotations.DalOptions) *Queries {
+func NewQueries(file *File, fields *Fields, opts *annotations.DalOptions) *Queries {
 	queryNames := []string{}
 	queriesByName := map[string]*Query{}
 
 	for _, q := range opts.Queries {
-		query := NewQuery(file, q)
+		query := NewQuery(file, fields, q)
 		queryNames = append(queryNames, query.Name)
 		queriesByName[query.Name] = query
 	}

@@ -8,39 +8,6 @@ import "protoc-gen-go-genms-dal/annotations/annotations.proto";
 import "protoc-gen-go-genms-dal/annotations/types/types.proto";
 
 message User {
-    option (genms.dal.message_options) = {
-        queries: [
-            {
-                name: "by id"
-                args: [{name: "id"}]
-            },
-            {
-                name: "by name and division"
-                args: [
-                    {name: "name"},
-                    {name: "division"}
-                ]
-            },
-            {
-                name: "by kind"
-                args: [{name: "kind"}]
-            },
-            {
-                name: "by phone"
-                args: [{name: "phone"}]
-            },
-            {
-                name: "provider stub only"
-                mode: QueryMode_ProviderStub
-            },
-            {
-                name: "interface stub only"
-                mode: QueryMode_InterfaceStub
-            }
-        ]
-        backends: [BackEnd_Postgres,BackEnd_Rest]
-    };
-
     int64 id = 1;
     string name = 2;
     string division = 3;
@@ -77,4 +44,56 @@ message User {
             }
         }
     ];
+
+    option (genms.dal.message_options) = {
+        queries: [
+            {
+                name: "by id"
+                args: [{name: "id"}]
+            },
+            {
+                name: "by name and division"
+                args: [
+                    {name: "name"},
+                    {name: "division"}
+                ]
+            },
+            {
+                name: "by kind"
+                args: [{name: "kind"}]
+            },
+            {
+                name: "by phone"
+                args: [{
+                    name: "phone"
+                    rest: {
+                        name: "mobile"
+                        location: Body
+                    }
+                }]
+                rest: {
+                    method: POST
+                }
+            },
+            {
+                name: "by range"
+                args: [
+                    {
+                        name: "start"
+                        kind: "int64"
+                        comparison: GT
+                    }
+                ]
+            },
+            {
+                name: "provider stub only"
+                mode: ProviderStub
+            },
+            {
+                name: "interface stub only"
+                mode: InterfaceStub
+            }
+        ]
+        backends: [Postgres, Rest]
+    };
 }

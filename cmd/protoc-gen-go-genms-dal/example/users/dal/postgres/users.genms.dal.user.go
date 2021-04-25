@@ -39,6 +39,7 @@ type UserCollection struct {
 	queryByNameAndDivision string
 	queryByKind            string
 	queryByPhone           string
+	queryByRange           string
 	queryProviderStubOnly  string
 }
 
@@ -201,8 +202,7 @@ func (x *UserCollection) DoUpdate(ctx context.Context, fvs *dal.UserFieldValues,
 
 // All implements dal.UserCollection.All
 func (x *UserCollection) All(ctx context.Context) ([]*users.User, error) {
-	fvs := &dal.UserFieldValues{}
-	return x.find(ctx, "all", x.queryAll, fvs)
+	return x.find(ctx, "all", x.queryAll, map[string]interface{}{})
 }
 
 // Filter implements dal.UserCollection.Filter
@@ -248,10 +248,10 @@ func (x *UserCollection) Filter(ctx context.Context, fvs *dal.UserFieldValues) (
 		query = fmt.Sprintf("%s WHERE %s", query, strings.Join(fields, " AND "))
 	}
 
-	return x.find(ctx, "filter", query, fvs)
+	return x.find(ctx, "filter", query, fieldValuesFromGeneric(fvs))
 }
 
-func (x *UserCollection) find(ctx context.Context, label string, query string, fvs *dal.UserFieldValues) ([]*users.User, error) {
+func (x *UserCollection) find(ctx context.Context, label string, query string, fvs interface{}) ([]*users.User, error) {
 	var err error
 	start := time.Now()
 	stats.Record(ctx, userInflight.M(1))
@@ -272,7 +272,7 @@ func (x *UserCollection) find(ctx context.Context, label string, query string, f
 		stats.Record(ctx, userLatency.M(dur), userInflight.M(-1))
 	}()
 
-	rows, err := x.db.QueryWithReplacements(ctx, query, fieldValuesFromGeneric(fvs))
+	rows, err := x.db.QueryWithReplacements(ctx, query, fvs)
 	if err != nil {
 		return nil, err
 	}
@@ -291,40 +291,37 @@ func (x *UserCollection) find(ctx context.Context, label string, query string, f
 
 // ById implements dal.UserCollection.ById
 func (x *UserCollection) ById(ctx context.Context, id int64) ([]*users.User, error) {
-	fvs := &dal.UserFieldValues{
-		Id: &id,
-	}
+	fvs := map[string]interface{}{"id": &id}
 	return x.find(ctx, "by_id", x.queryById, fvs)
 }
 
 // ByNameAndDivision implements dal.UserCollection.ByNameAndDivision
 func (x *UserCollection) ByNameAndDivision(ctx context.Context, name string, division string) ([]*users.User, error) {
-	fvs := &dal.UserFieldValues{
-		Name:     &name,
-		Division: &division,
-	}
+	fvs := map[string]interface{}{"name": &name, "division": &division}
 	return x.find(ctx, "by_name_and_division", x.queryByNameAndDivision, fvs)
 }
 
 // ByKind implements dal.UserCollection.ByKind
 func (x *UserCollection) ByKind(ctx context.Context, kind users.User_Kind) ([]*users.User, error) {
-	fvs := &dal.UserFieldValues{
-		Kind: &kind,
-	}
+	fvs := map[string]interface{}{"type": &kind}
 	return x.find(ctx, "by_kind", x.queryByKind, fvs)
 }
 
 // ByPhone implements dal.UserCollection.ByPhone
 func (x *UserCollection) ByPhone(ctx context.Context, phone *types.Phone) ([]*users.User, error) {
-	fvs := &dal.UserFieldValues{
-		Phone: phone,
-	}
+	fvs := map[string]interface{}{"phone": phone}
 	return x.find(ctx, "by_phone", x.queryByPhone, fvs)
+}
+
+// ByRange implements dal.UserCollection.ByRange
+func (x *UserCollection) ByRange(ctx context.Context, start int64) ([]*users.User, error) {
+	fvs := map[string]interface{}{"start": start}
+	return x.find(ctx, "by_range", x.queryByRange, fvs)
 }
 
 // ProviderStubOnly implements dal.UserCollection.ProviderStubOnly
 func (x *UserCollection) ProviderStubOnly(ctx context.Context) ([]*users.User, error) {
-	fvs := &dal.UserFieldValues{}
+	fvs := map[string]interface{}{}
 	return x.find(ctx, "provider_stub_only", x.queryProviderStubOnly, fvs)
 }
 
@@ -400,6 +397,13 @@ func NewUserCollection(db sql.DB, queries UserQueryTemplateProvider, config *Use
 		return nil, err
 	}
 	coll.queryByPhone = queryByPhone
+
+	// generate ByRange query
+	queryByRange, err := dal1.RenderQuery("dal.User-query-by_range", queries.ByRange(), queryReplacements)
+	if err != nil {
+		return nil, err
+	}
+	coll.queryByRange = queryByRange
 
 	// generate ProviderStubOnly query
 	queryProviderStubOnly, err := dal1.RenderQuery("dal.User-query-provider_stub_only", queries.ProviderStubOnly(), queryReplacements)
@@ -568,6 +572,7 @@ type UserQueryTemplateProvider interface {
 	ByNameAndDivision() string
 	ByKind() string
 	ByPhone() string
+	ByRange() string
 	ProviderStubOnly() string
 }
 
@@ -623,6 +628,13 @@ func (x *UserQueries) ByPhone() string {
 	return `SELECT {{ .fields }} FROM {{ .table }} WHERE
 			1 = 1 AND
 				phone = :phone;`
+}
+
+//ByRangeimplements UserQueryTemplateProvider.ByRange.
+func (x *UserQueries) ByRange() string {
+	return `SELECT {{ .fields }} FROM {{ .table }} WHERE
+			1 = 1 AND
+				start > :start;`
 }
 
 // define metrics

@@ -82,6 +82,20 @@ type FakeUserCollection struct {
 		result1 []*users.User
 		result2 error
 	}
+	ByRangeStub        func(context.Context, int64) ([]*users.User, error)
+	byRangeMutex       sync.RWMutex
+	byRangeArgsForCall []struct {
+		arg1 context.Context
+		arg2 int64
+	}
+	byRangeReturns struct {
+		result1 []*users.User
+		result2 error
+	}
+	byRangeReturnsOnCall map[int]struct {
+		result1 []*users.User
+		result2 error
+	}
 	DependantsStub        func() service.Services
 	dependantsMutex       sync.RWMutex
 	dependantsArgsForCall []struct {
@@ -541,6 +555,70 @@ func (fake *FakeUserCollection) ByPhoneReturnsOnCall(i int, result1 []*users.Use
 		})
 	}
 	fake.byPhoneReturnsOnCall[i] = struct {
+		result1 []*users.User
+		result2 error
+	}{result1, result2}
+}
+
+func (fake *FakeUserCollection) ByRange(arg1 context.Context, arg2 int64) ([]*users.User, error) {
+	fake.byRangeMutex.Lock()
+	ret, specificReturn := fake.byRangeReturnsOnCall[len(fake.byRangeArgsForCall)]
+	fake.byRangeArgsForCall = append(fake.byRangeArgsForCall, struct {
+		arg1 context.Context
+		arg2 int64
+	}{arg1, arg2})
+	fake.recordInvocation("ByRange", []interface{}{arg1, arg2})
+	fake.byRangeMutex.Unlock()
+	if fake.ByRangeStub != nil {
+		return fake.ByRangeStub(arg1, arg2)
+	}
+	if specificReturn {
+		return ret.result1, ret.result2
+	}
+	fakeReturns := fake.byRangeReturns
+	return fakeReturns.result1, fakeReturns.result2
+}
+
+func (fake *FakeUserCollection) ByRangeCallCount() int {
+	fake.byRangeMutex.RLock()
+	defer fake.byRangeMutex.RUnlock()
+	return len(fake.byRangeArgsForCall)
+}
+
+func (fake *FakeUserCollection) ByRangeCalls(stub func(context.Context, int64) ([]*users.User, error)) {
+	fake.byRangeMutex.Lock()
+	defer fake.byRangeMutex.Unlock()
+	fake.ByRangeStub = stub
+}
+
+func (fake *FakeUserCollection) ByRangeArgsForCall(i int) (context.Context, int64) {
+	fake.byRangeMutex.RLock()
+	defer fake.byRangeMutex.RUnlock()
+	argsForCall := fake.byRangeArgsForCall[i]
+	return argsForCall.arg1, argsForCall.arg2
+}
+
+func (fake *FakeUserCollection) ByRangeReturns(result1 []*users.User, result2 error) {
+	fake.byRangeMutex.Lock()
+	defer fake.byRangeMutex.Unlock()
+	fake.ByRangeStub = nil
+	fake.byRangeReturns = struct {
+		result1 []*users.User
+		result2 error
+	}{result1, result2}
+}
+
+func (fake *FakeUserCollection) ByRangeReturnsOnCall(i int, result1 []*users.User, result2 error) {
+	fake.byRangeMutex.Lock()
+	defer fake.byRangeMutex.Unlock()
+	fake.ByRangeStub = nil
+	if fake.byRangeReturnsOnCall == nil {
+		fake.byRangeReturnsOnCall = make(map[int]struct {
+			result1 []*users.User
+			result2 error
+		})
+	}
+	fake.byRangeReturnsOnCall[i] = struct {
 		result1 []*users.User
 		result2 error
 	}{result1, result2}
@@ -1249,6 +1327,8 @@ func (fake *FakeUserCollection) Invocations() map[string][][]interface{} {
 	defer fake.byNameAndDivisionMutex.RUnlock()
 	fake.byPhoneMutex.RLock()
 	defer fake.byPhoneMutex.RUnlock()
+	fake.byRangeMutex.RLock()
+	defer fake.byRangeMutex.RUnlock()
 	fake.dependantsMutex.RLock()
 	defer fake.dependantsMutex.RUnlock()
 	fake.filterMutex.RLock()

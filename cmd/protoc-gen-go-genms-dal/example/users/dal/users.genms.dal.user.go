@@ -45,6 +45,7 @@ type UserCollectionReader interface {
 	ByNameAndDivision(_ context.Context, _ string, _ string) ([]*users.User, error)
 	ByKind(_ context.Context, _ users.User_Kind) ([]*users.User, error)
 	ByPhone(_ context.Context, _ *types.Phone) ([]*users.User, error)
+	ByRange(_ context.Context, _ int64) ([]*users.User, error)
 	ProviderStubOnly(_ context.Context) ([]*users.User, error)
 	InterfaceStubOnly(_ context.Context) ([]*users.User, error)
 }
@@ -107,6 +108,11 @@ func (x *UnimplementedUserCollection) ByKind(_ context.Context, _ users.User_Kin
 
 // ByPhone implements UserCollection.ByPhone
 func (x *UnimplementedUserCollection) ByPhone(_ context.Context, _ *types.Phone) ([]*users.User, error) {
+	return nil, ErrUserCollectionMethodImpl
+}
+
+// ByRange implements UserCollection.ByRange
+func (x *UnimplementedUserCollection) ByRange(_ context.Context, _ int64) ([]*users.User, error) {
 	return nil, ErrUserCollectionMethodImpl
 }
 

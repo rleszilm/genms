@@ -58,6 +58,16 @@ type FakeUserQueryTemplateProvider struct {
 	byPhoneReturnsOnCall map[int]struct {
 		result1 string
 	}
+	ByRangeStub        func() string
+	byRangeMutex       sync.RWMutex
+	byRangeArgsForCall []struct {
+	}
+	byRangeReturns struct {
+		result1 string
+	}
+	byRangeReturnsOnCall map[int]struct {
+		result1 string
+	}
 	InsertStub        func() string
 	insertMutex       sync.RWMutex
 	insertArgsForCall []struct {
@@ -362,6 +372,58 @@ func (fake *FakeUserQueryTemplateProvider) ByPhoneReturnsOnCall(i int, result1 s
 	}{result1}
 }
 
+func (fake *FakeUserQueryTemplateProvider) ByRange() string {
+	fake.byRangeMutex.Lock()
+	ret, specificReturn := fake.byRangeReturnsOnCall[len(fake.byRangeArgsForCall)]
+	fake.byRangeArgsForCall = append(fake.byRangeArgsForCall, struct {
+	}{})
+	fake.recordInvocation("ByRange", []interface{}{})
+	fake.byRangeMutex.Unlock()
+	if fake.ByRangeStub != nil {
+		return fake.ByRangeStub()
+	}
+	if specificReturn {
+		return ret.result1
+	}
+	fakeReturns := fake.byRangeReturns
+	return fakeReturns.result1
+}
+
+func (fake *FakeUserQueryTemplateProvider) ByRangeCallCount() int {
+	fake.byRangeMutex.RLock()
+	defer fake.byRangeMutex.RUnlock()
+	return len(fake.byRangeArgsForCall)
+}
+
+func (fake *FakeUserQueryTemplateProvider) ByRangeCalls(stub func() string) {
+	fake.byRangeMutex.Lock()
+	defer fake.byRangeMutex.Unlock()
+	fake.ByRangeStub = stub
+}
+
+func (fake *FakeUserQueryTemplateProvider) ByRangeReturns(result1 string) {
+	fake.byRangeMutex.Lock()
+	defer fake.byRangeMutex.Unlock()
+	fake.ByRangeStub = nil
+	fake.byRangeReturns = struct {
+		result1 string
+	}{result1}
+}
+
+func (fake *FakeUserQueryTemplateProvider) ByRangeReturnsOnCall(i int, result1 string) {
+	fake.byRangeMutex.Lock()
+	defer fake.byRangeMutex.Unlock()
+	fake.ByRangeStub = nil
+	if fake.byRangeReturnsOnCall == nil {
+		fake.byRangeReturnsOnCall = make(map[int]struct {
+			result1 string
+		})
+	}
+	fake.byRangeReturnsOnCall[i] = struct {
+		result1 string
+	}{result1}
+}
+
 func (fake *FakeUserQueryTemplateProvider) Insert() string {
 	fake.insertMutex.Lock()
 	ret, specificReturn := fake.insertReturnsOnCall[len(fake.insertArgsForCall)]
@@ -583,6 +645,8 @@ func (fake *FakeUserQueryTemplateProvider) Invocations() map[string][][]interfac
 	defer fake.byNameAndDivisionMutex.RUnlock()
 	fake.byPhoneMutex.RLock()
 	defer fake.byPhoneMutex.RUnlock()
+	fake.byRangeMutex.RLock()
+	defer fake.byRangeMutex.RUnlock()
 	fake.insertMutex.RLock()
 	defer fake.insertMutex.RUnlock()
 	fake.providerStubOnlyMutex.RLock()

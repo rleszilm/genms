@@ -2,42 +2,25 @@ package rest
 
 import (
 	"github.com/rleszilm/genms/cmd/protoc-gen-go-genms-dal/annotations"
-	protocgenlib "github.com/rleszilm/genms/internal/protoc-gen-lib"
+	"github.com/rleszilm/genms/cmd/protoc-gen-go-genms-dal/generator"
 )
 
 // Query adds functionality to the query options.
 type Query struct {
-	*annotations.DalOptions_Query
+	*generator.Query
 }
 
 // NewQuery returns a new Query
-func NewQuery(q *annotations.DalOptions_Query) *Query {
-	return &Query{
-		DalOptions_Query: q,
-	}
+func NewQuery(file *File, fields *Fields, q *annotations.DalOptions_Query) *Query {
+	return AsQuery(generator.NewQuery(file.Generator(), fields.Generator(), q))
 }
 
-// Method returns the interface definition,
+// AsQuery returns the a query.
+func AsQuery(q *generator.Query) *Query {
+	return &Query{Query: q}
+}
+
+// Method returns the method of the rest query.
 func (q *Query) Method() string {
-	return protocgenlib.ToTitleCase(q.Name)
-}
-
-// QueryProvided returns whether a query should be formatted and stored.
-func (q *Query) QueryProvided() bool {
-	switch q.Mode {
-	case annotations.DalOptions_Query_QueryMode_Auto, annotations.DalOptions_Query_QueryMode_ProviderStub:
-		return true
-	default:
-		return false
-	}
-}
-
-// QueryImplemented returns whether a query should be formatted and stored.
-func (q *Query) QueryImplemented() bool {
-	switch q.Mode {
-	case annotations.DalOptions_Query_QueryMode_Auto:
-		return true
-	default:
-		return false
-	}
+	return q.GetRest().GetMethod().String()
 }

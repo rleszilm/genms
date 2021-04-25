@@ -17,6 +17,7 @@ type Interface struct {
 	File    *File
 	Message *Message
 	Fields  *Fields
+	Queries *Queries
 	Opts    *annotations.DalOptions
 }
 
@@ -30,11 +31,13 @@ func NewInterface(plugin *protogen.Plugin, file *protogen.File, msg *protogen.Me
 	ifile := NewFile(outfile, file)
 	imsg := NewMessage(ifile, msg)
 	ifields := NewFields(imsg)
+	iqueries := NewQueries(ifile, ifields, opts)
 
 	return &Interface{
 		File:    ifile,
-		Message: imsg, 
+		Message: imsg,
 		Fields:  ifields,
+		Queries: iqueries,
 		Opts:    opts,
 	}
 }
@@ -152,11 +155,12 @@ type {{ .I.Message.Name }}CollectionWriter interface {
 type {{ .I.Message.Name }}CollectionReader interface {
 	All({{ .P.Context }}.Context) ([]*{{ .I.Message.QualifiedKind }}, error)
 	Filter({{ .P.Context }}.Context, *{{ .I.Message.Name }}FieldValues) ([]*{{ .I.Message.QualifiedKind }}, error)
-	{{ range $Q := .I.Opts.Queries -}}
-		{{ ToTitleCase $Q.Name }}(_ {{ $P.Context }}.Context
-			{{- range $A := .Args -}}
-				{{- $F := ($I.Fields.ByName $A.Name) -}}
-				, _ {{ $F.QualifiedKind }}
+	{{ range $qn := .I.Queries.Names -}}
+		{{- $q := ($I.Queries.ByName $qn) -}}
+		{{ ToTitleCase $qn }}(_ {{ $P.Context }}.Context
+			{{- range $a := $q.Args -}}
+				{{- $arg := (Arg $I.File $I.Fields $a) -}}
+				, _ {{ $arg.QualifiedKind }}
 			{{- end }}) ([]*{{ $I.Message.QualifiedKind }}, error)
 	{{ end }}	
 }
@@ -165,6 +169,7 @@ type {{ .I.Message.Name }}CollectionReader interface {
 
 	tmpl, err := template.New("defineInterfaceInterface").
 		Funcs(template.FuncMap{
+			"Arg":         NewArg,
 			"ToTitleCase": protocgenlib.ToTitleCase,
 		}).
 		Parse(tmplSrc)
@@ -264,12 +269,13 @@ func (x *Unimplemented{{ .I.Message.Name }}Collection) Filter(_ {{ .P.Context }}
 	return nil, Err{{ .I.Message.Name }}CollectionMethodImpl
 }
 
-{{ range $Q := .I.Opts.Queries -}}
-	// {{ ToTitleCase $Q.Name }} implements {{ $I.Message.Name }}Collection.{{ ToTitleCase $Q.Name }}
-	func (x *Unimplemented{{ $I.Message.Name }}Collection){{ ToTitleCase $Q.Name }}(_ {{ $P.Context }}.Context
-		{{- range $A := .Args -}}
-			{{- $F := ($I.Fields.ByName $A.Name) -}}
-			, _ {{ $F.QualifiedKind }}
+{{ range $qn := .I.Queries.Names -}}
+	{{- $q := ($I.Queries.ByName $qn) -}}
+	// {{ ToTitleCase $q.Name }} implements {{ $I.Message.Name }}Collection.{{ ToTitleCase $q.Name }}
+	func (x *Unimplemented{{ $I.Message.Name }}Collection){{ ToTitleCase $q.Name }}(_ {{ $P.Context }}.Context
+		{{- range $a := $q.Args -}}
+			{{- $arg := (Arg $I.File $I.Fields $a) -}}
+			, _ {{ $arg.QualifiedKind }}
 		{{- end }}) ([]*{{ $I.Message.QualifiedKind }}, error) {
 		return nil, Err{{ $I.Message.Name }}CollectionMethodImpl
 	}
@@ -279,6 +285,7 @@ func (x *Unimplemented{{ .I.Message.Name }}Collection) Filter(_ {{ .P.Context }}
 
 	tmpl, err := template.New("defineInterfaceUnimplemented").
 		Funcs(template.FuncMap{
+			"Arg":         NewArg,
 			"ToTitleCase": protocgenlib.ToTitleCase,
 		}).
 		Parse(tmplSrc)

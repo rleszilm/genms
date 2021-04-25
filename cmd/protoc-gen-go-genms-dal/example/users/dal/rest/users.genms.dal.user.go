@@ -2,8 +2,12 @@
 package rest_dal_users
 
 import (
+	bytes "bytes"
 	context "context"
 	json "encoding/json"
+	fmt "fmt"
+	copier "github.com/jinzhu/copier"
+	types "github.com/rleszilm/genms/cmd/protoc-gen-go-genms-dal/annotations/types"
 	users "github.com/rleszilm/genms/cmd/protoc-gen-go-genms-dal/example/users"
 	dal "github.com/rleszilm/genms/cmd/protoc-gen-go-genms-dal/example/users/dal"
 	stats "go.opencensus.io/stats"
@@ -13,7 +17,9 @@ import (
 	log "log"
 	http "net/http"
 	url "net/url"
+	strconv "strconv"
 	sync "sync"
+	template "text/template"
 	time "time"
 )
 
@@ -24,11 +30,13 @@ type UserCollection struct {
 	client *http.Client
 	config *UserConfig
 
-	queryById              string
-	queryByNameAndDivision string
-	queryByKind            string
-	queryByPhone           string
-	queryProviderStubOnly  string
+	url                      *url.URL
+	urlTmplById              *template.Template
+	urlTmplByNameAndDivision *template.Template
+	urlTmplByKind            *template.Template
+	urlTmplByPhone           *template.Template
+	urlTmplByRange           *template.Template
+	urlTmplProviderStubOnly  *template.Template
 }
 
 // Initialize initializes and starts the service. Initialize should panic in case of
@@ -53,50 +61,39 @@ func (x *UserCollection) String() string {
 	return x.NameOf()
 }
 
-// All implements dal.UserCollection.All
-func (x *UserCollection) All(ctx context.Context) ([]*users.User, error) {
-	scheme, method, host, path, headers, _, _ := x.queries.All()
-
-	url := url.URL{
-		Scheme: scheme,
-		Host:   host,
-		Path:   path,
-	}
-
-	req, err := http.NewRequest(method, url.String(), nil)
-	if err != nil {
-		return nil, err
-	}
-
-	for k, v := range headers {
-		req.Header.Add(k, v)
-	}
-
-	return x.find(ctx, "all", req)
-}
-
-func (x *UserCollection) find(ctx context.Context, label string, req *http.Request) ([]*users.User, error) {
+// DoReq executes the given http request.
+func (x *UserCollection) DoReq(ctx context.Context, label string, req *http.Request) ([]*users.User, error) {
 	var err error
+	var resp *http.Response
 	start := time.Now()
 	stats.Record(ctx, userInflight.M(1))
 	defer func() {
 		stop := time.Now()
 		dur := float64(stop.Sub(start).Nanoseconds()) / float64(time.Millisecond)
 
+		if resp != nil {
+			ctx, _ = tag.New(ctx,
+				tag.Upsert(userQueryCode, strconv.Itoa(resp.StatusCode)),
+			)
+		}
+
 		if err != nil {
-			ctx, err = tag.New(ctx,
+			ctx, _ = tag.New(ctx,
 				tag.Upsert(userQueryError, label),
 			)
 		}
 
-		ctx, err = tag.New(ctx,
+		ctx, _ = tag.New(ctx,
 			tag.Upsert(userQueryName, label),
 		)
 
 		stats.Record(ctx, userLatency.M(dur), userInflight.M(-1))
 	}()
 
-	resp, err := x.client.Do(req.WithContext(ctx))
+	ctx, cancel := context.WithTimeout(ctx, x.config.Timeout)
+	defer cancel()
+
+	resp, err = x.client.Do(req.WithContext(ctx))
 	if err != nil {
 		return nil, err
 	}
@@ -113,11 +110,282 @@ func (x *UserCollection) find(ctx context.Context, label string, req *http.Reque
 	return Users, nil
 }
 
+// ById implements dal.UserCollection.ById
+func (x *UserCollection) ById(ctx context.Context, id int64) ([]*users.User, error) {
+	u := &url.URL{}
+	copier.Copy(u, x.url)
+
+	req := &http.Request{
+		Method: "GET",
+		Header: http.Header{},
+	}
+
+	queryValues := url.Values{}
+	queryValues.Add("id", fmt.Sprintf("%v", id))
+
+	u.RawQuery = queryValues.Encode()
+
+	pathValues := map[string]interface{}{}
+	pathBuf := &bytes.Buffer{}
+	if err := x.urlTmplById.Execute(pathBuf, pathValues); err != nil {
+		return nil, err
+	}
+	u.Path = pathBuf.String()
+
+	for k, v := range x.config.Headers {
+		req.Header.Add(k, v)
+	}
+
+	return x.DoReq(ctx, "by_id", req)
+}
+
+// ByNameAndDivision implements dal.UserCollection.ByNameAndDivision
+func (x *UserCollection) ByNameAndDivision(ctx context.Context, name string, division string) ([]*users.User, error) {
+	u := &url.URL{}
+	copier.Copy(u, x.url)
+
+	req := &http.Request{
+		Method: "GET",
+		Header: http.Header{},
+	}
+
+	queryValues := url.Values{}
+	queryValues.Add("name", fmt.Sprintf("%v", name))
+	queryValues.Add("division", fmt.Sprintf("%v", division))
+
+	u.RawQuery = queryValues.Encode()
+
+	pathValues := map[string]interface{}{}
+	pathBuf := &bytes.Buffer{}
+	if err := x.urlTmplByNameAndDivision.Execute(pathBuf, pathValues); err != nil {
+		return nil, err
+	}
+	u.Path = pathBuf.String()
+
+	for k, v := range x.config.Headers {
+		req.Header.Add(k, v)
+	}
+
+	return x.DoReq(ctx, "by_name_and_division", req)
+}
+
+// ByKind implements dal.UserCollection.ByKind
+func (x *UserCollection) ByKind(ctx context.Context, kind users.User_Kind) ([]*users.User, error) {
+	u := &url.URL{}
+	copier.Copy(u, x.url)
+
+	req := &http.Request{
+		Method: "GET",
+		Header: http.Header{},
+	}
+
+	queryValues := url.Values{}
+	queryValues.Add("type", fmt.Sprintf("%v", kind))
+
+	u.RawQuery = queryValues.Encode()
+
+	pathValues := map[string]interface{}{}
+	pathBuf := &bytes.Buffer{}
+	if err := x.urlTmplByKind.Execute(pathBuf, pathValues); err != nil {
+		return nil, err
+	}
+	u.Path = pathBuf.String()
+
+	for k, v := range x.config.Headers {
+		req.Header.Add(k, v)
+	}
+
+	return x.DoReq(ctx, "by_kind", req)
+}
+
+// ByPhone implements dal.UserCollection.ByPhone
+func (x *UserCollection) ByPhone(ctx context.Context, phone *types.Phone) ([]*users.User, error) {
+	u := &url.URL{}
+	copier.Copy(u, x.url)
+
+	req := &http.Request{
+		Method: "POST",
+		Header: http.Header{},
+	}
+
+	queryValues := url.Values{}
+
+	u.RawQuery = queryValues.Encode()
+
+	pathValues := map[string]interface{}{}
+	pathBuf := &bytes.Buffer{}
+	if err := x.urlTmplByPhone.Execute(pathBuf, pathValues); err != nil {
+		return nil, err
+	}
+	u.Path = pathBuf.String()
+
+	bodyValues := map[string]interface{}{"mobile": phone}
+	bodyBytes, err := json.Marshal(bodyValues)
+	if err != nil {
+		return nil, err
+	}
+	bodyRC := ioutil.NopCloser(bytes.NewReader(bodyBytes))
+	req.Body = bodyRC
+
+	for k, v := range x.config.Headers {
+		req.Header.Add(k, v)
+	}
+
+	return x.DoReq(ctx, "by_phone", req)
+}
+
+// ByRange implements dal.UserCollection.ByRange
+func (x *UserCollection) ByRange(ctx context.Context, start int64) ([]*users.User, error) {
+	u := &url.URL{}
+	copier.Copy(u, x.url)
+
+	req := &http.Request{
+		Method: "GET",
+		Header: http.Header{},
+	}
+
+	queryValues := url.Values{}
+	queryValues.Add("start", fmt.Sprintf("%v", start))
+
+	u.RawQuery = queryValues.Encode()
+
+	pathValues := map[string]interface{}{}
+	pathBuf := &bytes.Buffer{}
+	if err := x.urlTmplByRange.Execute(pathBuf, pathValues); err != nil {
+		return nil, err
+	}
+	u.Path = pathBuf.String()
+
+	for k, v := range x.config.Headers {
+		req.Header.Add(k, v)
+	}
+
+	return x.DoReq(ctx, "by_range", req)
+}
+
+// ProviderStubOnly implements dal.UserCollection.ProviderStubOnly
+func (x *UserCollection) ProviderStubOnly(ctx context.Context) ([]*users.User, error) {
+	u := &url.URL{}
+	copier.Copy(u, x.url)
+
+	req := &http.Request{
+		Method: "GET",
+		Header: http.Header{},
+	}
+
+	queryValues := url.Values{}
+
+	u.RawQuery = queryValues.Encode()
+
+	pathValues := map[string]interface{}{}
+	pathBuf := &bytes.Buffer{}
+	if err := x.urlTmplProviderStubOnly.Execute(pathBuf, pathValues); err != nil {
+		return nil, err
+	}
+	u.Path = pathBuf.String()
+
+	for k, v := range x.config.Headers {
+		req.Header.Add(k, v)
+	}
+
+	return x.DoReq(ctx, "provider_stub_only", req)
+}
+
+// NewUserCollection returns a new UserCollection.
+func NewUserCollection(client *http.Client, urls UserUrlTemplateProvider, config *UserConfig) (*UserCollection, error) {
+	registerUserMetricsOnce.Do(registerUserMetrics)
+
+	coll := &UserCollection{
+		client: client,
+	}
+
+	u, err := url.Parse(config.URL)
+	if err != nil {
+		return nil, err
+	}
+	coll.url = u
+
+	if urls.ById() != "" {
+		urlTmplById, err := template.New("urlTmplById").
+			Funcs(template.FuncMap{}).
+			Parse(urls.ById())
+		if err != nil {
+			return nil, err
+		}
+		coll.urlTmplById = urlTmplById
+	}
+
+	if urls.ByNameAndDivision() != "" {
+		urlTmplByNameAndDivision, err := template.New("urlTmplByNameAndDivision").
+			Funcs(template.FuncMap{}).
+			Parse(urls.ByNameAndDivision())
+		if err != nil {
+			return nil, err
+		}
+		coll.urlTmplByNameAndDivision = urlTmplByNameAndDivision
+	}
+
+	if urls.ByKind() != "" {
+		urlTmplByKind, err := template.New("urlTmplByKind").
+			Funcs(template.FuncMap{}).
+			Parse(urls.ByKind())
+		if err != nil {
+			return nil, err
+		}
+		coll.urlTmplByKind = urlTmplByKind
+	}
+
+	if urls.ByPhone() != "" {
+		urlTmplByPhone, err := template.New("urlTmplByPhone").
+			Funcs(template.FuncMap{}).
+			Parse(urls.ByPhone())
+		if err != nil {
+			return nil, err
+		}
+		coll.urlTmplByPhone = urlTmplByPhone
+	}
+
+	if urls.ByRange() != "" {
+		urlTmplByRange, err := template.New("urlTmplByRange").
+			Funcs(template.FuncMap{}).
+			Parse(urls.ByRange())
+		if err != nil {
+			return nil, err
+		}
+		coll.urlTmplByRange = urlTmplByRange
+	}
+
+	if urls.ProviderStubOnly() != "" {
+		urlTmplProviderStubOnly, err := template.New("urlTmplProviderStubOnly").
+			Funcs(template.FuncMap{}).
+			Parse(urls.ProviderStubOnly())
+		if err != nil {
+			return nil, err
+		}
+		coll.urlTmplProviderStubOnly = urlTmplProviderStubOnly
+	}
+
+	return coll, nil
+}
+
 // UserConfig is a struct that can be used to configure a UserCollection
 type UserConfig struct {
+	URL     string            `envconfig:"url"`
 	Name    string            `envconfig:"name"`
 	Timeout time.Duration     `envconfig:"timeout" default:"5s"`
 	Headers map[string]string `envconfig:"headers"`
+}
+
+// UserUrlTemplateProvider is an interface that returns the query templated that should be executed
+// to generate the queries that the collection will use.
+//go:generate go run github.com/maxbrunsfeld/counterfeiter/v6 . UserUrlTemplateProvider
+type UserUrlTemplateProvider interface {
+	ById() string
+	ByNameAndDivision() string
+	ByKind() string
+	ByPhone() string
+	ByRange() string
+	ProviderStubOnly() string
 }
 
 // define metrics
