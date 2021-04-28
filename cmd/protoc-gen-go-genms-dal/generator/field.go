@@ -10,8 +10,7 @@ import (
 // Field adds functionality to the underlying field.
 type Field struct {
 	*protocgenlib.Field
-	dalOptions  *annotations.DalFieldOptions
-	typeOptions *annotations.DalFieldOptions_BackendFieldOptions
+	options *annotations.DalFieldOptions
 }
 
 // NewField returns a new Field.
@@ -21,30 +20,36 @@ func NewField(msg *Message, field *protogen.Field) *Field {
 
 // AsField wraps a Field.
 func AsField(f *protocgenlib.Field) *Field {
-	field := &Field{
-		Field: f,
+	opts := f.Proto().Desc.Options()
+	var dalOptions *annotations.DalFieldOptions
+	if proto.HasExtension(opts, annotations.E_FieldOptions) {
+		if topts, ok := proto.GetExtension(opts, annotations.E_FieldOptions).(*annotations.DalFieldOptions); ok {
+			dalOptions = topts
+		}
 	}
 
-	opts := f.Proto().Desc.Options()
-	if proto.HasExtension(f.Proto().Desc.Options(), annotations.E_FieldOptions) {
-		dalOptions := proto.GetExtension(opts, annotations.E_FieldOptions).(*annotations.DalFieldOptions)
-		field.dalOptions = dalOptions
-		field.typeOptions = dalOptions.GetRest()
+	field := &Field{
+		Field:   f,
+		options: dalOptions,
 	}
 
 	return field
 }
 
+// Generator returns the Generator level Field.
+func (f *Field) Generator() *Field {
+	return f
+}
+
+// Options returns the DalFieldOptions
+func (f *Field) Options() *annotations.DalFieldOptions {
+	return f.options
+}
+
 // QueryName returns the name of the field as it should appear in database queries.
 func (f *Field) QueryName() string {
-	if f.typeOptions != nil {
-		if name := f.typeOptions.GetField(); name != "" {
-			return name
-		}
-	}
-
-	if f.dalOptions != nil {
-		if name := f.dalOptions.GetField(); name != "" {
+	if f.options != nil {
+		if name := f.options.GetField(); name != "" {
 			return name
 		}
 	}
@@ -54,8 +59,8 @@ func (f *Field) QueryName() string {
 
 // Ignore returns whether the field should be skipped during processing.
 func (f *Field) Ignore() bool {
-	if f.dalOptions != nil {
-		return f.dalOptions.Ignore
+	if f.options != nil {
+		return f.options.GetIgnore()
 	}
 	return false
 }

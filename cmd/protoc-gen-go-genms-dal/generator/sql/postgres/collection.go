@@ -7,8 +7,10 @@ import (
 	"strings"
 	"text/template"
 
+	"github.com/go-test/deep"
 	"github.com/rleszilm/genms/cmd/protoc-gen-go-genms-dal/annotations"
 	protocgenlib "github.com/rleszilm/genms/internal/protoc-gen-lib"
+	"golang.org/x/tools/imports"
 	"google.golang.org/protobuf/compiler/protogen"
 )
 
@@ -19,6 +21,9 @@ type Collection struct {
 	Fields  *Fields
 	Queries *Queries
 	Opts    *annotations.DalOptions
+
+	plugin   *protogen.Plugin
+	filename string
 }
 
 // NewCollection returns a new collection renderer.
@@ -34,11 +39,13 @@ func NewCollection(plugin *protogen.Plugin, file *protogen.File, msg *protogen.M
 	cqueries := NewQueries(cfile, cfields, opts)
 
 	return &Collection{
-		File:    cfile,
-		Message: cmsg,
-		Fields:  cfields,
-		Queries: cqueries,
-		Opts:    opts,
+		File:     cfile,
+		Message:  cmsg,
+		Fields:   cfields,
+		Queries:  cqueries,
+		Opts:     opts,
+		plugin:   plugin,
+		filename: filename,
 	}
 }
 
@@ -66,6 +73,21 @@ func (c *Collection) render() error {
 		if err := s(); err != nil {
 			return err
 		}
+	}
+
+	outfile := c.File.Outfile()
+	original, err := outfile.Content()
+	if err != nil {
+		return err
+	}
+	formatted, err := imports.Process(c.filename, original, nil)
+
+	if diff := deep.Equal(original, formatted); diff != nil {
+		formattedOutfile := c.plugin.NewGeneratedFile(c.filename, ".")
+		if _, err := formattedOutfile.Write(formatted); err != nil {
+			return err
+		}
+		outfile.Skip()
 	}
 
 	return nil

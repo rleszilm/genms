@@ -7,8 +7,10 @@ import (
 	"strings"
 	"text/template"
 
+	"github.com/go-test/deep"
 	"github.com/rleszilm/genms/cmd/protoc-gen-go-genms-dal/annotations"
 	protocgenlib "github.com/rleszilm/genms/internal/protoc-gen-lib"
+	"golang.org/x/tools/imports"
 	"google.golang.org/protobuf/compiler/protogen"
 )
 
@@ -19,6 +21,9 @@ type Collection struct {
 	Fields  *Fields
 	Queries *Queries
 	Opts    *annotations.DalOptions
+
+	plugin   *protogen.Plugin
+	filename string
 }
 
 // NewCollection returns a new collection renderer.
@@ -34,11 +39,13 @@ func NewCollection(plugin *protogen.Plugin, file *protogen.File, msg *protogen.M
 	cqueries := NewQueries(cfile, cfields, opts)
 
 	return &Collection{
-		File:    cfile,
-		Message: cmsg,
-		Fields:  cfields,
-		Queries: cqueries,
-		Opts:    opts,
+		File:     cfile,
+		Message:  cmsg,
+		Fields:   cfields,
+		Queries:  cqueries,
+		Opts:     opts,
+		plugin:   plugin,
+		filename: filename,
 	}
 }
 
@@ -50,6 +57,7 @@ func (c *Collection) render() error {
 		c.defineDefaultQueries,
 		c.defineQueries,
 		c.defineNewCollection,
+		c.defineInternalStructs,
 		c.defineConfig,
 		c.defineTemplateProvider,
 		c.defineMetrics,
@@ -59,6 +67,21 @@ func (c *Collection) render() error {
 		if err := s(); err != nil {
 			return err
 		}
+	}
+
+	outfile := c.File.Outfile()
+	original, err := outfile.Content()
+	if err != nil {
+		return err
+	}
+	formatted, err := imports.Process(c.filename, original, nil)
+
+	if diff := deep.Equal(original, formatted); diff != nil {
+		formattedOutfile := c.plugin.NewGeneratedFile(c.filename, ".")
+		if _, err := formattedOutfile.Write(formatted); err != nil {
+			return err
+		}
+		outfile.Skip()
 	}
 
 	return nil
@@ -100,6 +123,7 @@ type {{ .C.Message.Name }}Collection struct {
 	config *{{ .C.Message.Name }}Config
 
 	url *{{ .P.URL }}.URL
+	urlAll string
 	{{ range $qn := .C.Queries.Names -}}
 		{{- $q := $C.Queries.ByName $qn -}}
 		{{- if $q.QueryProvided -}}
@@ -233,9 +257,14 @@ func (x *{{ .C.Message.Name }}Collection) DoReq(ctx {{ .P.Context }}.Context, la
 		return nil, err
 	}
 
-	{{ .C.Message.Name }}s := []*{{ .C.Message.QualifiedKind }}{}
-	if err := {{ .P.JSON }}.Unmarshal(buff, &{{ .C.Message.Name }}s); err != nil {
+	{{ .C.Message.Name }}Scanners := []*{{ ToTitleCase .C.Message.Name }}Scanner{}
+	if err := {{ .P.JSON }}.Unmarshal(buff, &{{ .C.Message.Name }}Scanners); err != nil {
 		return nil, err
+	}
+
+	{{ .C.Message.Name }}s := []*{{ .C.Message.QualifiedKind }}{}
+	for _, c := range {{ .C.Message.Name }}Scanners {
+		{{ .C.Message.Name }}s = append({{ .C.Message.Name }}s, c.{{ .C.Message.Name }}())
 	}
 	return {{ .C.Message.Name }}s, nil
 }
@@ -246,6 +275,7 @@ func (x *{{ .C.Message.Name }}Collection) DoReq(ctx {{ .P.Context }}.Context, la
 		Funcs(template.FuncMap{
 			"ToCamelCase": protocgenlib.ToCamelCase,
 			"ToLower":     strings.ToLower,
+			"ToTitleCase": protocgenlib.ToTitleCase,
 		}).
 		Parse(tmplSrc)
 
@@ -281,6 +311,25 @@ func (x *{{ .C.Message.Name }}Collection) DoReq(ctx {{ .P.Context }}.Context, la
 func (c *Collection) defineQueries() error {
 	tmplSrc := `{{- $C := .C -}}
 {{- $P := .P -}}
+// All implements {{ $C.Message.QualifiedDalKind }}Collection.All
+func (x *{{ $C.Message.Name }}Collection) All(ctx {{ $P.Context }}.Context) ([]*{{ $C.Message.QualifiedKind }}, error) {
+	u := &{{ $P.URL }}.URL{}
+	{{ $P.Copier }}.Copy(u, x.url)
+	u.Path = x.urlAll
+
+	req := &{{ $P.HTTP }}.Request{
+		Method: "GET",
+		Header: {{ $P.HTTP }}.Header{},
+		URL: u,
+	}
+
+	for k, v := range x.config.Headers {
+		req.Header.Add(k, v)
+	}
+	
+	return x.DoReq(ctx, "all", req)
+}
+
 {{ range $qn := .C.Queries.Names }}
 	{{- $q := ($C.Queries.ByName $qn) -}}
 	{{- if $q.QueryProvided }}
@@ -297,6 +346,7 @@ func (c *Collection) defineQueries() error {
 			req := &{{ $P.HTTP }}.Request{
 				Method: "{{ $q.Method }}",
 				Header: {{ $P.HTTP }}.Header{},
+				URL: u,
 			}
 
 			queryValues := {{ $P.URL }}.Values{}
@@ -306,7 +356,7 @@ func (c *Collection) defineQueries() error {
 					queryValues.Add("{{ $arg.QueryName }}", {{ $P.Fmt }}.Sprintf("%v", {{ ToSnakeCase $arg.Name }}))
 				{{ end }}
 			{{- end }}
-			u.RawQuery = queryValues.Encode()
+			req.URL.RawQuery = queryValues.Encode()
 
 			pathValues := map[string]interface{}{
 				{{- range $a := $q.Args -}}
@@ -320,7 +370,7 @@ func (c *Collection) defineQueries() error {
 			if err := x.urlTmpl{{ ToTitleCase $q.Name }}.Execute(pathBuf, pathValues); err != nil {
 				return nil, err
 			}
-			u.Path = pathBuf.String()
+			req.URL.Path = pathBuf.String()
 			
 			{{ if ne "GET" ($q.Method) -}}
 				bodyValues := map[string]interface{}{
@@ -401,6 +451,7 @@ func New{{ .C.Message.Name }}Collection(client *{{ .P.HTTP }}.Client, urls {{ .C
 
 	coll := &{{ .C.Message.Name }}Collection{
 		client: client,
+		config: config,
 	}
 
 	u, err := {{ .P.URL }}.Parse(config.URL)
@@ -409,6 +460,7 @@ func New{{ .C.Message.Name }}Collection(client *{{ .P.HTTP }}.Client, urls {{ .C
 	}
 	coll.url = u
 
+	coll.urlAll = urls.All()
 	{{ range $qn := .C.Queries.Names -}}
 		{{- $q := ($C.Queries.ByName $qn) -}}
 		{{- if $q.QueryProvided -}}
@@ -444,6 +496,63 @@ func New{{ .C.Message.Name }}Collection(client *{{ .P.HTTP }}.Client, urls {{ .C
 		"HTTP":       c.File.QualifiedPackageName("net/http"),
 		"Template":   c.File.QualifiedPackageName("text/template"),
 		"URL":        c.File.QualifiedPackageName("net/url"),
+	}
+
+	buf := &bytes.Buffer{}
+	if err := tmpl.Execute(buf, map[string]interface{}{
+		"C": c,
+		"P": p,
+	}); err != nil {
+		return err
+	}
+
+	if _, err := c.File.Write(buf.Bytes()); err != nil {
+		return err
+	}
+	return nil
+}
+
+func (c *Collection) defineInternalStructs() error {
+	tmplSrc := `{{- $C := .C -}}
+// {{ .C.Message.Name }}Scanner is an autogenerated struct that
+// is used to parse query results.
+type {{ .C.Message.Name }}Scanner struct {
+	{{ range $n := .C.Fields.Names -}}
+		{{- $f := ($C.Fields.ByName $n) -}}
+		{{- if not $f.Ignore -}}
+			{{ ToTitleCase $f.Name }} {{ $f.QualifiedKind }} ` + "`" + `json:"{{ $f.QueryName }}"` + "`" + `
+		{{- end }}
+	{{ end -}}
+}
+
+// {{ .C.Message.Name }} returns a new {{ .C.Message.QualifiedKind }} populated with scanned values.
+func (x *{{ .C.Message.Name }}Scanner) {{ .C.Message.Name }}() *{{ .C.Message.QualifiedKind }} {
+	y := &{{ .C.Message.QualifiedKind }}{}
+
+	{{ range $n := .C.Fields.Names -}}
+		{{- $f := ($C.Fields.ByName $n) -}}
+		{{- if not $f.Ignore -}}
+			y.{{ ToTitleCase $f.Name }} = x.{{ ToTitleCase $f.Name }}
+		{{- end }}
+	{{ end -}}
+	return y
+}
+
+`
+
+	tmpl, err := template.New("defineRestStructs").
+		Funcs(template.FuncMap{
+			"AsPointer":   protocgenlib.AsPointer,
+			"ToTitleCase": protocgenlib.ToTitleCase,
+		}).
+		Parse(tmplSrc)
+
+	if err != nil {
+		return err
+	}
+
+	p := map[string]string{
+		"Collection": c.File.QualifiedPackageName(c.File.DalPackagePath()),
 	}
 
 	buf := &bytes.Buffer{}
@@ -504,6 +613,7 @@ func (c *Collection) defineTemplateProvider() error {
 // to generate the queries that the collection will use.
 //{{ $Generate }} {{ .C.Message.Name }}UrlTemplateProvider
 type {{ .C.Message.Name }}UrlTemplateProvider interface {
+	All() string
 	{{ range $qn := .C.Queries.Names -}}
 		{{- $q := ($C.Queries.ByName $qn) -}}
 		{{- if $q.QueryProvided -}}
