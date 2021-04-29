@@ -249,7 +249,7 @@ func (x *{{ .C.Message.Name }}Collection) DoInsert(ctx {{ .P.Context }}.Context,
 		{{ .P.Stats }}.Record(ctx, {{ ToCamelCase .C.Message.Name }}Latency.M(dur), {{ ToCamelCase .C.Message.Name }}Inflight.M(-1))
 	}()
 
-	return x.db.ExecWithReplacements(ctx, x.execInsert, writerFromGeneric(arg))
+	return x.db.ExecWithReplacements(ctx, x.execInsert, {{ ToSnakeCase .C.Message.Name }}WriterFromGeneric(arg))
 }
 
 // DoUpsert provides the base logic for {{ .C.Message.QualifiedDalKind }}Collection.Upsert.
@@ -276,7 +276,7 @@ func (x *{{ .C.Message.Name }}Collection) DoUpsert(ctx {{ .P.Context }}.Context,
 		{{ .P.Stats }}.Record(ctx, {{ ToCamelCase .C.Message.Name }}Latency.M(dur), {{ ToCamelCase .C.Message.Name }}Inflight.M(-1))
 	}()
 
-	return x.db.ExecWithReplacements(ctx, x.execUpsert, writerFromGeneric(arg))
+	return x.db.ExecWithReplacements(ctx, x.execUpsert, {{ ToSnakeCase .C.Message.Name }}WriterFromGeneric(arg))
 }
 
 // DoUpdate provides the base logic for {{ .C.Message.QualifiedDalKind }}Collection.Upsert.
@@ -322,7 +322,7 @@ func (x *{{ .C.Message.Name }}Collection) DoUpdate(ctx {{ .P.Context }}.Context,
 		return nil, err
 	}
 
-	return x.db.ExecWithReplacements(ctx, string(buf.Bytes()), fieldValuesFromGeneric(fvs))
+	return x.db.ExecWithReplacements(ctx, string(buf.Bytes()), {{ ToSnakeCase .C.Message.Name }}FieldValuesFromGeneric(fvs))
 }
 
 // All implements {{ .C.Message.QualifiedDalKind }}Collection.All
@@ -348,7 +348,7 @@ func (x *{{ .C.Message.Name }}Collection) Filter(ctx {{ .P.Context }}.Context, f
 		query = {{ .P.Fmt }}.Sprintf("%s WHERE %s", query, {{ .P.Strings }}.Join(fields, " AND "))
 	}
 
-	return x.find(ctx, "filter", query, fieldValuesFromGeneric(fvs))
+	return x.find(ctx, "filter", query, {{ ToSnakeCase .C.Message.Name }}FieldValuesFromGeneric(fvs))
 }
 
 func (x *{{ .C.Message.Name }}Collection) find(ctx {{ .P.Context }}.Context, label string, query string, fvs interface{}) ([]*{{ .C.Message.QualifiedKind }}, error) {
@@ -617,7 +617,7 @@ type {{ .C.Message.Name }}FieldValues struct {
 	{{ end -}}
 }
 
-func fieldValuesFromGeneric(y *{{ .C.Message.QualifiedDalKind }}FieldValues) *{{ .C.Message.Name }}FieldValues {
+func {{ ToSnakeCase .C.Message.Name }}FieldValuesFromGeneric(y *{{ .C.Message.QualifiedDalKind }}FieldValues) *{{ .C.Message.Name }}FieldValues {
 	f := &{{ .C.Message.Name }}FieldValues{}
 	{{ range $n := .C.Fields.Names -}}
 		{{- $f := ($C.Fields.ByName $n) -}}
@@ -670,7 +670,7 @@ type {{ .C.Message.Name }}Writer struct {
 	{{ end -}}
 }
 
-func writerFromGeneric(y *{{ .C.Message.QualifiedKind }}) *{{ .C.Message.Name }}Writer {
+func {{ ToSnakeCase .C.Message.Name }}WriterFromGeneric(y *{{ .C.Message.QualifiedKind }}) *{{ .C.Message.Name }}Writer {
 	x := &{{ .C.Message.Name }}Writer{}
 	{{ range $n := .C.Fields.Names -}}
 		{{- $f := ($C.Fields.ByName $n) -}}
@@ -685,6 +685,7 @@ func writerFromGeneric(y *{{ .C.Message.QualifiedKind }}) *{{ .C.Message.Name }}
 	tmpl, err := template.New("definePostgresStructs").
 		Funcs(template.FuncMap{
 			"AsPointer":   protocgenlib.AsPointer,
+			"ToSnakeCase": protocgenlib.ToSnakeCase,
 			"ToTitleCase": protocgenlib.ToTitleCase,
 		}).
 		Parse(tmplSrc)

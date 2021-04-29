@@ -2,6 +2,7 @@ package generator
 
 import (
 	"errors"
+	"log"
 	"strings"
 
 	"github.com/rleszilm/genms/cmd/protoc-gen-go-genms-dal/annotations"
@@ -56,6 +57,7 @@ func (a *Arg) QualifiedKind() (string, error) {
 	}
 
 	if a.arg.GetKind() == "" {
+		log.Println("no kind", a.arg)
 		return "", errors.New("arg has no kind")
 	}
 
