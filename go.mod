@@ -6,7 +6,6 @@ require (
 	contrib.go.opencensus.io/exporter/prometheus v0.2.0
 	github.com/Shopify/sarama v1.27.2
 	github.com/awalterschulze/goderive v0.0.0-20201024082847-dcd8fe800b1e
-	github.com/envoyproxy/protoc-gen-validate v0.6.1 // indirect
 	github.com/go-redis/redis/v8 v8.4.11
 	github.com/go-test/deep v1.0.7
 	github.com/golang/glog v0.0.0-20210429001901-424d2337a529 // indirect
@@ -19,18 +18,14 @@ require (
 	github.com/jmoiron/sqlx v1.2.0
 	github.com/kelseyhightower/envconfig v1.4.0
 	github.com/lib/pq v1.0.0
-	github.com/lyft/protoc-gen-star v0.5.2 // indirect
 	github.com/maxbrunsfeld/counterfeiter/v6 v6.2.3
 	github.com/pkg/errors v0.9.1
 	github.com/rleszilm/grpc-graphql-gateway v0.18.10
-	github.com/spf13/afero v1.6.0 // indirect
 	go.mongodb.org/mongo-driver v1.4.5
 	go.opencensus.io v0.22.6
-	golang.org/x/lint v0.0.0-20201208152925-83fdc39ff7b5 // indirect
 	golang.org/x/mod v0.4.2 // indirect
 	golang.org/x/net v0.0.0-20210428140749-89ef3d95e781 // indirect
 	golang.org/x/sys v0.0.0-20210426230700-d19ff857e887 // indirect
-	golang.org/x/text v0.3.6 // indirect
 	golang.org/x/tools v0.1.0
 	google.golang.org/genproto v0.0.0-20210427215850-f767ed18ee4d
 	google.golang.org/grpc v1.37.0
