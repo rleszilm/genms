@@ -3,7 +3,6 @@ package postgres
 import (
 	"fmt"
 
-	"github.com/rleszilm/genms/cmd/protoc-gen-go-genms-dal/annotations"
 	"github.com/rleszilm/genms/cmd/protoc-gen-go-genms-dal/generator"
 	protocgenlib "github.com/rleszilm/genms/internal/protoc-gen-lib"
 	"google.golang.org/protobuf/compiler/protogen"
@@ -12,8 +11,6 @@ import (
 // Field adds functionality to the underlying field.
 type Field struct {
 	*generator.Field
-	dalOptions  *annotations.DalFieldOptions
-	typeOptions *annotations.DalFieldOptions_BackendFieldOptions
 }
 
 // NewField returns a new Field.
@@ -28,6 +25,28 @@ func AsField(f *protocgenlib.Field) *Field {
 	}
 
 	return field
+}
+
+// QueryName returns the name of the field as it should appear in database queries.
+func (f *Field) QueryName() string {
+	opts := f.Options()
+	if opts != nil && opts.GetPostgres() != nil {
+		if name := opts.GetPostgres().GetField(); name != "" {
+			return name
+		}
+	}
+
+	return f.Generator().QueryName()
+}
+
+// Ignore returns the name of the field as it should appear in database queries.
+func (f *Field) Ignore() bool {
+	opts := f.Options()
+	if opts != nil && opts.GetPostgres() != nil {
+		return opts.GetPostgres().GetIgnore()
+	}
+
+	return f.Generator().Ignore()
 }
 
 // HasSQLNil returns whether the sql scanner would use a nil type.

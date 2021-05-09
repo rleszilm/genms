@@ -7,17 +7,41 @@ import "google/protobuf/descriptor.proto";
 
 message DalOptions {
     message Query {
-        string name = 1;
-        repeated string args = 2;
+        message Arg {
+            enum Comparison {
+                EQ  = 0;
+                NE  = 1;
+                GT  = 2;
+                LT  = 3;
+                GTE = 4;
+                LTE = 5;
+            }
 
-        enum QueryMode {
-            QueryMode_Auto = 0;
-            QueryMode_ProviderStub = 1;
-            QueryMode_InterfaceStub = 2;
+            message Rest {
+                enum Location {
+                    Query = 0;
+                    Path = 1;
+                    Body = 2;
+                    Header = 3;
+                }
+                
+                string name = 1;
+                Location location = 2;
+            }
+
+            string name = 1;
+            string kind = 2;
+            Comparison comparison = 3;
+            Rest rest = 4;
         }
-        QueryMode mode = 3;
 
-        message RestOptions {
+        enum Mode {
+            Auto = 0;
+            ProviderStub = 1;
+            InterfaceStub = 2;
+        }
+
+        message Rest {
             enum Method {
                 GET = 0;
                 POST = 1;
@@ -25,36 +49,38 @@ message DalOptions {
                 PATCH = 3;
                 DELETE = 4;
             }
-            message Arg {
-                string arg = 1;
-                string field = 2;
+
+            enum ContentType {
+                JSON = 0;
+                URLEncoded = 1;
             }
+
             Method method = 1;
-            repeated Arg headers = 2;
-            repeated string path = 3;
-            repeated Arg query = 4;
-            repeated string body = 5;
+            ContentType content = 2;
         }
-        RestOptions rest = 4;
+
+        string name = 1;
+        repeated Arg args = 2;
+        Mode mode = 3;
+        Rest rest = 4;
     }
     repeated Query queries = 1;
 
     enum Backend {
-        BackEnd_None = 0;
-        BackEnd_Postgres = 1;
-        BackEnd_Rest = 2;
+        None = 0;
+        Postgres = 1;
+        Rest = 2;
     }
     repeated Backend backends = 2;
 
     message BackendOptions {
         enum ReadMode {
-            ReadMode_ReadWrite = 0;
-            ReadMode_ReadOnly = 1;
-            ReadMode_WriteOnly = 2;
+            ReadWrite = 0;
+            ReadOnly = 1;
+            WriteOnly = 2;
         }
         ReadMode mode = 1;
     }
-
     map<string,BackendOptions> options = 3;
 }
 

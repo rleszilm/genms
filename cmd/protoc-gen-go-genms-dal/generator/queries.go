@@ -1,4 +1,4 @@
-package rest
+package generator
 
 import "github.com/rleszilm/genms/cmd/protoc-gen-go-genms-dal/annotations"
 

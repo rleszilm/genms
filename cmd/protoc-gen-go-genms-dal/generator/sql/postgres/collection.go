@@ -7,8 +7,10 @@ import (
 	"strings"
 	"text/template"
 
+	"github.com/go-test/deep"
 	"github.com/rleszilm/genms/cmd/protoc-gen-go-genms-dal/annotations"
 	protocgenlib "github.com/rleszilm/genms/internal/protoc-gen-lib"
+	"golang.org/x/tools/imports"
 	"google.golang.org/protobuf/compiler/protogen"
 )
 
@@ -19,6 +21,9 @@ type Collection struct {
 	Fields  *Fields
 	Queries *Queries
 	Opts    *annotations.DalOptions
+
+	plugin   *protogen.Plugin
+	filename string
 }
 
 // NewCollection returns a new collection renderer.
@@ -31,14 +36,16 @@ func NewCollection(plugin *protogen.Plugin, file *protogen.File, msg *protogen.M
 	cfile := NewFile(outfile, file)
 	cmsg := NewMessage(cfile, msg)
 	cfields := NewFields(cmsg)
-	cqueries := NewQueries(opts)
+	cqueries := NewQueries(cfile, cfields, opts)
 
 	return &Collection{
-		File:    cfile,
-		Message: cmsg,
-		Fields:  cfields,
-		Queries: cqueries,
-		Opts:    opts,
+		File:     cfile,
+		Message:  cmsg,
+		Fields:   cfields,
+		Queries:  cqueries,
+		Opts:     opts,
+		plugin:   plugin,
+		filename: filename,
 	}
 }
 
@@ -66,6 +73,21 @@ func (c *Collection) render() error {
 		if err := s(); err != nil {
 			return err
 		}
+	}
+
+	outfile := c.File.Outfile()
+	original, err := outfile.Content()
+	if err != nil {
+		return err
+	}
+	formatted, err := imports.Process(c.filename, original, nil)
+
+	if diff := deep.Equal(original, formatted); diff != nil {
+		formattedOutfile := c.plugin.NewGeneratedFile(c.filename, ".")
+		if _, err := formattedOutfile.Write(formatted); err != nil {
+			return err
+		}
+		outfile.Skip()
 	}
 
 	return nil
@@ -227,7 +249,7 @@ func (x *{{ .C.Message.Name }}Collection) DoInsert(ctx {{ .P.Context }}.Context,
 		{{ .P.Stats }}.Record(ctx, {{ ToCamelCase .C.Message.Name }}Latency.M(dur), {{ ToCamelCase .C.Message.Name }}Inflight.M(-1))
 	}()
 
-	return x.db.ExecWithReplacements(ctx, x.execInsert, writerFromGeneric(arg))
+	return x.db.ExecWithReplacements(ctx, x.execInsert, {{ ToSnakeCase .C.Message.Name }}WriterFromGeneric(arg))
 }
 
 // DoUpsert provides the base logic for {{ .C.Message.QualifiedDalKind }}Collection.Upsert.
@@ -254,7 +276,7 @@ func (x *{{ .C.Message.Name }}Collection) DoUpsert(ctx {{ .P.Context }}.Context,
 		{{ .P.Stats }}.Record(ctx, {{ ToCamelCase .C.Message.Name }}Latency.M(dur), {{ ToCamelCase .C.Message.Name }}Inflight.M(-1))
 	}()
 
-	return x.db.ExecWithReplacements(ctx, x.execUpsert, writerFromGeneric(arg))
+	return x.db.ExecWithReplacements(ctx, x.execUpsert, {{ ToSnakeCase .C.Message.Name }}WriterFromGeneric(arg))
 }
 
 // DoUpdate provides the base logic for {{ .C.Message.QualifiedDalKind }}Collection.Upsert.
@@ -300,13 +322,12 @@ func (x *{{ .C.Message.Name }}Collection) DoUpdate(ctx {{ .P.Context }}.Context,
 		return nil, err
 	}
 
-	return x.db.ExecWithReplacements(ctx, string(buf.Bytes()), fieldValuesFromGeneric(fvs))
+	return x.db.ExecWithReplacements(ctx, string(buf.Bytes()), {{ ToSnakeCase .C.Message.Name }}FieldValuesFromGeneric(fvs))
 }
 
 // All implements {{ .C.Message.QualifiedDalKind }}Collection.All
 func (x *{{ .C.Message.Name }}Collection) All(ctx {{ .P.Context }}.Context) ([]*{{ .C.Message.QualifiedKind }}, error) {
-	fvs := &{{ .C.Message.QualifiedDalKind }}FieldValues{}
-	return x.find(ctx, "all", x.queryAll, fvs)
+	return x.find(ctx, "all", x.queryAll, map[string]interface{}{})
 }
 
 // Filter implements {{ .C.Message.QualifiedDalKind }}Collection.Filter
@@ -327,10 +348,10 @@ func (x *{{ .C.Message.Name }}Collection) Filter(ctx {{ .P.Context }}.Context, f
 		query = {{ .P.Fmt }}.Sprintf("%s WHERE %s", query, {{ .P.Strings }}.Join(fields, " AND "))
 	}
 
-	return x.find(ctx, "filter", query, fvs)
+	return x.find(ctx, "filter", query, {{ ToSnakeCase .C.Message.Name }}FieldValuesFromGeneric(fvs))
 }
 
-func (x *{{ .C.Message.Name }}Collection) find(ctx {{ .P.Context }}.Context, label string, query string, fvs *{{ .C.Message.QualifiedDalKind }}FieldValues) ([]*{{ .C.Message.QualifiedKind }}, error) {
+func (x *{{ .C.Message.Name }}Collection) find(ctx {{ .P.Context }}.Context, label string, query string, fvs interface{}) ([]*{{ .C.Message.QualifiedKind }}, error) {
 	var err error
 	start := {{ .P.Time }}.Now()
 	{{ .P.Stats }}.Record(ctx, {{ ToCamelCase .C.Message.Name }}Inflight.M(1))
@@ -351,7 +372,7 @@ func (x *{{ .C.Message.Name }}Collection) find(ctx {{ .P.Context }}.Context, lab
 		{{ .P.Stats }}.Record(ctx, {{ ToCamelCase .C.Message.Name }}Latency.M(dur), {{ ToCamelCase .C.Message.Name }}Inflight.M(-1))
 	}()
 
-	rows, err := x.db.QueryWithReplacements(ctx, query, fieldValuesFromGeneric(fvs))
+	rows, err := x.db.QueryWithReplacements(ctx, query, fvs)
 	if err != nil {
 		return nil, err
 	}
@@ -386,10 +407,10 @@ func (x *{{ .C.Message.Name }}Collection) find(ctx {{ .P.Context }}.Context, lab
 		"Context": c.File.QualifiedPackageName("context"),
 		"Fmt":     c.File.QualifiedPackageName("fmt"),
 		"SQL":     c.File.QualifiedPackageName("database/sql"),
-		"Strings": c.File.QualifiedPackageName("strings"),
-		"Time":    c.File.QualifiedPackageName("time"),
 		"Stats":   c.File.QualifiedPackageName("go.opencensus.io/stats"),
+		"Strings": c.File.QualifiedPackageName("strings"),
 		"Tag":     c.File.QualifiedPackageName("go.opencensus.io/tag"),
+		"Time":    c.File.QualifiedPackageName("time"),
 	}
 
 	fields := []string{}
@@ -427,14 +448,14 @@ func (c *Collection) defineQueries() error {
 		// {{ ToTitleCase $q.Name }} implements {{ $C.Message.QualifiedDalKind }}Collection.{{ ToTitleCase $q.Name }}
 		func (x *{{ $C.Message.Name }}Collection){{ ToTitleCase $q.Name }}(ctx {{ $P.Context }}.Context
 			{{- range $a := $q.Args -}}
-				{{- $f := ($C.Fields.ByName $a) -}}
-				, {{ ToSnakeCase $f.Name }} {{ $f.QualifiedKind }}
+				{{- $arg := (Arg $C.File $C.Fields $a) -}}
+				, {{ ToSnakeCase $arg.Name }} {{ $arg.QualifiedKind }}
 			{{- end -}}
 		) ([]*{{ $C.Message.QualifiedKind }}, error) {
-			fvs := &{{ $C.Message.QualifiedDalKind }}FieldValues{
+			fvs := map[string]interface{}{
 				{{- range $a := $q.Args -}}
-				{{- $f := ($C.Fields.ByName $a) }}
-					{{ ToTitleCase $f.Name }}: {{ $f.ToRef }}{{ ToSnakeCase $f.Name }},
+					{{- $arg := (Arg $C.File $C.Fields $a) -}}
+					"{{ $arg.QueryName }}": {{ $arg.ToRef }}{{ ToSnakeCase $arg.Name }},
 				{{- end }}
 			}
 			return x.find(ctx, "{{ ToSnakeCase $q.Name }}", x.query{{ ToTitleCase $q.Name }}, fvs)
@@ -445,6 +466,7 @@ func (c *Collection) defineQueries() error {
 
 	tmpl, err := template.New("definePostgresQueries").
 		Funcs(template.FuncMap{
+			"Arg":         NewArg,
 			"ToSnakeCase": protocgenlib.ToSnakeCase,
 			"ToTitleCase": protocgenlib.ToTitleCase,
 		}).
@@ -595,7 +617,7 @@ type {{ .C.Message.Name }}FieldValues struct {
 	{{ end -}}
 }
 
-func fieldValuesFromGeneric(y *{{ .C.Message.QualifiedDalKind }}FieldValues) *{{ .C.Message.Name }}FieldValues {
+func {{ ToSnakeCase .C.Message.Name }}FieldValuesFromGeneric(y *{{ .C.Message.QualifiedDalKind }}FieldValues) *{{ .C.Message.Name }}FieldValues {
 	f := &{{ .C.Message.Name }}FieldValues{}
 	{{ range $n := .C.Fields.Names -}}
 		{{- $f := ($C.Fields.ByName $n) -}}
@@ -648,7 +670,7 @@ type {{ .C.Message.Name }}Writer struct {
 	{{ end -}}
 }
 
-func writerFromGeneric(y *{{ .C.Message.QualifiedKind }}) *{{ .C.Message.Name }}Writer {
+func {{ ToSnakeCase .C.Message.Name }}WriterFromGeneric(y *{{ .C.Message.QualifiedKind }}) *{{ .C.Message.Name }}Writer {
 	x := &{{ .C.Message.Name }}Writer{}
 	{{ range $n := .C.Fields.Names -}}
 		{{- $f := ($C.Fields.ByName $n) -}}
@@ -663,6 +685,7 @@ func writerFromGeneric(y *{{ .C.Message.QualifiedKind }}) *{{ .C.Message.Name }}
 	tmpl, err := template.New("definePostgresStructs").
 		Funcs(template.FuncMap{
 			"AsPointer":   protocgenlib.AsPointer,
+			"ToSnakeCase": protocgenlib.ToSnakeCase,
 			"ToTitleCase": protocgenlib.ToTitleCase,
 		}).
 		Parse(tmplSrc)
@@ -723,9 +746,10 @@ type {{ .C.Message.Name }}Config struct {
 func (c *Collection) defineTemplateProvider() error {
 	tmplSrc := `{{- $C := .C -}}
 {{- $P := .P -}}
+{{- $Generate := "go:generate go run github.com/maxbrunsfeld/counterfeiter/v6 ." -}}
 // {{ .C.Message.Name }}QueryTemplateProvider is an interface that returns the query templated that should be executed
 // to generate the queries that the collection will use.
-//go:generate go run github.com/maxbrunsfeld/counterfeiter/v6 . {{ .C.Message.Name }}QueryTemplateProvider
+//{{ $Generate }} {{ .C.Message.Name }}QueryTemplateProvider
 type {{ .C.Message.Name }}QueryTemplateProvider interface {
 	Insert() string
 	Upsert() string
@@ -772,9 +796,9 @@ func (x *{{ .C.Message.Name }}Queries) All() string {
 			return ` + "`" + `SELECT {{ "{{ .fields }}" }} FROM {{ "{{ .table }}" }} WHERE
 			1 = 1
 			{{- range $a := $q.Args -}}
-				{{- $f := $C.Fields.ByName $a -}}	
+				{{- $arg := (Arg $C.File $C.Fields $a) -}}
 				{{- "" }} AND
-				{{ $f.QueryName }} = :{{ $f.QueryName }}
+				{{ $arg.QueryName }} {{ $arg.Comparison }} :{{ $arg.QueryName }}
 			{{- end -}};` + "`" + `
 		}
 	{{ end -}}
@@ -783,6 +807,7 @@ func (x *{{ .C.Message.Name }}Queries) All() string {
 
 	tmpl, err := template.New("definePostgresTemplateProvider").
 		Funcs(template.FuncMap{
+			"Arg":         NewArg,
 			"ToTitleCase": protocgenlib.ToTitleCase,
 		}).
 		Parse(tmplSrc)
@@ -857,9 +882,9 @@ func register{{ ToTitleCase .C.Message.Name }}Metrics() {
 
 	p := map[string]string{
 		"Log":   c.File.QualifiedPackageName("log"),
+		"Stats": c.File.QualifiedPackageName("go.opencensus.io/stats"),
 		"Sync":  c.File.QualifiedPackageName("sync"),
 		"Tag":   c.File.QualifiedPackageName("go.opencensus.io/tag"),
-		"Stats": c.File.QualifiedPackageName("go.opencensus.io/stats"),
 		"View":  c.File.QualifiedPackageName("go.opencensus.io/stats/view"),
 	}
 

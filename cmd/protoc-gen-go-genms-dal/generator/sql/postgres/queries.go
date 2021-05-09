@@ -1,36 +1,18 @@
 package postgres
 
-import "github.com/rleszilm/genms/cmd/protoc-gen-go-genms-dal/annotations"
+import (
+	"github.com/rleszilm/genms/cmd/protoc-gen-go-genms-dal/annotations"
+	"github.com/rleszilm/genms/cmd/protoc-gen-go-genms-dal/generator"
+)
 
 // Queries is a struct that contains data about the messages queries.
 type Queries struct {
-	queryNames    []string
-	queriesByName map[string]*Query
+	*generator.Queries
 }
 
-// Queries returns the query names.
-func (q *Queries) Names() []string {
-	return q.queryNames
-}
-
-// ByName returns the specified query.
-func (q *Queries) ByName(n string) *Query {
-	return q.queriesByName[n]
-}
-
-// NewQueries returns a new queries.
-func NewQueries(opts *annotations.DalOptions) *Queries {
-	queryNames := []string{}
-	queriesByName := map[string]*Query{}
-
-	for _, q := range opts.Queries {
-		query := NewQuery(q)
-		queryNames = append(queryNames, query.Name)
-		queriesByName[query.Name] = query
-	}
-
+// AsQueries wraps a Queries.
+func NewQueries(file *File, fields *Fields, opts *annotations.DalOptions) *Queries {
 	return &Queries{
-		queryNames:    queryNames,
-		queriesByName: queriesByName,
+		Queries: generator.NewQueries(file.Generator(), fields.Generator(), opts),
 	}
 }

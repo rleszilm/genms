@@ -37,7 +37,7 @@ test:
 	go test -coverprofile=cover.out $(TEST_OPTS) $(TESTS)
 
 tool-chain:
-	go get -u \
+	go get \
 		github.com/grpc-ecosystem/grpc-gateway/v2/protoc-gen-grpc-gateway \
 		github.com/grpc-ecosystem/grpc-gateway/v2/protoc-gen-openapiv2 \
 		github.com/envoyproxy/protoc-gen-validate \

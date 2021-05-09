@@ -60,6 +60,7 @@ type Channel struct {
 	nameError   string
 	nameFatal   string
 	namePanic   string
+	namePrint   string
 }
 
 // Trace logs Trace level messages
@@ -172,6 +173,16 @@ func (c *Channel) Panicf(msg string, args ...interface{}) {
 	c.Panic(fmt.Sprintf(msg, args...))
 }
 
+// Print logs messages as long as the channel is not explicitly disabled.
+func (c *Channel) Print(args ...interface{}) {
+	c.log.Println(append([]interface{}{c.namePanic}, args...)...)
+}
+
+// Printf logs messages as long as the channel is not explicitly disabled.
+func (c *Channel) Printf(msg string, args ...interface{}) {
+	c.Print(fmt.Sprintf(msg, args...))
+}
+
 // WithFlags sets the flags on the underlying logger.
 func (c *Channel) WithFlags(flags int) {
 	c.log.SetFlags(flags)
@@ -275,6 +286,7 @@ func NewChannel(name string) *Channel {
 		nameError:   fmt.Sprintf("[Error](%s):", name),
 		nameFatal:   fmt.Sprintf("[Fatal](%s):", name),
 		namePanic:   fmt.Sprintf("[Panic](%s):", name),
+		namePrint:   fmt.Sprintf("[Print](%s):", name),
 	}
 	return channels[name]
 }
