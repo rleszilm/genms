@@ -9,7 +9,6 @@ require (
 	github.com/go-redis/redis/v8 v8.4.11
 	github.com/go-test/deep v1.0.7
 	github.com/golang/glog v0.0.0-20210429001901-424d2337a529 // indirect
-	github.com/golang/protobuf v1.5.2
 	github.com/graphql-go/graphql v0.7.9
 	github.com/grpc-ecosystem/go-grpc-middleware v1.2.2
 	github.com/grpc-ecosystem/grpc-gateway/v2 v2.4.0
@@ -24,10 +23,10 @@ require (
 	go.mongodb.org/mongo-driver v1.4.5
 	go.opencensus.io v0.22.6
 	golang.org/x/mod v0.4.2 // indirect
-	golang.org/x/net v0.0.0-20210428140749-89ef3d95e781 // indirect
-	golang.org/x/sys v0.0.0-20210426230700-d19ff857e887 // indirect
+	golang.org/x/net v0.0.0-20210508051633-16afe75a6701 // indirect
+	golang.org/x/sys v0.0.0-20210507161434-a76c4d0a0096 // indirect
 	golang.org/x/tools v0.1.0
-	google.golang.org/genproto v0.0.0-20210427215850-f767ed18ee4d
+	google.golang.org/genproto v0.0.0-20210506142907-4a47615972c2
 	google.golang.org/grpc v1.37.0
 	google.golang.org/protobuf v1.26.0
 	gopkg.in/yaml.v2 v2.4.0 // indirect
