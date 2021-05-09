@@ -26,7 +26,7 @@ func AsFile(file *protocgenlib.File) *File {
 	}
 }
 
-// PostgresPackageName returns the name of the dal package.
+// PostgresPackageName returns the name of the dal  package.
 func (f *File) PostgresPackageName() string {
 	return "postgres_" + f.File.DalPackageName()
 }

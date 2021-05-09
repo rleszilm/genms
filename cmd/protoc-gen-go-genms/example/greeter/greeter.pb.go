@@ -7,10 +7,6 @@
 package greeter
 
 import (
-<<<<<<< HEAD
-=======
-	proto "github.com/golang/protobuf/proto"
->>>>>>> master
 	_ "github.com/rleszilm/genms/cmd/protoc-gen-go-genms/annotations"
 	_ "github.com/rleszilm/grpc-graphql-gateway/graphql"
 	_ "google.golang.org/genproto/googleapis/api/annotations"
