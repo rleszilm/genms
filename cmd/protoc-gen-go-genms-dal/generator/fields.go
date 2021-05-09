@@ -21,7 +21,17 @@ func AsFields(fields *protocgenlib.Fields) *Fields {
 	}
 }
 
+// Generator returns the generator level Fields
+func (f *Fields) Generator() *Fields {
+	return f
+}
+
 // ByName returns the specified field.
 func (f *Fields) ByName(n string) *Field {
-	return AsField(f.Fields.ByName(n))
+	field := f.Fields.ByName(n)
+	if field == nil {
+		return nil
+	}
+
+	return AsField(field.ProtocGenLib())
 }

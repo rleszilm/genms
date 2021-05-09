@@ -25,6 +25,11 @@ func AsFile(file *protocgenlib.File) *File {
 	}
 }
 
+// Generator returns the underlying generator.File
+func (f *File) Generator() *File {
+	return f
+}
+
 // DalPackageName returns the name of the dal  package.
 func (f *File) DalPackageName() string {
 	return "dal_" + f.File.PackageName()

@@ -5,49 +5,64 @@ import (
 	"context"
 	"sync"
 
-	usersa "github.com/rleszilm/genms/cmd/protoc-gen-go-genms-dal/example/users"
-	users "github.com/rleszilm/genms/cmd/protoc-gen-go-genms-dal/example/users/dal"
+	"github.com/rleszilm/genms/cmd/protoc-gen-go-genms-dal/example/users"
+	dal_users "github.com/rleszilm/genms/cmd/protoc-gen-go-genms-dal/example/users/dal"
 )
 
 type FakeUserCollectionWriter struct {
-	InsertStub        func(context.Context, *usersa.User) (*usersa.User, error)
+	InsertStub        func(context.Context, *users.User) (*users.User, error)
 	insertMutex       sync.RWMutex
 	insertArgsForCall []struct {
 		arg1 context.Context
-		arg2 *usersa.User
+		arg2 *users.User
 	}
 	insertReturns struct {
-		result1 *usersa.User
+		result1 *users.User
 		result2 error
 	}
 	insertReturnsOnCall map[int]struct {
-		result1 *usersa.User
+		result1 *users.User
 		result2 error
 	}
-	UpsertStub        func(context.Context, *usersa.User) (*usersa.User, error)
+	UpdateStub        func(context.Context, *users.User, *dal_users.UserFieldValues) (*users.User, error)
+	updateMutex       sync.RWMutex
+	updateArgsForCall []struct {
+		arg1 context.Context
+		arg2 *users.User
+		arg3 *dal_users.UserFieldValues
+	}
+	updateReturns struct {
+		result1 *users.User
+		result2 error
+	}
+	updateReturnsOnCall map[int]struct {
+		result1 *users.User
+		result2 error
+	}
+	UpsertStub        func(context.Context, *users.User) (*users.User, error)
 	upsertMutex       sync.RWMutex
 	upsertArgsForCall []struct {
 		arg1 context.Context
-		arg2 *usersa.User
+		arg2 *users.User
 	}
 	upsertReturns struct {
-		result1 *usersa.User
+		result1 *users.User
 		result2 error
 	}
 	upsertReturnsOnCall map[int]struct {
-		result1 *usersa.User
+		result1 *users.User
 		result2 error
 	}
 	invocations      map[string][][]interface{}
 	invocationsMutex sync.RWMutex
 }
 
-func (fake *FakeUserCollectionWriter) Insert(arg1 context.Context, arg2 *usersa.User) (*usersa.User, error) {
+func (fake *FakeUserCollectionWriter) Insert(arg1 context.Context, arg2 *users.User) (*users.User, error) {
 	fake.insertMutex.Lock()
 	ret, specificReturn := fake.insertReturnsOnCall[len(fake.insertArgsForCall)]
 	fake.insertArgsForCall = append(fake.insertArgsForCall, struct {
 		arg1 context.Context
-		arg2 *usersa.User
+		arg2 *users.User
 	}{arg1, arg2})
 	fake.recordInvocation("Insert", []interface{}{arg1, arg2})
 	fake.insertMutex.Unlock()
@@ -67,51 +82,116 @@ func (fake *FakeUserCollectionWriter) InsertCallCount() int {
 	return len(fake.insertArgsForCall)
 }
 
-func (fake *FakeUserCollectionWriter) InsertCalls(stub func(context.Context, *usersa.User) (*usersa.User, error)) {
+func (fake *FakeUserCollectionWriter) InsertCalls(stub func(context.Context, *users.User) (*users.User, error)) {
 	fake.insertMutex.Lock()
 	defer fake.insertMutex.Unlock()
 	fake.InsertStub = stub
 }
 
-func (fake *FakeUserCollectionWriter) InsertArgsForCall(i int) (context.Context, *usersa.User) {
+func (fake *FakeUserCollectionWriter) InsertArgsForCall(i int) (context.Context, *users.User) {
 	fake.insertMutex.RLock()
 	defer fake.insertMutex.RUnlock()
 	argsForCall := fake.insertArgsForCall[i]
 	return argsForCall.arg1, argsForCall.arg2
 }
 
-func (fake *FakeUserCollectionWriter) InsertReturns(result1 *usersa.User, result2 error) {
+func (fake *FakeUserCollectionWriter) InsertReturns(result1 *users.User, result2 error) {
 	fake.insertMutex.Lock()
 	defer fake.insertMutex.Unlock()
 	fake.InsertStub = nil
 	fake.insertReturns = struct {
-		result1 *usersa.User
+		result1 *users.User
 		result2 error
 	}{result1, result2}
 }
 
-func (fake *FakeUserCollectionWriter) InsertReturnsOnCall(i int, result1 *usersa.User, result2 error) {
+func (fake *FakeUserCollectionWriter) InsertReturnsOnCall(i int, result1 *users.User, result2 error) {
 	fake.insertMutex.Lock()
 	defer fake.insertMutex.Unlock()
 	fake.InsertStub = nil
 	if fake.insertReturnsOnCall == nil {
 		fake.insertReturnsOnCall = make(map[int]struct {
-			result1 *usersa.User
+			result1 *users.User
 			result2 error
 		})
 	}
 	fake.insertReturnsOnCall[i] = struct {
-		result1 *usersa.User
+		result1 *users.User
 		result2 error
 	}{result1, result2}
 }
 
-func (fake *FakeUserCollectionWriter) Upsert(arg1 context.Context, arg2 *usersa.User) (*usersa.User, error) {
+func (fake *FakeUserCollectionWriter) Update(arg1 context.Context, arg2 *users.User, arg3 *dal_users.UserFieldValues) (*users.User, error) {
+	fake.updateMutex.Lock()
+	ret, specificReturn := fake.updateReturnsOnCall[len(fake.updateArgsForCall)]
+	fake.updateArgsForCall = append(fake.updateArgsForCall, struct {
+		arg1 context.Context
+		arg2 *users.User
+		arg3 *dal_users.UserFieldValues
+	}{arg1, arg2, arg3})
+	fake.recordInvocation("Update", []interface{}{arg1, arg2, arg3})
+	fake.updateMutex.Unlock()
+	if fake.UpdateStub != nil {
+		return fake.UpdateStub(arg1, arg2, arg3)
+	}
+	if specificReturn {
+		return ret.result1, ret.result2
+	}
+	fakeReturns := fake.updateReturns
+	return fakeReturns.result1, fakeReturns.result2
+}
+
+func (fake *FakeUserCollectionWriter) UpdateCallCount() int {
+	fake.updateMutex.RLock()
+	defer fake.updateMutex.RUnlock()
+	return len(fake.updateArgsForCall)
+}
+
+func (fake *FakeUserCollectionWriter) UpdateCalls(stub func(context.Context, *users.User, *dal_users.UserFieldValues) (*users.User, error)) {
+	fake.updateMutex.Lock()
+	defer fake.updateMutex.Unlock()
+	fake.UpdateStub = stub
+}
+
+func (fake *FakeUserCollectionWriter) UpdateArgsForCall(i int) (context.Context, *users.User, *dal_users.UserFieldValues) {
+	fake.updateMutex.RLock()
+	defer fake.updateMutex.RUnlock()
+	argsForCall := fake.updateArgsForCall[i]
+	return argsForCall.arg1, argsForCall.arg2, argsForCall.arg3
+}
+
+func (fake *FakeUserCollectionWriter) UpdateReturns(result1 *users.User, result2 error) {
+	fake.updateMutex.Lock()
+	defer fake.updateMutex.Unlock()
+	fake.UpdateStub = nil
+	fake.updateReturns = struct {
+		result1 *users.User
+		result2 error
+	}{result1, result2}
+}
+
+func (fake *FakeUserCollectionWriter) UpdateReturnsOnCall(i int, result1 *users.User, result2 error) {
+	fake.updateMutex.Lock()
+	defer fake.updateMutex.Unlock()
+	fake.UpdateStub = nil
+	if fake.updateReturnsOnCall == nil {
+		fake.updateReturnsOnCall = make(map[int]struct {
+			result1 *users.User
+			result2 error
+		})
+	}
+	fake.updateReturnsOnCall[i] = struct {
+		result1 *users.User
+		result2 error
+	}{result1, result2}
+}
+
+func (fake *FakeUserCollectionWriter) Upsert(arg1 context.Context, arg2 *users.User) (*users.User, error) {
 	fake.upsertMutex.Lock()
 	ret, specificReturn := fake.upsertReturnsOnCall[len(fake.upsertArgsForCall)]
 	fake.upsertArgsForCall = append(fake.upsertArgsForCall, struct {
 		arg1 context.Context
-		arg2 *usersa.User
+		arg2 *users.User
 	}{arg1, arg2})
 	fake.recordInvocation("Upsert", []interface{}{arg1, arg2})
 	fake.upsertMutex.Unlock()
@@ -131,41 +211,41 @@ func (fake *FakeUserCollectionWriter) UpsertCallCount() int {
 	return len(fake.upsertArgsForCall)
 }
 
-func (fake *FakeUserCollectionWriter) UpsertCalls(stub func(context.Context, *usersa.User) (*usersa.User, error)) {
+func (fake *FakeUserCollectionWriter) UpsertCalls(stub func(context.Context, *users.User) (*users.User, error)) {
 	fake.upsertMutex.Lock()
 	defer fake.upsertMutex.Unlock()
 	fake.UpsertStub = stub
 }
 
-func (fake *FakeUserCollectionWriter) UpsertArgsForCall(i int) (context.Context, *usersa.User) {
+func (fake *FakeUserCollectionWriter) UpsertArgsForCall(i int) (context.Context, *users.User) {
 	fake.upsertMutex.RLock()
 	defer fake.upsertMutex.RUnlock()
 	argsForCall := fake.upsertArgsForCall[i]
 	return argsForCall.arg1, argsForCall.arg2
 }
 
-func (fake *FakeUserCollectionWriter) UpsertReturns(result1 *usersa.User, result2 error) {
+func (fake *FakeUserCollectionWriter) UpsertReturns(result1 *users.User, result2 error) {
 	fake.upsertMutex.Lock()
 	defer fake.upsertMutex.Unlock()
 	fake.UpsertStub = nil
 	fake.upsertReturns = struct {
-		result1 *usersa.User
+		result1 *users.User
 		result2 error
 	}{result1, result2}
 }
 
-func (fake *FakeUserCollectionWriter) UpsertReturnsOnCall(i int, result1 *usersa.User, result2 error) {
+func (fake *FakeUserCollectionWriter) UpsertReturnsOnCall(i int, result1 *users.User, result2 error) {
 	fake.upsertMutex.Lock()
 	defer fake.upsertMutex.Unlock()
 	fake.UpsertStub = nil
 	if fake.upsertReturnsOnCall == nil {
 		fake.upsertReturnsOnCall = make(map[int]struct {
-			result1 *usersa.User
+			result1 *users.User
 			result2 error
 		})
 	}
 	fake.upsertReturnsOnCall[i] = struct {
-		result1 *usersa.User
+		result1 *users.User
 		result2 error
 	}{result1, result2}
 }
@@ -175,6 +255,8 @@ func (fake *FakeUserCollectionWriter) Invocations() map[string][][]interface{} {
 	defer fake.invocationsMutex.RUnlock()
 	fake.insertMutex.RLock()
 	defer fake.insertMutex.RUnlock()
+	fake.updateMutex.RLock()
+	defer fake.updateMutex.RUnlock()
 	fake.upsertMutex.RLock()
 	defer fake.upsertMutex.RUnlock()
 	copiedInvocations := map[string][][]interface{}{}
@@ -196,4 +278,4 @@ func (fake *FakeUserCollectionWriter) recordInvocation(key string, args []interf
 	fake.invocations[key] = append(fake.invocations[key], args)
 }
 
-var _ users.UserCollectionWriter = new(FakeUserCollectionWriter)
+var _ dal_users.UserCollectionWriter = new(FakeUserCollectionWriter)

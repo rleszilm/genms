@@ -26,11 +26,6 @@ func AsFile(file *protocgenlib.File) *File {
 	}
 }
 
-// Generator returns the underlying generator.File
-func (f *File) Generator() *generator.File {
-	return f.File
-}
-
 // PostgresPackageName returns the name of the dal  package.
 func (f *File) PostgresPackageName() string {
 	return "postgres_" + f.File.DalPackageName()

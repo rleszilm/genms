@@ -1,6 +1,8 @@
 package protocgenlib
 
-import "google.golang.org/protobuf/compiler/protogen"
+import (
+	"google.golang.org/protobuf/compiler/protogen"
+)
 
 // Field adds functionality to the underlying Field.
 type Field struct {
