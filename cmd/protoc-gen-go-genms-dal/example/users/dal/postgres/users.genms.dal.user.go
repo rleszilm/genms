@@ -88,7 +88,7 @@ func (x *UserCollection) DoInsert(ctx context.Context, arg *users.User) (sql1.Re
 		stats.Record(ctx, userLatency.M(dur), userInflight.M(-1))
 	}()
 
-	return x.db.ExecWithReplacements(ctx, x.execInsert, writerFromGeneric(arg))
+	return x.db.ExecWithReplacements(ctx, x.execInsert, userWriterFromGeneric(arg))
 }
 
 // DoUpsert provides the base logic for dal.UserCollection.Upsert.
@@ -115,7 +115,7 @@ func (x *UserCollection) DoUpsert(ctx context.Context, arg *users.User) (sql1.Re
 		stats.Record(ctx, userLatency.M(dur), userInflight.M(-1))
 	}()
 
-	return x.db.ExecWithReplacements(ctx, x.execUpsert, writerFromGeneric(arg))
+	return x.db.ExecWithReplacements(ctx, x.execUpsert, userWriterFromGeneric(arg))
 }
 
 // DoUpdate provides the base logic for dal.UserCollection.Upsert.
@@ -200,7 +200,7 @@ func (x *UserCollection) DoUpdate(ctx context.Context, fvs *dal.UserFieldValues,
 		return nil, err
 	}
 
-	return x.db.ExecWithReplacements(ctx, string(buf.Bytes()), fieldValuesFromGeneric(fvs))
+	return x.db.ExecWithReplacements(ctx, string(buf.Bytes()), userFieldValuesFromGeneric(fvs))
 }
 
 // All implements dal.UserCollection.All
@@ -255,7 +255,7 @@ func (x *UserCollection) Filter(ctx context.Context, fvs *dal.UserFieldValues) (
 		query = fmt.Sprintf("%s WHERE %s", query, strings.Join(fields, " AND "))
 	}
 
-	return x.find(ctx, "filter", query, fieldValuesFromGeneric(fvs))
+	return x.find(ctx, "filter", query, userFieldValuesFromGeneric(fvs))
 }
 
 func (x *UserCollection) find(ctx context.Context, label string, query string, fvs interface{}) ([]*users.User, error) {
@@ -440,7 +440,7 @@ type UserFieldValues struct {
 	RenamedRest     *string `db:"renamed_rest"`
 }
 
-func fieldValuesFromGeneric(y *dal.UserFieldValues) *UserFieldValues {
+func userFieldValuesFromGeneric(y *dal.UserFieldValues) *UserFieldValues {
 	f := &UserFieldValues{}
 	if y.ScalarInt32 != nil {
 		f.ScalarInt32 = y.ScalarInt32
@@ -563,7 +563,7 @@ type UserWriter struct {
 	RenamedRest     string `db:"renamed_rest"`
 }
 
-func writerFromGeneric(y *users.User) *UserWriter {
+func userWriterFromGeneric(y *users.User) *UserWriter {
 	x := &UserWriter{}
 	x.ScalarInt32 = y.ScalarInt32
 	x.ScalarInt64 = y.ScalarInt64

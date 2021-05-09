@@ -341,6 +341,7 @@ func NewUserCollection(client *http.Client, urls UserUrlTemplateProvider, config
 	}
 	coll.url = u
 
+	coll.urlAll = urls.All()
 	if urls.OneParam() != "" {
 		urlTmplOneParam, err := template.New("urlTmplOneParam").
 			Funcs(template.FuncMap{}).
@@ -456,6 +457,7 @@ type UserConfig struct {
 // to generate the queries that the collection will use.
 //go:generate go run github.com/maxbrunsfeld/counterfeiter/v6 . UserUrlTemplateProvider
 type UserUrlTemplateProvider interface {
+	All() string
 	OneParam() string
 	MultipleParam() string
 	MessageParam() string
