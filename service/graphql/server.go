@@ -5,13 +5,14 @@ import (
 
 	"github.com/jinzhu/copier"
 	"github.com/rleszilm/genms/service"
+	grpc_service "github.com/rleszilm/genms/service/grpc"
 	rest_service "github.com/rleszilm/genms/service/rest"
 	"github.com/rleszilm/grpc-graphql-gateway/options"
 	"github.com/rleszilm/grpc-graphql-gateway/runtime"
 )
 
-// GraphqlProxy is a function that registers http routes to a grpc server.
-type GraphqlProxy func(*runtime.ServeMux, *options.ServerOptions) error
+// GrpcProxyRoutes is a function that registers http routes to a grpc server.
+type GrpcProxyRoutes func(*runtime.ServeMux, *options.ServerOptions) error
 
 // Server is a service.Service that handles rest requests.
 type Server struct {
@@ -55,12 +56,7 @@ func (s *Server) Addr() string {
 }
 
 // WithGrpcProxy adds rest methods that proxy to a grpc server.
-func (s *Server) WithGrpcProxy(_ context.Context, proxyName string, proxyFunc GraphqlProxy) error {
-	proxy, ok := s.config.Proxies[proxyName]
-	if !ok {
-		return service.ErrNoProxy
-	}
-
+func (s *Server) WithGrpcProxy(_ context.Context, proxy *grpc_service.Proxy, proxyFunc GrpcProxyRoutes) error {
 	if !proxy.Enabled {
 		return nil
 	}

@@ -7,18 +7,18 @@ import (
 
 	"github.com/grpc-ecosystem/grpc-gateway/v2/runtime"
 	"github.com/rleszilm/genms/service"
+	grpc_service "github.com/rleszilm/genms/service/grpc"
 	"google.golang.org/grpc"
 )
 
-// GrpcProxy is a function that registers http routes to a grpc server.
-type GrpcProxy func(context.Context, *runtime.ServeMux, string, []grpc.DialOption) error
+// GrpcProxyRoutes is a function that registers http routes to a grpc server.
+type GrpcProxyRoutes func(context.Context, *runtime.ServeMux, string, []grpc.DialOption) error
 
 // Server is a service.Service that handles rest requests.
 type Server struct {
 	service.Dependencies
 	name    string
 	config  *Config
-	proxies map[string]*ProxyGrpc
 	server  *http.Server
 	mux     *http.ServeMux
 	grpcMux *runtime.ServeMux
@@ -82,17 +82,7 @@ func (s *Server) WithRouteFunc(pattern string, handler http.HandlerFunc) error {
 }
 
 // WithGrpcProxy adds rest methods that proxy to a grpc server.
-func (s *Server) WithGrpcProxy(ctx context.Context, proxy *ProxyGrpc) {
-	s.proxies[proxy.Name] = proxy
-}
-
-// WithGrpcProxyHandler adds rest methods that proxy to a grpc server.
-func (s *Server) WithGrpcProxyHandler(ctx context.Context, proxyName string, proxyFunc GrpcProxy) error {
-	proxy, ok := s.proxies[proxyName]
-	if !ok {
-		return service.ErrNoProxy
-	}
-
+func (s *Server) WithGrpcProxy(ctx context.Context, proxy *grpc_service.Proxy, proxyFunc GrpcProxyRoutes) error {
 	if !proxy.Enabled {
 		return nil
 	}
@@ -119,9 +109,8 @@ func NewServer(name string, config *Config) (*Server, error) {
 	mux := http.NewServeMux()
 
 	s := &Server{
-		name:    name,
-		config:  config,
-		proxies: map[string]*ProxyGrpc{},
+		name:   name,
+		config: config,
 		server: &http.Server{
 			Addr:    config.Addr,
 			Handler: mux,
