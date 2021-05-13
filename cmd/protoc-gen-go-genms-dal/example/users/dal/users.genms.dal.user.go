@@ -4,6 +4,7 @@ package dal_users
 import (
 	context "context"
 	errors "errors"
+	fmt "fmt"
 	users "github.com/rleszilm/genms/cmd/protoc-gen-go-genms-dal/example/users"
 	service "github.com/rleszilm/genms/service"
 )
@@ -124,4 +125,19 @@ func (x *UnimplementedUserCollection) ProviderStubOnly(_ context.Context) ([]*us
 // InterfaceStubOnly implements UserCollection.InterfaceStubOnly
 func (x *UnimplementedUserCollection) InterfaceStubOnly(_ context.Context) ([]*users.User, error) {
 	return nil, ErrUserCollectionMethodImpl
+}
+
+func ReturnsOne(xs []*users.User, err error) (*users.User, error) {
+	if err != nil {
+		return nil, err
+	}
+
+	switch len(xs) {
+	case 0:
+		return nil, err
+	case 1:
+		return xs[0], err
+	default:
+		return nil, fmt.Errorf("users.user: more than 1 value returned - %w", err)
+	}
 }
