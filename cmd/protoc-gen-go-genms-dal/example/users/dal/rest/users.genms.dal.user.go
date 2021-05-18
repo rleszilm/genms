@@ -67,28 +67,33 @@ func (x *UserCollection) DoReq(ctx context.Context, label string, req *http.Requ
 	var err error
 	var resp *http.Response
 	start := time.Now()
-	stats.Record(ctx, userInflight.M(1))
+
+	ctx, _ = tag.New(ctx,
+		tag.Upsert(tagQueryCollection, "user"),
+	)
+
+	ctx, _ = tag.New(ctx,
+		tag.Upsert(tagQueryName, label),
+	)
+
+	stats.Record(ctx, measureInflight.M(1))
 	defer func() {
 		stop := time.Now()
 		dur := float64(stop.Sub(start).Nanoseconds()) / float64(time.Millisecond)
 
 		if resp != nil {
 			ctx, _ = tag.New(ctx,
-				tag.Upsert(userQueryCode, strconv.Itoa(resp.StatusCode)),
+				tag.Upsert(tagQueryCode, strconv.Itoa(resp.StatusCode)),
 			)
 		}
 
 		if err != nil {
 			ctx, _ = tag.New(ctx,
-				tag.Upsert(userQueryError, label),
+				tag.Upsert(tagQueryError, label),
 			)
 		}
 
-		ctx, _ = tag.New(ctx,
-			tag.Upsert(userQueryName, label),
-		)
-
-		stats.Record(ctx, userLatency.M(dur), userInflight.M(-1))
+		stats.Record(ctx, measureLatency.M(dur), measureInflight.M(-1))
 	}()
 
 	ctx, cancel := context.WithTimeout(ctx, x.config.Timeout)
@@ -328,7 +333,7 @@ func (x *UserCollection) ProviderStubOnly(ctx context.Context) ([]*users.User, e
 
 // NewUserCollection returns a new UserCollection.
 func NewUserCollection(client *http.Client, urls UserUrlTemplateProvider, config *UserConfig) (*UserCollection, error) {
-	registerUserMetricsOnce.Do(registerUserMetrics)
+	registerMetricsOnce.Do(registerMetrics)
 
 	coll := &UserCollection{
 		client: client,
@@ -468,30 +473,31 @@ type UserUrlTemplateProvider interface {
 
 // define metrics
 var (
-	userQueryName  = tag.MustNewKey("dal_rest_user")
-	userQueryCode  = tag.MustNewKey("dal_rest_user_code")
-	userQueryError = tag.MustNewKey("dal_rest_user_error")
+	tagQueryName       = tag.MustNewKey("dal_rest_query")
+	tagQueryCollection = tag.MustNewKey("dal_rest_collection")
+	tagQueryCode       = tag.MustNewKey("dal_rest_code")
+	tagQueryError      = tag.MustNewKey("dal_rest_error")
 
-	userLatency  = stats.Float64("user_latency", "Latency of User queries", stats.UnitMilliseconds)
-	userInflight = stats.Int64("user_inflight", "Count of User queries in flight", stats.UnitDimensionless)
+	measureLatency  = stats.Float64("dal_rest_latency", "Latency of queries", stats.UnitMilliseconds)
+	measureInflight = stats.Int64("dal_rest_inflight", "Count of queries in flight", stats.UnitDimensionless)
 
-	registerUserMetricsOnce sync.Once
+	registerMetricsOnce sync.Once
 )
 
-func registerUserMetrics() {
+func registerMetrics() {
 	views := []*view.View{
 		{
-			Name:        "dal_rest_user_latency",
-			Measure:     userLatency,
+			Name:        "dal_rest_latency",
+			Measure:     measureLatency,
 			Description: "The distribution of the query latencies",
-			TagKeys:     []tag.Key{userQueryName, userQueryCode, userQueryError},
+			TagKeys:     []tag.Key{tagQueryName, tagQueryCollection, tagQueryCode, tagQueryError},
 			Aggregation: view.Distribution(0, 25, 100, 200, 400, 800, 10000),
 		},
 		{
-			Name:        "dal_rest_user_inflight",
-			Measure:     userInflight,
+			Name:        "dal_rest_inflight",
+			Measure:     measureInflight,
 			Description: "The number of queries being processed",
-			TagKeys:     []tag.Key{userQueryName, userQueryCode},
+			TagKeys:     []tag.Key{tagQueryName, tagQueryCollection, tagQueryCode},
 			Aggregation: view.Sum(),
 		},
 	}

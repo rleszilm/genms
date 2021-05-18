@@ -7,6 +7,8 @@ import (
 
 	"github.com/rleszilm/genms/cmd/protoc-gen-go-genms-dal/annotations"
 	"github.com/rleszilm/genms/cmd/protoc-gen-go-genms-dal/generator"
+	"github.com/rleszilm/genms/cmd/protoc-gen-go-genms-dal/generator/cache"
+	"github.com/rleszilm/genms/cmd/protoc-gen-go-genms-dal/generator/keyvalue"
 	"github.com/rleszilm/genms/cmd/protoc-gen-go-genms-dal/generator/rest"
 	"github.com/rleszilm/genms/cmd/protoc-gen-go-genms-dal/generator/sql/postgres"
 	"google.golang.org/protobuf/compiler/protogen"
@@ -74,11 +76,34 @@ func generate(plugin *protogen.Plugin, file *protogen.File, msg *protogen.Messag
 	ext := proto.GetExtension(msgOpts, annotations.E_MessageOptions)
 	dalOpts := ext.(*annotations.DalOptions)
 
-	if len(dalOpts.Backends) > 0 {
-		// write interfaces
-		if err := generator.GenerateInterface(plugin, file, msg, dalOpts); err != nil {
-			return err
-		}
+	// write interfaces
+	if err := generator.GenerateInterface(plugin, file, msg, dalOpts); err != nil {
+		return err
+	}
+
+	// write keyvalue
+	if err := keyvalue.GenerateKeyValue(plugin, file, msg, dalOpts); err != nil {
+		return err
+	}
+
+	// write cache
+	if err := cache.GenerateCache(plugin, file, msg, dalOpts); err != nil {
+		return err
+	}
+
+	// write map cache
+	if err := cache.GenerateMap(plugin, file, msg, dalOpts); err != nil {
+		return err
+	}
+
+	// write lru cache
+	if err := cache.GenerateLRU(plugin, file, msg, dalOpts); err != nil {
+		return err
+	}
+
+	// write updater
+	if err := cache.GenerateUpdater(plugin, file, msg, dalOpts); err != nil {
+		return err
 	}
 
 	for _, be := range dalOpts.Backends {

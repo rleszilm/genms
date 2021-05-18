@@ -231,22 +231,26 @@ func (c *Collection) defineDefaultQueries() error {
 func (x *{{ .C.Message.Name }}Collection) DoInsert(ctx {{ .P.Context }}.Context, arg *{{ .C.Message.QualifiedKind }}) ({{ .P.SQL }}.Result, error) {
 	var err error
 	start := {{ .P.Time }}.Now()
-	{{ .P.Stats }}.Record(ctx, {{ ToCamelCase .C.Message.Name }}Inflight.M(1))
+
+	ctx, _ = {{ .P.Tag }}.New(ctx,
+		{{ .P.Tag }}.Upsert(tagQueryCollection, "{{ ToSnakeCase .C.Message.Name }}"),
+	)
+
+	ctx, _ = {{ .P.Tag }}.New(ctx,
+		{{ .P.Tag }}.Upsert(tagQueryName, "insert"),
+	)
+
 	defer func() {
 		stop := {{ .P.Time }}.Now()
 		dur := float64(stop.Sub(start).Nanoseconds()) / float64({{ .P.Time }}.Millisecond)
 
 		if err != nil {
-			ctx, err = {{ .P.Tag }}.New(ctx,
-				{{ .P.Tag }}.Insert({{ ToCamelCase .C.Message.Name }}QueryError, "{{ ToSnakeCase .C.Message.Name }}_insert"),
+			ctx, _ = {{ .P.Tag }}.New(ctx,
+				{{ .P.Tag }}.Insert(tagQueryError, "true"),
 			)
 		}
 
-		ctx, err = {{ .P.Tag }}.New(ctx,
-			{{ .P.Tag }}.Insert({{ ToCamelCase .C.Message.Name }}QueryName, "{{ ToSnakeCase .C.Message.Name }}_insert"),
-		)
-
-		{{ .P.Stats }}.Record(ctx, {{ ToCamelCase .C.Message.Name }}Latency.M(dur), {{ ToCamelCase .C.Message.Name }}Inflight.M(-1))
+		{{ .P.Stats }}.Record(ctx, measureLatency.M(dur), measureInflight.M(-1))
 	}()
 
 	return x.db.ExecWithReplacements(ctx, x.execInsert, {{ ToSnakeCase .C.Message.Name }}WriterFromGeneric(arg))
@@ -258,22 +262,26 @@ func (x *{{ .C.Message.Name }}Collection) DoInsert(ctx {{ .P.Context }}.Context,
 func (x *{{ .C.Message.Name }}Collection) DoUpsert(ctx {{ .P.Context }}.Context, arg *{{ .C.Message.QualifiedKind }}) ({{ .P.SQL }}.Result, error) {
 	var err error
 	start := {{ .P.Time }}.Now()
-	{{ .P.Stats }}.Record(ctx, {{ ToCamelCase .C.Message.Name }}Inflight.M(1))
+	
+	ctx, _ = {{ .P.Tag }}.New(ctx,
+		{{ .P.Tag }}.Upsert(tagQueryCollection, "{{ ToSnakeCase .C.Message.Name }}"),
+	)
+
+	ctx, _ = {{ .P.Tag }}.New(ctx,
+		{{ .P.Tag }}.Upsert(tagQueryName, "upsert"),
+	)
+
 	defer func() {
 		stop := {{ .P.Time }}.Now()
 		dur := float64(stop.Sub(start).Nanoseconds()) / float64({{ .P.Time }}.Millisecond)
 
 		if err != nil {
-			ctx, err = {{ .P.Tag }}.New(ctx,
-				{{ .P.Tag }}.Upsert({{ ToCamelCase .C.Message.Name }}QueryError, "{{ ToSnakeCase .C.Message.Name }}_upsert"),
+			ctx, _ = {{ .P.Tag }}.New(ctx,
+				{{ .P.Tag }}.Insert(tagQueryError, "true"),
 			)
 		}
 
-		ctx, err = {{ .P.Tag }}.New(ctx,
-			{{ .P.Tag }}.Upsert({{ ToCamelCase .C.Message.Name }}QueryName, "{{ ToSnakeCase .C.Message.Name }}_upsert"),
-		)
-
-		{{ .P.Stats }}.Record(ctx, {{ ToCamelCase .C.Message.Name }}Latency.M(dur), {{ ToCamelCase .C.Message.Name }}Inflight.M(-1))
+		{{ .P.Stats }}.Record(ctx, measureLatency.M(dur), measureInflight.M(-1))
 	}()
 
 	return x.db.ExecWithReplacements(ctx, x.execUpsert, {{ ToSnakeCase .C.Message.Name }}WriterFromGeneric(arg))
@@ -285,22 +293,26 @@ func (x *{{ .C.Message.Name }}Collection) DoUpsert(ctx {{ .P.Context }}.Context,
 func (x *{{ .C.Message.Name }}Collection) DoUpdate(ctx {{ .P.Context }}.Context, fvs *{{ .C.Message.QualifiedDalKind }}FieldValues, clause string) ({{ .P.SQL }}.Result, error) {
 	var err error
 	start := {{ .P.Time }}.Now()
-	{{ .P.Stats }}.Record(ctx, {{ ToCamelCase .C.Message.Name }}Inflight.M(1))
+	
+	ctx, _ = {{ .P.Tag }}.New(ctx,
+		{{ .P.Tag }}.Upsert(tagQueryCollection, "{{ ToSnakeCase .C.Message.Name }}"),
+	)
+
+	ctx, _ = {{ .P.Tag }}.New(ctx,
+		{{ .P.Tag }}.Upsert(tagQueryName, "update"),
+	)
+
 	defer func() {
 		stop := {{ .P.Time }}.Now()
 		dur := float64(stop.Sub(start).Nanoseconds()) / float64({{ .P.Time }}.Millisecond)
 
 		if err != nil {
-			ctx, err = {{ .P.Tag }}.New(ctx,
-				{{ .P.Tag }}.Upsert({{ ToCamelCase .C.Message.Name }}QueryError, "{{ ToSnakeCase .C.Message.Name }}_update"),
+			ctx, _ = {{ .P.Tag }}.New(ctx,
+				{{ .P.Tag }}.Insert(tagQueryError, "true"),
 			)
 		}
 
-		ctx, err = {{ .P.Tag }}.New(ctx,
-			{{ .P.Tag }}.Upsert({{ ToCamelCase .C.Message.Name }}QueryName, "{{ ToSnakeCase .C.Message.Name }}_update"),
-		)
-
-		{{ .P.Stats }}.Record(ctx, {{ ToCamelCase .C.Message.Name }}Latency.M(dur), {{ ToCamelCase .C.Message.Name }}Inflight.M(-1))
+		{{ .P.Stats }}.Record(ctx, measureLatency.M(dur), measureInflight.M(-1))
 	}()
 
 	updates := []string{}
@@ -354,22 +366,27 @@ func (x *{{ .C.Message.Name }}Collection) Filter(ctx {{ .P.Context }}.Context, f
 func (x *{{ .C.Message.Name }}Collection) find(ctx {{ .P.Context }}.Context, label string, query string, fvs interface{}) ([]*{{ .C.Message.QualifiedKind }}, error) {
 	var err error
 	start := {{ .P.Time }}.Now()
-	{{ .P.Stats }}.Record(ctx, {{ ToCamelCase .C.Message.Name }}Inflight.M(1))
+	
+	ctx, _ = {{ .P.Tag }}.New(ctx,
+		{{ .P.Tag }}.Upsert(tagQueryCollection, "{{ ToSnakeCase .C.Message.Name }}"),
+	)
+
+	ctx, _ = {{ .P.Tag }}.New(ctx,
+		{{ .P.Tag }}.Upsert(tagQueryName, label),
+	)
+	
+	{{ .P.Stats }}.Record(ctx, measureInflight.M(1))
 	defer func() {
 		stop := {{ .P.Time }}.Now()
 		dur := float64(stop.Sub(start).Nanoseconds()) / float64({{ .P.Time }}.Millisecond)
 
 		if err != nil {
-			ctx, err = {{ .P.Tag }}.New(ctx,
-				{{ .P.Tag }}.Upsert({{ ToCamelCase .C.Message.Name }}QueryError, label),
+			ctx, _ = {{ .P.Tag }}.New(ctx,
+				{{ .P.Tag }}.Upsert(tagQueryError, "true"),
 			)
 		}
 
-		ctx, err = {{ .P.Tag }}.New(ctx,
-			{{ .P.Tag }}.Upsert({{ ToCamelCase .C.Message.Name }}QueryName, label),
-		)
-
-		{{ .P.Stats }}.Record(ctx, {{ ToCamelCase .C.Message.Name }}Latency.M(dur), {{ ToCamelCase .C.Message.Name }}Inflight.M(-1))
+		{{ .P.Stats }}.Record(ctx, measureLatency.M(dur), measureInflight.M(-1))
 	}()
 
 	rows, err := x.db.QueryWithReplacements(ctx, query, fvs)
@@ -835,11 +852,12 @@ func (x *{{ .C.Message.Name }}Queries) All() string {
 func (c *Collection) defineMetrics() error {
 	tmplSrc := `// define metrics
 var (
-	{{ ToCamelCase .C.Message.Name }}QueryName = {{ .P.Tag }}.MustNewKey("dal_postgres_{{ ToSnakeCase .C.Message.Name }}")
-	{{ ToCamelCase .C.Message.Name }}QueryError = {{ .P.Tag }}.MustNewKey("dal_postgres_{{ ToSnakeCase .C.Message.Name }}_error")
+	tagQueryName = {{ .P.Tag }}.MustNewKey("dal_postgres_query")
+	tagQueryCollection = {{ .P.Tag }}.MustNewKey("dal_postgres_collection")
+	tagQueryError = {{ .P.Tag }}.MustNewKey("dal_postgres_error")
 
-	{{ ToCamelCase .C.Message.Name }}Latency = {{ .P.Stats }}.Float64("{{ ToSnakeCase .C.Message.Name }}_latency", "Latency of {{ .C.Message.Name }} queries", {{ .P.Stats }}.UnitMilliseconds)
-	{{ ToCamelCase .C.Message.Name }}Inflight = {{ .P.Stats }}.Int64("{{ ToSnakeCase .C.Message.Name }}_inflight", "Count of {{ .C.Message.Name }} queries in flight", {{ .P.Stats }}.UnitDimensionless)
+	measureLatency = {{ .P.Stats }}.Float64("dal_postgres_latency", "Latency of {{ .C.Message.Name }} queries", {{ .P.Stats }}.UnitMilliseconds)
+	measureInflight = {{ .P.Stats }}.Int64("dal_postgres_inflight", "Count of {{ .C.Message.Name }} queries in flight", {{ .P.Stats }}.UnitDimensionless)
 
 	register{{ ToTitleCase .C.Message.Name }}MetricsOnce {{ .P.Sync }}.Once
 )
@@ -847,17 +865,17 @@ var (
 func register{{ ToTitleCase .C.Message.Name }}Metrics() {
 	views := []*{{ .P.View }}.View{
 		{
-			Name:        "dal_postgres_{{ ToSnakeCase .C.Message.Name }}_latency",
-			Measure:     {{ ToCamelCase .C.Message.Name }}Latency,
+			Name:        "dal_postgres_latency",
+			Measure:     measureLatency,
 			Description: "The distribution of the query latencies",
-			TagKeys:     []{{ .P.Tag }}.Key{ {{ ToCamelCase .C.Message.Name }}QueryName, {{ ToCamelCase .C.Message.Name }}QueryError},
+			TagKeys:     []{{ .P.Tag }}.Key{ tagQueryName, tagQueryCollection, tagQueryError },
 			Aggregation: {{ .P.View }}.Distribution(0, 25, 100, 200, 400, 800, 10000),
 		},
 		{
-			Name:        "dal_postgres_{{ ToSnakeCase .C.Message.Name }}_inflight",
-			Measure:     {{ ToCamelCase .C.Message.Name }}Inflight,
+			Name:        "dal_postgres_inflight",
+			Measure:     measureInflight,
 			Description: "The number of queries being processed",
-			TagKeys:     []{{ .P.Tag }}.Key{ {{ ToCamelCase .C.Message.Name }}QueryName},
+			TagKeys:     []{{ .P.Tag }}.Key{ tagQueryName, tagQueryCollection },
 			Aggregation: {{ .P.View }}.Sum(),
 		},
 	}

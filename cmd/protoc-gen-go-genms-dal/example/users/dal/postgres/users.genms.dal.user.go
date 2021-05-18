@@ -70,22 +70,26 @@ func (x *UserCollection) String() string {
 func (x *UserCollection) DoInsert(ctx context.Context, arg *users.User) (sql1.Result, error) {
 	var err error
 	start := time.Now()
-	stats.Record(ctx, userInflight.M(1))
+
+	ctx, _ = tag.New(ctx,
+		tag.Upsert(tagQueryCollection, "user"),
+	)
+
+	ctx, _ = tag.New(ctx,
+		tag.Upsert(tagQueryName, "insert"),
+	)
+
 	defer func() {
 		stop := time.Now()
 		dur := float64(stop.Sub(start).Nanoseconds()) / float64(time.Millisecond)
 
 		if err != nil {
-			ctx, err = tag.New(ctx,
-				tag.Insert(userQueryError, "user_insert"),
+			ctx, _ = tag.New(ctx,
+				tag.Insert(tagQueryError, "true"),
 			)
 		}
 
-		ctx, err = tag.New(ctx,
-			tag.Insert(userQueryName, "user_insert"),
-		)
-
-		stats.Record(ctx, userLatency.M(dur), userInflight.M(-1))
+		stats.Record(ctx, measureLatency.M(dur), measureInflight.M(-1))
 	}()
 
 	return x.db.ExecWithReplacements(ctx, x.execInsert, userWriterFromGeneric(arg))
@@ -97,22 +101,26 @@ func (x *UserCollection) DoInsert(ctx context.Context, arg *users.User) (sql1.Re
 func (x *UserCollection) DoUpsert(ctx context.Context, arg *users.User) (sql1.Result, error) {
 	var err error
 	start := time.Now()
-	stats.Record(ctx, userInflight.M(1))
+
+	ctx, _ = tag.New(ctx,
+		tag.Upsert(tagQueryCollection, "user"),
+	)
+
+	ctx, _ = tag.New(ctx,
+		tag.Upsert(tagQueryName, "upsert"),
+	)
+
 	defer func() {
 		stop := time.Now()
 		dur := float64(stop.Sub(start).Nanoseconds()) / float64(time.Millisecond)
 
 		if err != nil {
-			ctx, err = tag.New(ctx,
-				tag.Upsert(userQueryError, "user_upsert"),
+			ctx, _ = tag.New(ctx,
+				tag.Insert(tagQueryError, "true"),
 			)
 		}
 
-		ctx, err = tag.New(ctx,
-			tag.Upsert(userQueryName, "user_upsert"),
-		)
-
-		stats.Record(ctx, userLatency.M(dur), userInflight.M(-1))
+		stats.Record(ctx, measureLatency.M(dur), measureInflight.M(-1))
 	}()
 
 	return x.db.ExecWithReplacements(ctx, x.execUpsert, userWriterFromGeneric(arg))
@@ -124,22 +132,26 @@ func (x *UserCollection) DoUpsert(ctx context.Context, arg *users.User) (sql1.Re
 func (x *UserCollection) DoUpdate(ctx context.Context, fvs *dal.UserFieldValues, clause string) (sql1.Result, error) {
 	var err error
 	start := time.Now()
-	stats.Record(ctx, userInflight.M(1))
+
+	ctx, _ = tag.New(ctx,
+		tag.Upsert(tagQueryCollection, "user"),
+	)
+
+	ctx, _ = tag.New(ctx,
+		tag.Upsert(tagQueryName, "update"),
+	)
+
 	defer func() {
 		stop := time.Now()
 		dur := float64(stop.Sub(start).Nanoseconds()) / float64(time.Millisecond)
 
 		if err != nil {
-			ctx, err = tag.New(ctx,
-				tag.Upsert(userQueryError, "user_update"),
+			ctx, _ = tag.New(ctx,
+				tag.Insert(tagQueryError, "true"),
 			)
 		}
 
-		ctx, err = tag.New(ctx,
-			tag.Upsert(userQueryName, "user_update"),
-		)
-
-		stats.Record(ctx, userLatency.M(dur), userInflight.M(-1))
+		stats.Record(ctx, measureLatency.M(dur), measureInflight.M(-1))
 	}()
 
 	updates := []string{}
@@ -261,22 +273,27 @@ func (x *UserCollection) Filter(ctx context.Context, fvs *dal.UserFieldValues) (
 func (x *UserCollection) find(ctx context.Context, label string, query string, fvs interface{}) ([]*users.User, error) {
 	var err error
 	start := time.Now()
-	stats.Record(ctx, userInflight.M(1))
+
+	ctx, _ = tag.New(ctx,
+		tag.Upsert(tagQueryCollection, "user"),
+	)
+
+	ctx, _ = tag.New(ctx,
+		tag.Upsert(tagQueryName, label),
+	)
+
+	stats.Record(ctx, measureInflight.M(1))
 	defer func() {
 		stop := time.Now()
 		dur := float64(stop.Sub(start).Nanoseconds()) / float64(time.Millisecond)
 
 		if err != nil {
-			ctx, err = tag.New(ctx,
-				tag.Upsert(userQueryError, label),
+			ctx, _ = tag.New(ctx,
+				tag.Upsert(tagQueryError, "true"),
 			)
 		}
 
-		ctx, err = tag.New(ctx,
-			tag.Upsert(userQueryName, label),
-		)
-
-		stats.Record(ctx, userLatency.M(dur), userInflight.M(-1))
+		stats.Record(ctx, measureLatency.M(dur), measureInflight.M(-1))
 	}()
 
 	rows, err := x.db.QueryWithReplacements(ctx, query, fvs)
@@ -670,11 +687,12 @@ func (x *UserQueries) WithRest() string {
 
 // define metrics
 var (
-	userQueryName  = tag.MustNewKey("dal_postgres_user")
-	userQueryError = tag.MustNewKey("dal_postgres_user_error")
+	tagQueryName       = tag.MustNewKey("dal_postgres_query")
+	tagQueryCollection = tag.MustNewKey("dal_postgres_collection")
+	tagQueryError      = tag.MustNewKey("dal_postgres_error")
 
-	userLatency  = stats.Float64("user_latency", "Latency of User queries", stats.UnitMilliseconds)
-	userInflight = stats.Int64("user_inflight", "Count of User queries in flight", stats.UnitDimensionless)
+	measureLatency  = stats.Float64("dal_postgres_latency", "Latency of User queries", stats.UnitMilliseconds)
+	measureInflight = stats.Int64("dal_postgres_inflight", "Count of User queries in flight", stats.UnitDimensionless)
 
 	registerUserMetricsOnce sync.Once
 )
@@ -682,17 +700,17 @@ var (
 func registerUserMetrics() {
 	views := []*view.View{
 		{
-			Name:        "dal_postgres_user_latency",
-			Measure:     userLatency,
+			Name:        "dal_postgres_latency",
+			Measure:     measureLatency,
 			Description: "The distribution of the query latencies",
-			TagKeys:     []tag.Key{userQueryName, userQueryError},
+			TagKeys:     []tag.Key{tagQueryName, tagQueryCollection, tagQueryError},
 			Aggregation: view.Distribution(0, 25, 100, 200, 400, 800, 10000),
 		},
 		{
-			Name:        "dal_postgres_user_inflight",
-			Measure:     userInflight,
+			Name:        "dal_postgres_inflight",
+			Measure:     measureInflight,
 			Description: "The number of queries being processed",
-			TagKeys:     []tag.Key{userQueryName},
+			TagKeys:     []tag.Key{tagQueryName, tagQueryCollection},
 			Aggregation: view.Sum(),
 		},
 	}

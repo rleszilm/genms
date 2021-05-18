@@ -220,28 +220,33 @@ func (x *{{ .C.Message.Name }}Collection) DoReq(ctx {{ .P.Context }}.Context, la
 	var err error
 	var resp *{{ .P.HTTP }}.Response
 	start := {{ .P.Time }}.Now()
-	{{ .P.Stats }}.Record(ctx, {{ ToCamelCase (.C.Message.Name) }}Inflight.M(1))
-	defer func() {
+
+	ctx, _ = {{ .P.Tag }}.New(ctx,
+		{{ .P.Tag }}.Upsert(tagQueryCollection, "{{ ToSnakeCase .C.Message.Name }}"),
+	)
+
+	ctx, _ = {{ .P.Tag }}.New(ctx,
+		{{ .P.Tag }}.Upsert(tagQueryName, label),
+	)
+
+	{{ .P.Stats }}.Record(ctx, measureInflight.M(1))
+	defer func() {		
 		stop := {{ .P.Time }}.Now()
 		dur := float64(stop.Sub(start).Nanoseconds()) / float64({{ .P.Time }}.Millisecond)
 
 		if resp != nil {
 			ctx, _ = {{ .P.Tag }}.New(ctx,
-				{{ .P.Tag }}.Upsert({{ ToCamelCase (.C.Message.Name) }}QueryCode, {{ .P.Strconv }}.Itoa(resp.StatusCode)),
+				{{ .P.Tag }}.Upsert(tagQueryCode, {{ .P.Strconv }}.Itoa(resp.StatusCode)),
 			)
 		}
 
 		if err != nil {
 			ctx, _ = {{ .P.Tag }}.New(ctx,
-				{{ .P.Tag }}.Upsert({{ ToCamelCase (.C.Message.Name) }}QueryError, label),
+				{{ .P.Tag }}.Upsert(tagQueryError, label),
 			)
 		}
 
-		ctx, _ = {{ .P.Tag }}.New(ctx,
-			{{ .P.Tag }}.Upsert({{ ToCamelCase (.C.Message.Name) }}QueryName, label),
-		)
-
-		{{ .P.Stats }}.Record(ctx, {{ ToCamelCase (.C.Message.Name) }}Latency.M(dur), {{ ToCamelCase (.C.Message.Name) }}Inflight.M(-1))
+		{{ .P.Stats }}.Record(ctx, measureLatency.M(dur), measureInflight.M(-1))
 	}()
 
 	ctx, cancel := {{ .P.Context }}.WithTimeout(ctx, x.config.Timeout)
@@ -275,6 +280,7 @@ func (x *{{ .C.Message.Name }}Collection) DoReq(ctx {{ .P.Context }}.Context, la
 		Funcs(template.FuncMap{
 			"ToCamelCase": protocgenlib.ToCamelCase,
 			"ToLower":     strings.ToLower,
+			"ToSnakeCase": protocgenlib.ToSnakeCase,
 			"ToTitleCase": protocgenlib.ToTitleCase,
 		}).
 		Parse(tmplSrc)
@@ -447,7 +453,7 @@ func (c *Collection) defineNewCollection() error {
 {{- $P := .P -}}
 // New{{ .C.Message.Name }}Collection returns a new {{ .C.Message.Name }}Collection.
 func New{{ .C.Message.Name }}Collection(client *{{ .P.HTTP }}.Client, urls {{ .C.Message.Name }}UrlTemplateProvider, config *{{ .C.Message.Name }}Config) (*{{ .C.Message.Name }}Collection, error) {
-	register{{ ToTitleCase .C.Message.Name }}MetricsOnce.Do(register{{ ToTitleCase .C.Message.Name }}Metrics)
+	registerMetricsOnce.Do(registerMetrics)
 
 	coll := &{{ .C.Message.Name }}Collection{
 		client: client,
@@ -653,30 +659,31 @@ type {{ .C.Message.Name }}UrlTemplateProvider interface {
 func (c *Collection) defineMetrics() error {
 	tmplSrc := `// define metrics
 	var (
-		{{ ToCamelCase .C.Message.Name }}QueryName = {{ .P.Tag }}.MustNewKey("dal_rest_{{ ToSnakeCase .C.Message.Name }}")
-		{{ ToCamelCase .C.Message.Name }}QueryCode = {{ .P.Tag }}.MustNewKey("dal_rest_{{ ToSnakeCase .C.Message.Name }}_code")
-		{{ ToCamelCase .C.Message.Name }}QueryError = {{ .P.Tag }}.MustNewKey("dal_rest_{{ ToSnakeCase .C.Message.Name }}_error")
+		tagQueryName = {{ .P.Tag }}.MustNewKey("dal_rest_query")
+		tagQueryCollection = {{ .P.Tag }}.MustNewKey("dal_rest_collection")
+		tagQueryCode = {{ .P.Tag }}.MustNewKey("dal_rest_code")
+		tagQueryError = {{ .P.Tag }}.MustNewKey("dal_rest_error")
 	
-		{{ ToCamelCase .C.Message.Name }}Latency = {{ .P.Stats }}.Float64("{{ ToSnakeCase .C.Message.Name }}_latency", "Latency of {{ .C.Message.Name }} queries", {{ .P.Stats }}.UnitMilliseconds)
-		{{ ToCamelCase .C.Message.Name }}Inflight = {{ .P.Stats }}.Int64("{{ ToSnakeCase .C.Message.Name }}_inflight", "Count of {{ .C.Message.Name }} queries in flight", {{ .P.Stats }}.UnitDimensionless)
+		measureLatency = {{ .P.Stats }}.Float64("dal_rest_latency", "Latency of queries", {{ .P.Stats }}.UnitMilliseconds)
+		measureInflight = {{ .P.Stats }}.Int64("dal_rest_inflight", "Count of queries in flight", {{ .P.Stats }}.UnitDimensionless)
 	
-		register{{ ToTitleCase .C.Message.Name }}MetricsOnce {{ .P.Sync }}.Once
+		registerMetricsOnce {{ .P.Sync }}.Once
 	)
 	
-	func register{{ ToTitleCase .C.Message.Name }}Metrics() {
+	func registerMetrics() {
 		views := []*{{ .P.View }}.View{
 			{
-				Name:        "dal_rest_{{ ToSnakeCase .C.Message.Name }}_latency",
-				Measure:     {{ ToCamelCase .C.Message.Name }}Latency,
+				Name:        "dal_rest_latency",
+				Measure:     measureLatency,
 				Description: "The distribution of the query latencies",
-				TagKeys:     []{{ .P.Tag }}.Key{ {{ ToCamelCase .C.Message.Name }}QueryName, {{ ToCamelCase .C.Message.Name }}QueryCode, {{ ToCamelCase .C.Message.Name }}QueryError},
+				TagKeys:     []{{ .P.Tag }}.Key{ tagQueryName, tagQueryCollection, tagQueryCode, tagQueryError },
 				Aggregation: {{ .P.View }}.Distribution(0, 25, 100, 200, 400, 800, 10000),
 			},
 			{
-				Name:        "dal_rest_{{ ToSnakeCase .C.Message.Name }}_inflight",
-				Measure:     {{ ToCamelCase .C.Message.Name }}Inflight,
+				Name:        "dal_rest_inflight",
+				Measure:     measureInflight,
 				Description: "The number of queries being processed",
-				TagKeys:     []{{ .P.Tag }}.Key{ {{ ToCamelCase .C.Message.Name }}QueryName, {{ ToCamelCase .C.Message.Name }}QueryCode},
+				TagKeys:     []{{ .P.Tag }}.Key{ tagQueryName, tagQueryCollection, tagQueryCode },
 				Aggregation: {{ .P.View }}.Sum(),
 			},
 		}
