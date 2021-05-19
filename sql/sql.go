@@ -24,22 +24,22 @@ var (
 func init() {
 	views := []*view.View{
 		{
-			Name:        "genms_sql_inflight",
-			Measure:     MeasureInflight,
+			Name:        "genms_sql_error",
+			Measure:     MeasureError,
 			Description: "The number of queries being processed",
 			TagKeys:     []tag.Key{TagCollection, TagInstance, TagQuery, TagDriver},
 			Aggregation: view.Count(),
 		},
 		{
 			Name:        "genms_sql_latency",
-			Measure:     measureLatency,
+			Measure:     MeasureLatency,
 			Description: "The distribution of the query latencies",
 			TagKeys:     []tag.Key{TagCollection, TagInstance, TagQuery, TagDriver},
 			Aggregation: view.Distribution(0, 25, 100, 200, 400, 800, 10000),
 		},
 		{
 			Name:        "genms_sql_inflight",
-			Measure:     measureInflight,
+			Measure:     MeasureInflight,
 			Description: "The number of queries being processed",
 			TagKeys:     []tag.Key{TagCollection, TagInstance, TagQuery, TagDriver},
 			Aggregation: view.LastValue(),
