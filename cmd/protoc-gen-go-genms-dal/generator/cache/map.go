@@ -128,16 +128,16 @@ type {{ .C.Message.Name }}Map struct {
 func (x *{{ .C.Message.Name }}Map) All(ctx {{ .P.Context }}.Context) ([]*{{ .C.Message.QualifiedKind }}, error) {
 	start := {{ .P.Time }}.Now()
 	ctx, _ = {{ .P.Tag }}.New(ctx,
-		{{ .P.Tag }}.Upsert(tagCacheCollection, "{{ ToSnakeCase .C.Message.Name }}"),
-		{{ .P.Tag }}.Upsert(tagCacheInstance, x.name),
-		{{ .P.Tag }}.Upsert(tagCacheMethod, "all"),
-		{{ .P.Tag }}.Upsert(tagCacheType, "map"),
+		{{ .P.Tag }}.Upsert({{ .P.Cache }}.TagCacheCollection, "{{ ToSnakeCase .C.Message.Name }}"),
+		{{ .P.Tag }}.Upsert({{ .P.Cache }}.TagCacheInstance, x.name),
+		{{ .P.Tag }}.Upsert({{ .P.Cache }}.TagCacheMethod, "all"),
+		{{ .P.Tag }}.Upsert({{ .P.Cache }}.TagCacheType, "map"),
 	)
-	{{ .P.Stats }}.Record(ctx, measureInflight.M(1))
+	{{ .P.Stats }}.Record(ctx, {{ .P.Cache }}.MeasureInflight.M(1))
 	defer func() {
 		stop := time.Now()
 		dur := float64(stop.Sub(start).Nanoseconds()) / float64({{ .P.Time }}.Millisecond)
-		{{ .P.Stats }}.Record(ctx, measureLatency.M(dur), measureInflight.M(-1))
+		{{ .P.Stats }}.Record(ctx, {{ .P.Cache }}.MeasureLatency.M(dur), {{ .P.Cache }}.MeasureInflight.M(-1))
 	}()
 
 	return x.all, nil
@@ -147,63 +147,75 @@ func (x *{{ .C.Message.Name }}Map) All(ctx {{ .P.Context }}.Context) ([]*{{ .C.M
 func (x *{{ .C.Message.Name }}Map) GetByKey(ctx {{ .P.Context }}.Context, key {{ .P.KeyValue }}.{{ .C.Message.Name }}Key) (*{{ .C.Message.QualifiedKind }}, error) {
 	start := {{ .P.Time }}.Now()
 	ctx, _ = {{ .P.Tag }}.New(ctx,
-		{{ .P.Tag }}.Upsert(tagCacheCollection, "{{ ToSnakeCase .C.Message.Name }}"),
-		{{ .P.Tag }}.Upsert(tagCacheInstance, x.name),
-		{{ .P.Tag }}.Upsert(tagCacheMethod, "get"),
-		{{ .P.Tag }}.Upsert(tagCacheType, "map"),
+		{{ .P.Tag }}.Upsert({{ .P.Cache }}.TagCacheCollection, "{{ ToSnakeCase .C.Message.Name }}"),
+		{{ .P.Tag }}.Upsert({{ .P.Cache }}.TagCacheInstance, x.name),
+		{{ .P.Tag }}.Upsert({{ .P.Cache }}.TagCacheMethod, "get"),
+		{{ .P.Tag }}.Upsert({{ .P.Cache }}.TagCacheType, "map"),
 	)
-	{{ .P.Stats }}.Record(ctx, measureInflight.M(1))
+	{{ .P.Stats }}.Record(ctx, {{ .P.Cache }}.MeasureInflight.M(1))
 	defer func() {
 		stop := time.Now()
 		dur := float64(stop.Sub(start).Nanoseconds()) / float64({{ .P.Time }}.Millisecond)
-		{{ .P.Stats }}.Record(ctx, measureLatency.M(dur), measureInflight.M(-1))
+		{{ .P.Stats }}.Record(ctx, {{ .P.Cache }}.MeasureLatency.M(dur), {{ .P.Cache }}.MeasureInflight.M(-1))
 	}()
 	
 	if val, ok := x.cache[key]; ok {
 		return val, nil
 	}
 
-	val, err := x.reader.GetByKey(ctx, key)
-	if err != nil {
-		x.cache[key] = val
-		return val, nil
+	if x.reader != nil {
+		val, err := x.reader.GetByKey(ctx, key)
+		if err != nil {
+			x.cache[key] = val
+			return val, nil
+		}
 	}
 
-	{{ .P.Stats }}.Record(ctx, measureError.M(1))
-	return nil, err
+	{{ .P.Stats }}.Record(ctx, {{ .P.Cache }}.MeasureError.M(1))
+	return nil, nil
 }
 
 // SetByKey implements {{ .P.KeyValue }}.{{ .C.Message.Name }}Writer.
 func (x *{{ .C.Message.Name }}Map) SetByKey(ctx {{ .P.Context }}.Context, key {{ .P.KeyValue }}.{{ .C.Message.Name }}Key, val *{{ .C.Message.QualifiedKind }}) error {
 	start := {{ .P.Time }}.Now()
 	ctx, _ = {{ .P.Tag }}.New(ctx,
-		{{ .P.Tag }}.Upsert(tagCacheCollection, "{{ ToSnakeCase .C.Message.Name }}"),
-		{{ .P.Tag }}.Upsert(tagCacheInstance, x.name),
-		{{ .P.Tag }}.Upsert(tagCacheMethod, "get"),
-		{{ .P.Tag }}.Upsert(tagCacheType, "map"),
+		{{ .P.Tag }}.Upsert({{ .P.Cache }}.TagCacheCollection, "{{ ToSnakeCase .C.Message.Name }}"),
+		{{ .P.Tag }}.Upsert({{ .P.Cache }}.TagCacheInstance, x.name),
+		{{ .P.Tag }}.Upsert({{ .P.Cache }}.TagCacheMethod, "get"),
+		{{ .P.Tag }}.Upsert({{ .P.Cache }}.TagCacheType, "map"),
 	)
-	{{ .P.Stats }}.Record(ctx, measureInflight.M(1))
+	{{ .P.Stats }}.Record(ctx, {{ .P.Cache }}.MeasureInflight.M(1))
 	defer func() {
 		stop := time.Now()
 		dur := float64(stop.Sub(start).Nanoseconds()) / float64({{ .P.Time }}.Millisecond)
-		{{ .P.Stats }}.Record(ctx, measureLatency.M(dur), measureInflight.M(-1))
+		{{ .P.Stats }}.Record(ctx, {{ .P.Cache }}.MeasureLatency.M(dur), {{ .P.Cache }}.MeasureInflight.M(-1))
 	}()
 	
-	if err := x.writer.SetByKey(ctx, key, val); err != nil {
-		{{ .P.Stats }}.Record(ctx, measureError.M(1))
-		return err
+	if x.writer != nil {
+		if err := x.writer.SetByKey(ctx, key, val); err != nil {
+			{{ .P.Stats }}.Record(ctx, {{ .P.Cache }}.MeasureError.M(1))
+			return err
+		}
 	}
 
 	x.cache[key] = val
 	return nil
 }
 
+// WithReader tells the {{ .C.Message.Name }}Map where to source values from if they don't exist in cache.
+func (x *{{ .C.Message.Name }}Map) WithReader(r {{ .P.KeyValue }}.{{ .C.Message.Name }}Reader) {
+	x.reader = r
+}
+
+// WithWriter tells the {{ .C.Message.Name }}Map where to source values from if they don't exist in cache.
+func (x *{{ .C.Message.Name }}Map) WithWriter(w {{ .P.KeyValue }}.{{ .C.Message.Name }}Writer) {
+	x.writer = w
+}
+
 // New{{ .C.Message.Name }}Map returns a new {{ .C.Message.Name }}Map cache.
-func New{{ .C.Message.Name }}Map(name string, r {{ .P.KeyValue }}.{{ .C.Message.Name }}ReadAller, w {{ .P.KeyValue }}.{{ .C.Message.Name }}Writer, i int) (*{{ .C.Message.Name }}Map, error) {
+func New{{ .C.Message.Name }}Map(name string, i int) (*{{ .C.Message.Name }}Map, error) {
 	return &{{ .C.Message.Name }}Map{
 		name: name,
-		reader: r,
-		writer: w,
 		cache: map[{{ .P.KeyValue }}.{{ .C.Message.Name }}Key]*{{ .C.Message.QualifiedKind }}{},
 	}, nil
 }
@@ -220,6 +232,7 @@ func New{{ .C.Message.Name }}Map(name string, r {{ .P.KeyValue }}.{{ .C.Message.
 	}
 
 	p := map[string]string{
+		"Cache":    c.File.QualifiedPackageName("github.com/rleszilm/genms/cache"),
 		"Context":  c.File.QualifiedPackageName("context"),
 		"KeyValue": c.File.QualifiedPackageName(path.Join(c.File.DalPackagePath(), "keyvalue")),
 		"Log":      c.File.QualifiedPackageName("github.com/rleszilm/genms/log"),

@@ -139,10 +139,10 @@ func (x *{{ .C.Message.Name }}Updater) Shutdown(_ {{ .P.Context }}.Context) erro
 
 func (x *{{ .C.Message.Name }}Updater) update(ctx {{ .P.Context }}.Context) {
 	ctx, _ = {{ .P.Tag }}.New(ctx,
-		{{ .P.Tag }}.Upsert(tagCacheCollection, "{{ ToSnakeCase .C.Message.Name }}"),
-		{{ .P.Tag }}.Upsert(tagCacheInstance, x.name),
-		{{ .P.Tag }}.Upsert(tagCacheMethod, "update"),
-		{{ .P.Tag }}.Upsert(tagCacheType, "updater"),
+		{{ .P.Tag }}.Upsert({{ .P.Cache }}.TagCacheCollection, "{{ ToSnakeCase .C.Message.Name }}"),
+		{{ .P.Tag }}.Upsert({{ .P.Cache }}.TagCacheInstance, x.name),
+		{{ .P.Tag }}.Upsert({{ .P.Cache }}.TagCacheMethod, "update"),
+		{{ .P.Tag }}.Upsert({{ .P.Cache }}.TagCacheType, "updater"),
 	)
 
 	ticker := {{ .P.Time }}.NewTicker(0)
@@ -152,7 +152,7 @@ func (x *{{ .C.Message.Name }}Updater) update(ctx {{ .P.Context }}.Context) {
 			return
 		case <- ticker.C:
 			start := {{ .P.Time }}.Now()
-			{{ .P.Stats }}.Record(ctx, measureInflight.M(1))
+			{{ .P.Stats }}.Record(ctx, {{ .P.Cache }}.MeasureInflight.M(1))
 			
 			vals, err := x.reader.All(ctx)
 			if err == nil {
@@ -162,19 +162,17 @@ func (x *{{ .C.Message.Name }}Updater) update(ctx {{ .P.Context }}.Context) {
 					}
 				}
 			}
-			{{ .P.Stats }}.Record(ctx, measureInflight.M(-1))
+			{{ .P.Stats }}.Record(ctx, {{ .P.Cache }}.MeasureInflight.M(-1))
 
 			if err != nil {
-				logs.Error("could not update {{ .C.Message.Name }}'s:", err)
-				{{ .P.Stats }}.Record(ctx, measureError.M(1))
+				{{ .P.Stats }}.Record(ctx, {{ .P.Cache }}.MeasureError.M(1))
 			}
 
 			stop := {{ .P.Time }}.Now()
 			dur := float64(stop.Sub(start).Nanoseconds()) / float64({{ .P.Time }}.Millisecond)
-			{{ .P.Stats }}.Record(ctx, measureLatency.M(dur))
+			{{ .P.Stats }}.Record(ctx, {{ .P.Cache }}.MeasureLatency.M(dur))
 
 			if x.interval == 0 {
-				logs.Info("{{ .C.Message.Name }} updater has no interval. Ceasing updates.")
 				return
 			}
 			ticker.Reset(x.interval)
@@ -207,6 +205,7 @@ func New{{ .C.Message.Name }}Updater(name string, r {{ .P.KeyValue }}.{{ .C.Mess
 	}
 
 	p := map[string]string{
+		"Cache":    c.File.QualifiedPackageName("github.com/rleszilm/genms/cache"),
 		"Context":  c.File.QualifiedPackageName("context"),
 		"KeyValue": c.File.QualifiedPackageName(path.Join(c.File.DalPackagePath(), "keyvalue")),
 		"Stats":    c.File.QualifiedPackageName("go.opencensus.io/stats"),

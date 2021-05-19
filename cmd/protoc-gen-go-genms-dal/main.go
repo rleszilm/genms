@@ -81,13 +81,13 @@ func generate(plugin *protogen.Plugin, file *protogen.File, msg *protogen.Messag
 		return err
 	}
 
-	// write keyvalue
-	if err := keyvalue.GenerateKeyValue(plugin, file, msg, dalOpts); err != nil {
+	// write cache
+	if err := cache.GenerateCache(plugin, file, msg, dalOpts); err != nil {
 		return err
 	}
 
-	// write cache
-	if err := cache.GenerateCache(plugin, file, msg, dalOpts); err != nil {
+	// write keyvalue
+	if err := keyvalue.GenerateKeyValue(plugin, file, msg, dalOpts); err != nil {
 		return err
 	}
 

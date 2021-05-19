@@ -4,6 +4,7 @@ import (
 	"bytes"
 	"fmt"
 	"path"
+	"strings"
 	"text/template"
 
 	"github.com/go-test/deep"
@@ -29,7 +30,7 @@ type Cache struct {
 func NewCache(plugin *protogen.Plugin, file *protogen.File, msg *protogen.Message, opts *annotations.DalOptions) *Cache {
 	base := path.Base(file.GeneratedFilenamePrefix)
 	dir := path.Dir(file.GeneratedFilenamePrefix)
-	filename := path.Join(dir, fmt.Sprintf("dal/cache/%s.genms.cache.go", base))
+	filename := path.Join(dir, fmt.Sprintf("dal/cache/%s.genms.cache.%s.go", base, strings.ToLower(msg.GoIdent.GoName)))
 	outfile := plugin.NewGeneratedFile(filename, ".")
 
 	cfile := NewFile(outfile, file)
@@ -112,10 +113,6 @@ func (c *Cache) defineCollection() error {
 	tmplSrc := `{{- $C := .C -}}
 {{- $P := .P -}}
 
-var (
-	logs = {{ .P.Log }}.NewChannel("cache")
-)
-
 // Nil{{ .C.Message.Name }}Cache is a KV ReadWriter that takes no action on read or write.
 type Nil{{ .C.Message.Name }}Cache struct{
 }
@@ -143,7 +140,6 @@ func (x *Nil{{ .C.Message.Name }}Cache) SetByKey(_ {{ .P.Context }}.Context, _ {
 	p := map[string]string{
 		"Context":  c.File.QualifiedPackageName("context"),
 		"KeyValue": c.File.QualifiedPackageName(path.Join(c.File.DalPackagePath(), "keyvalue")),
-		"Log":      c.File.QualifiedPackageName("github.com/rleszilm/genms/log"),
 	}
 
 	buf := &bytes.Buffer{}

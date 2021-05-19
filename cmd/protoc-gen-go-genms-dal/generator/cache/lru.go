@@ -121,23 +121,23 @@ type {{ .C.Message.Name }}LRU struct {
 	reader {{ .P.KeyValue }}.{{ .C.Message.Name }}Reader
 	writer {{ .P.KeyValue }}.{{ .C.Message.Name }}Writer
 	lru *{{ .P.LRU }}.ARCCache
-	
+	all []*{{ .C.Message.QualifiedKind }}
 }
 
 // All implements implements {{ .P.KeyValue }}.{{ .C.Message.Name }}ReadAller.
 func (x *{{ .C.Message.Name }}LRU) All(ctx {{ .P.Context }}.Context) ([]*{{ .C.Message.QualifiedKind }}, error) {
 	start := {{ .P.Time }}.Now()
 	ctx, _ = {{ .P.Tag }}.New(ctx,
-		{{ .P.Tag }}.Upsert(TagCacheCollection, "{{ ToSnakeCase .C.Message.Name }}"),
-		{{ .P.Tag }}.Upsert(TagCacheInstance, x.name),
-		{{ .P.Tag }}.Upsert(TagCacheMethod, "all"),
-		{{ .P.Tag }}.Upsert(TagCacheType, "lru"),
+		{{ .P.Tag }}.Upsert({{ .P.Cache }}.TagCacheCollection, "{{ ToSnakeCase .C.Message.Name }}"),
+		{{ .P.Tag }}.Upsert({{ .P.Cache }}.TagCacheInstance, x.name),
+		{{ .P.Tag }}.Upsert({{ .P.Cache }}.TagCacheMethod, "all"),
+		{{ .P.Tag }}.Upsert({{ .P.Cache }}.TagCacheType, "lru"),
 	)
-	{{ .P.Stats }}.Record(ctx, MeasureInflight.M(1))
+	{{ .P.Stats }}.Record(ctx, {{ .P.Cache }}.MeasureInflight.M(1))
 	defer func() {
 		stop := time.Now()
 		dur := float64(stop.Sub(start).Nanoseconds()) / float64({{ .P.Time }}.Millisecond)
-		{{ .P.Stats }}.Record(ctx, MeasureLatency.M(dur), MeasureInflight.M(-1))
+		{{ .P.Stats }}.Record(ctx, {{ .P.Cache }}.MeasureLatency.M(dur), {{ .P.Cache }}.MeasureInflight.M(-1))
 	}()
 
 	return x.all, nil
@@ -147,61 +147,84 @@ func (x *{{ .C.Message.Name }}LRU) All(ctx {{ .P.Context }}.Context) ([]*{{ .C.M
 func (x *{{ .C.Message.Name }}LRU) GetByKey(ctx {{ .P.Context }}.Context, key {{ .P.KeyValue }}.{{ .C.Message.Name }}Key) (*{{ .C.Message.QualifiedKind }}, error) {
 	start := {{ .P.Time }}.Now()
 	ctx, _ = {{ .P.Tag }}.New(ctx,
-		{{ .P.Tag }}.Upsert(TagCacheCollection, "{{ ToSnakeCase .C.Message.Name }}"),
-		{{ .P.Tag }}.Upsert(TagCacheInstance, x.name),
-		{{ .P.Tag }}.Upsert(TagCacheMethod, "get"),
-		{{ .P.Tag }}.Upsert(TagCacheType, "lru"),
+		{{ .P.Tag }}.Upsert({{ .P.Cache }}.TagCacheCollection, "{{ ToSnakeCase .C.Message.Name }}"),
+		{{ .P.Tag }}.Upsert({{ .P.Cache }}.TagCacheInstance, x.name),
+		{{ .P.Tag }}.Upsert({{ .P.Cache }}.TagCacheMethod, "get"),
+		{{ .P.Tag }}.Upsert({{ .P.Cache }}.TagCacheType, "lru"),
 	)
-	{{ .P.Stats }}.Record(ctx, MeasureInflight.M(1))
+	{{ .P.Stats }}.Record(ctx, {{ .P.Cache }}.MeasureInflight.M(1))
 	defer func() {
 		stop := time.Now()
 		dur := float64(stop.Sub(start).Nanoseconds()) / float64({{ .P.Time }}.Millisecond)
-		{{ .P.Stats }}.Record(ctx, MeasureLatency.M(dur), MeasureInflight.M(-1))
+		{{ .P.Stats }}.Record(ctx, {{ .P.Cache }}.MeasureLatency.M(dur), {{ .P.Cache }}.MeasureInflight.M(-1))
 	}()
 	
 	if val, ok := x.lru.Get(key); ok {
-		{{ .P.Stats }}.Record(ctx, MeasureHit.M(1))
+		{{ .P.Stats }}.Record(ctx, {{ .P.Cache }}.MeasureHit.M(1))
 		return val.(*{{ .C.Message.QualifiedKind }}), nil
 	}
-	{{ .P.Stats }}.Record(ctx, MeasureMiss.M(1))
+	{{ .P.Stats }}.Record(ctx, {{ .P.Cache }}.MeasureMiss.M(1))
 
-	val, err := x.reader.GetByKey(ctx, key)
-	if err != nil {
+	if x.reader != nil {
+		val, err := x.reader.GetByKey(ctx, key)
+		if err != nil {
+			return nil, err
+		}
 		x.lru.Add(key, val)
 		return val, nil
 	}
 
-	{{ .P.Stats }}.Record(ctx, MeasureError.M(1))
-	return nil, err
+	{{ .P.Stats }}.Record(ctx, {{ .P.Cache }}.MeasureError.M(1))
+	return nil, nil
 }
 
 // SetByKey implements {{ .P.KeyValue }}.{{ .C.Message.Name }}ReadWriter.
 func (x *{{ .C.Message.Name }}LRU) SetByKey(ctx {{ .P.Context }}.Context, key {{ .P.KeyValue }}.{{ .C.Message.Name }}Key, val *{{ .C.Message.QualifiedKind }}) error {
 	start := {{ .P.Time }}.Now()
 	ctx, _ = {{ .P.Tag }}.New(ctx,
-		{{ .P.Tag }}.Upsert(TagCacheCollection, "{{ ToSnakeCase .C.Message.Name }}"),
-		{{ .P.Tag }}.Upsert(TagCacheInstance, x.name),
-		{{ .P.Tag }}.Upsert(TagCacheMethod, "set"),
-		{{ .P.Tag }}.Upsert(TagCacheType, "lru"),
+		{{ .P.Tag }}.Upsert({{ .P.Cache }}.TagCacheCollection, "{{ ToSnakeCase .C.Message.Name }}"),
+		{{ .P.Tag }}.Upsert({{ .P.Cache }}.TagCacheInstance, x.name),
+		{{ .P.Tag }}.Upsert({{ .P.Cache }}.TagCacheMethod, "set"),
+		{{ .P.Tag }}.Upsert({{ .P.Cache }}.TagCacheType, "lru"),
 	)
-	{{ .P.Stats }}.Record(ctx, MeasureInflight.M(1))
+	{{ .P.Stats }}.Record(ctx, {{ .P.Cache }}.MeasureInflight.M(1))
 	defer func() {
 		stop := time.Now()
 		dur := float64(stop.Sub(start).Nanoseconds()) / float64({{ .P.Time }}.Millisecond)
-		{{ .P.Stats }}.Record(ctx, MeasureLatency.M(dur), MeasureInflight.M(-1))
+		{{ .P.Stats }}.Record(ctx, {{ .P.Cache }}.MeasureLatency.M(dur), {{ .P.Cache }}.MeasureInflight.M(-1))
 	}()
 
-	if err := x.writer.SetByKey(ctx, key, val); err != nil {
-		{{ .P.Stats }}.Record(ctx, MeasureError.M(1))
-		return err
+	if x.writer != nil {
+		if err := x.writer.SetByKey(ctx, key, val); err != nil {
+			{{ .P.Stats }}.Record(ctx, {{ .P.Cache }}.MeasureError.M(1))
+			return err
+		}
 	}
 
 	x.lru.Add(key, val)
+
+	all := []*{{ .C.Message.QualifiedKind }}{}
+	for _, k := range x.lru.Keys() {
+		y, _ := x.lru.Get(k)
+		all = append(all, y.(*{{ .C.Message.QualifiedKind }}))
+	}
+	x.all = all
+
 	return nil
 }
 
+// WithReader tells the {{ .C.Message.Name }}LRU where to source values from if they don't exist in cache.
+func (x *{{ .C.Message.Name }}LRU) WithReader(r {{ .P.KeyValue }}.{{ .C.Message.Name }}Reader) {
+	x.reader = r
+}
+
+// WithWriter tells the {{ .C.Message.Name }}LRU where to source values from if they don't exist in cache.
+func (x *{{ .C.Message.Name }}LRU) WithWriter(w {{ .P.KeyValue }}.{{ .C.Message.Name }}Writer) {
+	x.writer = w
+}
+
 // New{{ .C.Message.Name }}LRU returns a new {{ .C.Message.Name }}LRU cache.
-func New{{ .C.Message.Name }}LRU(name string, r {{ .P.KeyValue }}.{{ .C.Message.Name }}ReadAller, w {{ .P.KeyValue }}.{{ .C.Message.Name }}Writer, i int) (*{{ .C.Message.Name }}LRU, error) {
+func New{{ .C.Message.Name }}LRU(name string, i int) (*{{ .C.Message.Name }}LRU, error) {
 	arc, err := {{ .P.LRU }}.NewARC(i)
 	if err != nil {
 		return nil, err
@@ -209,8 +232,6 @@ func New{{ .C.Message.Name }}LRU(name string, r {{ .P.KeyValue }}.{{ .C.Message.
 
 	return &{{ .C.Message.Name }}LRU{
 		name: name,
-		reader: r,
-		writer: w,
 		lru: arc,
 	}, nil
 }
@@ -227,6 +248,7 @@ func New{{ .C.Message.Name }}LRU(name string, r {{ .P.KeyValue }}.{{ .C.Message.
 	}
 
 	p := map[string]string{
+		"Cache":    c.File.QualifiedPackageName("github.com/rleszilm/genms/cache"),
 		"Context":  c.File.QualifiedPackageName("context"),
 		"KeyValue": c.File.QualifiedPackageName(path.Join(c.File.DalPackagePath(), "keyvalue")),
 		"LRU":      c.File.QualifiedPackageName("github.com/hashicorp/golang-lru"),

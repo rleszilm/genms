@@ -145,10 +145,6 @@ type {{ .C.Message.Name }}ReadWriter interface {
 // {{ .C.Message.Name }}KeyFunc is a function that generates a unique deterministic key for the {{ .C.Message.QualifiedKind }}.
 type {{ .C.Message.Name }}KeyFunc func(*{{ .C.Message.QualifiedKind }}) interface{}
 
-var (
-	logs = {{ .P.Log }}.NewChannel("keyval")
-)
-
 `
 
 	tmpl, err := template.New("defineKeyValue").
@@ -161,7 +157,6 @@ var (
 
 	p := map[string]string{
 		"Context": c.File.QualifiedPackageName("context"),
-		"Log":     c.File.QualifiedPackageName("github.com/rleszilm/genms/log"),
 	}
 
 	buf := &bytes.Buffer{}
