@@ -127,7 +127,7 @@ func (x *UnimplementedTypeTwoCollection) InterfaceStubOnly(_ context.Context) ([
 	return nil, ErrTypeTwoCollectionMethodImpl
 }
 
-func ReturnsOne(xs []*multi.TypeTwo, err error) (*multi.TypeTwo, error) {
+func ReturnsOneTypeTwo(xs []*multi.TypeTwo, err error) (*multi.TypeTwo, error) {
 	if err != nil {
 		return nil, err
 	}

@@ -281,7 +281,7 @@ func (x *Unimplemented{{ .I.Message.Name }}Collection) Filter(_ {{ .P.Context }}
 	}
 {{ end }}
 
-func ReturnsOne(xs []*{{ .I.Message.QualifiedKind }}, err error) (*{{ .I.Message.QualifiedKind }}, error) {
+func ReturnsOne{{ .I.Message.Name }}(xs []*{{ .I.Message.QualifiedKind }}, err error) (*{{ .I.Message.QualifiedKind }}, error) {
 	if err != nil {
 		return nil, err
 	}

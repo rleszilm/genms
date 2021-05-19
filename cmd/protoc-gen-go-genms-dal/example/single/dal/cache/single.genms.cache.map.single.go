@@ -26,10 +26,10 @@ type SingleMap struct {
 func (x *SingleMap) All(ctx context.Context) ([]*single.Single, error) {
 	start := time.Now()
 	ctx, _ = tag.New(ctx,
-		tag.Upsert(cache.TagCacheCollection, "single"),
-		tag.Upsert(cache.TagCacheInstance, x.name),
-		tag.Upsert(cache.TagCacheMethod, "all"),
-		tag.Upsert(cache.TagCacheType, "map"),
+		tag.Upsert(cache.TagCollection, "single"),
+		tag.Upsert(cache.TagInstance, x.name),
+		tag.Upsert(cache.TagMethod, "all"),
+		tag.Upsert(cache.TagType, "map"),
 	)
 	stats.Record(ctx, cache.MeasureInflight.M(1))
 	defer func() {
@@ -45,10 +45,10 @@ func (x *SingleMap) All(ctx context.Context) ([]*single.Single, error) {
 func (x *SingleMap) GetByKey(ctx context.Context, key keyvalue.SingleKey) (*single.Single, error) {
 	start := time.Now()
 	ctx, _ = tag.New(ctx,
-		tag.Upsert(cache.TagCacheCollection, "single"),
-		tag.Upsert(cache.TagCacheInstance, x.name),
-		tag.Upsert(cache.TagCacheMethod, "get"),
-		tag.Upsert(cache.TagCacheType, "map"),
+		tag.Upsert(cache.TagCollection, "single"),
+		tag.Upsert(cache.TagInstance, x.name),
+		tag.Upsert(cache.TagMethod, "get"),
+		tag.Upsert(cache.TagType, "map"),
 	)
 	stats.Record(ctx, cache.MeasureInflight.M(1))
 	defer func() {
@@ -77,10 +77,10 @@ func (x *SingleMap) GetByKey(ctx context.Context, key keyvalue.SingleKey) (*sing
 func (x *SingleMap) SetByKey(ctx context.Context, key keyvalue.SingleKey, val *single.Single) error {
 	start := time.Now()
 	ctx, _ = tag.New(ctx,
-		tag.Upsert(cache.TagCacheCollection, "single"),
-		tag.Upsert(cache.TagCacheInstance, x.name),
-		tag.Upsert(cache.TagCacheMethod, "get"),
-		tag.Upsert(cache.TagCacheType, "map"),
+		tag.Upsert(cache.TagCollection, "single"),
+		tag.Upsert(cache.TagInstance, x.name),
+		tag.Upsert(cache.TagMethod, "get"),
+		tag.Upsert(cache.TagType, "map"),
 	)
 	stats.Record(ctx, cache.MeasureInflight.M(1))
 	defer func() {

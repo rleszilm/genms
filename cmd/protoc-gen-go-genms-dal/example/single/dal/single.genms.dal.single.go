@@ -127,7 +127,7 @@ func (x *UnimplementedSingleCollection) InterfaceStubOnly(_ context.Context) ([]
 	return nil, ErrSingleCollectionMethodImpl
 }
 
-func ReturnsOne(xs []*single.Single, err error) (*single.Single, error) {
+func ReturnsOneSingle(xs []*single.Single, err error) (*single.Single, error) {
 	if err != nil {
 		return nil, err
 	}

@@ -139,10 +139,10 @@ func (x *{{ .C.Message.Name }}Updater) Shutdown(_ {{ .P.Context }}.Context) erro
 
 func (x *{{ .C.Message.Name }}Updater) update(ctx {{ .P.Context }}.Context) {
 	ctx, _ = {{ .P.Tag }}.New(ctx,
-		{{ .P.Tag }}.Upsert({{ .P.Cache }}.TagCacheCollection, "{{ ToSnakeCase .C.Message.Name }}"),
-		{{ .P.Tag }}.Upsert({{ .P.Cache }}.TagCacheInstance, x.name),
-		{{ .P.Tag }}.Upsert({{ .P.Cache }}.TagCacheMethod, "update"),
-		{{ .P.Tag }}.Upsert({{ .P.Cache }}.TagCacheType, "updater"),
+		{{ .P.Tag }}.Upsert({{ .P.Cache }}.TagCollection, "{{ ToSnakeCase .C.Message.Name }}"),
+		{{ .P.Tag }}.Upsert({{ .P.Cache }}.TagInstance, x.name),
+		{{ .P.Tag }}.Upsert({{ .P.Cache }}.TagMethod, "update"),
+		{{ .P.Tag }}.Upsert({{ .P.Cache }}.TagType, "updater"),
 	)
 
 	ticker := {{ .P.Time }}.NewTicker(0)

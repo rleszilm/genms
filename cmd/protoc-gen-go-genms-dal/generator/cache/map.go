@@ -128,10 +128,10 @@ type {{ .C.Message.Name }}Map struct {
 func (x *{{ .C.Message.Name }}Map) All(ctx {{ .P.Context }}.Context) ([]*{{ .C.Message.QualifiedKind }}, error) {
 	start := {{ .P.Time }}.Now()
 	ctx, _ = {{ .P.Tag }}.New(ctx,
-		{{ .P.Tag }}.Upsert({{ .P.Cache }}.TagCacheCollection, "{{ ToSnakeCase .C.Message.Name }}"),
-		{{ .P.Tag }}.Upsert({{ .P.Cache }}.TagCacheInstance, x.name),
-		{{ .P.Tag }}.Upsert({{ .P.Cache }}.TagCacheMethod, "all"),
-		{{ .P.Tag }}.Upsert({{ .P.Cache }}.TagCacheType, "map"),
+		{{ .P.Tag }}.Upsert({{ .P.Cache }}.TagCollection, "{{ ToSnakeCase .C.Message.Name }}"),
+		{{ .P.Tag }}.Upsert({{ .P.Cache }}.TagInstance, x.name),
+		{{ .P.Tag }}.Upsert({{ .P.Cache }}.TagMethod, "all"),
+		{{ .P.Tag }}.Upsert({{ .P.Cache }}.TagType, "map"),
 	)
 	{{ .P.Stats }}.Record(ctx, {{ .P.Cache }}.MeasureInflight.M(1))
 	defer func() {
@@ -147,10 +147,10 @@ func (x *{{ .C.Message.Name }}Map) All(ctx {{ .P.Context }}.Context) ([]*{{ .C.M
 func (x *{{ .C.Message.Name }}Map) GetByKey(ctx {{ .P.Context }}.Context, key {{ .P.KeyValue }}.{{ .C.Message.Name }}Key) (*{{ .C.Message.QualifiedKind }}, error) {
 	start := {{ .P.Time }}.Now()
 	ctx, _ = {{ .P.Tag }}.New(ctx,
-		{{ .P.Tag }}.Upsert({{ .P.Cache }}.TagCacheCollection, "{{ ToSnakeCase .C.Message.Name }}"),
-		{{ .P.Tag }}.Upsert({{ .P.Cache }}.TagCacheInstance, x.name),
-		{{ .P.Tag }}.Upsert({{ .P.Cache }}.TagCacheMethod, "get"),
-		{{ .P.Tag }}.Upsert({{ .P.Cache }}.TagCacheType, "map"),
+		{{ .P.Tag }}.Upsert({{ .P.Cache }}.TagCollection, "{{ ToSnakeCase .C.Message.Name }}"),
+		{{ .P.Tag }}.Upsert({{ .P.Cache }}.TagInstance, x.name),
+		{{ .P.Tag }}.Upsert({{ .P.Cache }}.TagMethod, "get"),
+		{{ .P.Tag }}.Upsert({{ .P.Cache }}.TagType, "map"),
 	)
 	{{ .P.Stats }}.Record(ctx, {{ .P.Cache }}.MeasureInflight.M(1))
 	defer func() {
@@ -179,10 +179,10 @@ func (x *{{ .C.Message.Name }}Map) GetByKey(ctx {{ .P.Context }}.Context, key {{
 func (x *{{ .C.Message.Name }}Map) SetByKey(ctx {{ .P.Context }}.Context, key {{ .P.KeyValue }}.{{ .C.Message.Name }}Key, val *{{ .C.Message.QualifiedKind }}) error {
 	start := {{ .P.Time }}.Now()
 	ctx, _ = {{ .P.Tag }}.New(ctx,
-		{{ .P.Tag }}.Upsert({{ .P.Cache }}.TagCacheCollection, "{{ ToSnakeCase .C.Message.Name }}"),
-		{{ .P.Tag }}.Upsert({{ .P.Cache }}.TagCacheInstance, x.name),
-		{{ .P.Tag }}.Upsert({{ .P.Cache }}.TagCacheMethod, "get"),
-		{{ .P.Tag }}.Upsert({{ .P.Cache }}.TagCacheType, "map"),
+		{{ .P.Tag }}.Upsert({{ .P.Cache }}.TagCollection, "{{ ToSnakeCase .C.Message.Name }}"),
+		{{ .P.Tag }}.Upsert({{ .P.Cache }}.TagInstance, x.name),
+		{{ .P.Tag }}.Upsert({{ .P.Cache }}.TagMethod, "get"),
+		{{ .P.Tag }}.Upsert({{ .P.Cache }}.TagType, "map"),
 	)
 	{{ .P.Stats }}.Record(ctx, {{ .P.Cache }}.MeasureInflight.M(1))
 	defer func() {

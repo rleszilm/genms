@@ -26,10 +26,10 @@ type TypeTwoMap struct {
 func (x *TypeTwoMap) All(ctx context.Context) ([]*multi.TypeTwo, error) {
 	start := time.Now()
 	ctx, _ = tag.New(ctx,
-		tag.Upsert(cache.TagCacheCollection, "type_two"),
-		tag.Upsert(cache.TagCacheInstance, x.name),
-		tag.Upsert(cache.TagCacheMethod, "all"),
-		tag.Upsert(cache.TagCacheType, "map"),
+		tag.Upsert(cache.TagCollection, "type_two"),
+		tag.Upsert(cache.TagInstance, x.name),
+		tag.Upsert(cache.TagMethod, "all"),
+		tag.Upsert(cache.TagType, "map"),
 	)
 	stats.Record(ctx, cache.MeasureInflight.M(1))
 	defer func() {
@@ -45,10 +45,10 @@ func (x *TypeTwoMap) All(ctx context.Context) ([]*multi.TypeTwo, error) {
 func (x *TypeTwoMap) GetByKey(ctx context.Context, key keyvalue.TypeTwoKey) (*multi.TypeTwo, error) {
 	start := time.Now()
 	ctx, _ = tag.New(ctx,
-		tag.Upsert(cache.TagCacheCollection, "type_two"),
-		tag.Upsert(cache.TagCacheInstance, x.name),
-		tag.Upsert(cache.TagCacheMethod, "get"),
-		tag.Upsert(cache.TagCacheType, "map"),
+		tag.Upsert(cache.TagCollection, "type_two"),
+		tag.Upsert(cache.TagInstance, x.name),
+		tag.Upsert(cache.TagMethod, "get"),
+		tag.Upsert(cache.TagType, "map"),
 	)
 	stats.Record(ctx, cache.MeasureInflight.M(1))
 	defer func() {
@@ -77,10 +77,10 @@ func (x *TypeTwoMap) GetByKey(ctx context.Context, key keyvalue.TypeTwoKey) (*mu
 func (x *TypeTwoMap) SetByKey(ctx context.Context, key keyvalue.TypeTwoKey, val *multi.TypeTwo) error {
 	start := time.Now()
 	ctx, _ = tag.New(ctx,
-		tag.Upsert(cache.TagCacheCollection, "type_two"),
-		tag.Upsert(cache.TagCacheInstance, x.name),
-		tag.Upsert(cache.TagCacheMethod, "get"),
-		tag.Upsert(cache.TagCacheType, "map"),
+		tag.Upsert(cache.TagCollection, "type_two"),
+		tag.Upsert(cache.TagInstance, x.name),
+		tag.Upsert(cache.TagMethod, "get"),
+		tag.Upsert(cache.TagType, "map"),
 	)
 	stats.Record(ctx, cache.MeasureInflight.M(1))
 	defer func() {

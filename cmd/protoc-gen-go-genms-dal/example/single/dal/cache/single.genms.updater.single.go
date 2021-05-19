@@ -37,10 +37,10 @@ func (x *SingleUpdater) Shutdown(_ context.Context) error {
 
 func (x *SingleUpdater) update(ctx context.Context) {
 	ctx, _ = tag.New(ctx,
-		tag.Upsert(cache.TagCacheCollection, "single"),
-		tag.Upsert(cache.TagCacheInstance, x.name),
-		tag.Upsert(cache.TagCacheMethod, "update"),
-		tag.Upsert(cache.TagCacheType, "updater"),
+		tag.Upsert(cache.TagCollection, "single"),
+		tag.Upsert(cache.TagInstance, x.name),
+		tag.Upsert(cache.TagMethod, "update"),
+		tag.Upsert(cache.TagType, "updater"),
 	)
 
 	ticker := time.NewTicker(0)

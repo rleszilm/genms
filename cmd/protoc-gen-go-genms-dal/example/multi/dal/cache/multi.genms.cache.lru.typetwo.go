@@ -27,10 +27,10 @@ type TypeTwoLRU struct {
 func (x *TypeTwoLRU) All(ctx context.Context) ([]*multi.TypeTwo, error) {
 	start := time.Now()
 	ctx, _ = tag.New(ctx,
-		tag.Upsert(cache.TagCacheCollection, "type_two"),
-		tag.Upsert(cache.TagCacheInstance, x.name),
-		tag.Upsert(cache.TagCacheMethod, "all"),
-		tag.Upsert(cache.TagCacheType, "lru"),
+		tag.Upsert(cache.TagCollection, "type_two"),
+		tag.Upsert(cache.TagInstance, x.name),
+		tag.Upsert(cache.TagMethod, "all"),
+		tag.Upsert(cache.TagType, "lru"),
 	)
 	stats.Record(ctx, cache.MeasureInflight.M(1))
 	defer func() {
@@ -46,10 +46,10 @@ func (x *TypeTwoLRU) All(ctx context.Context) ([]*multi.TypeTwo, error) {
 func (x *TypeTwoLRU) GetByKey(ctx context.Context, key keyvalue.TypeTwoKey) (*multi.TypeTwo, error) {
 	start := time.Now()
 	ctx, _ = tag.New(ctx,
-		tag.Upsert(cache.TagCacheCollection, "type_two"),
-		tag.Upsert(cache.TagCacheInstance, x.name),
-		tag.Upsert(cache.TagCacheMethod, "get"),
-		tag.Upsert(cache.TagCacheType, "lru"),
+		tag.Upsert(cache.TagCollection, "type_two"),
+		tag.Upsert(cache.TagInstance, x.name),
+		tag.Upsert(cache.TagMethod, "get"),
+		tag.Upsert(cache.TagType, "lru"),
 	)
 	stats.Record(ctx, cache.MeasureInflight.M(1))
 	defer func() {
@@ -81,10 +81,10 @@ func (x *TypeTwoLRU) GetByKey(ctx context.Context, key keyvalue.TypeTwoKey) (*mu
 func (x *TypeTwoLRU) SetByKey(ctx context.Context, key keyvalue.TypeTwoKey, val *multi.TypeTwo) error {
 	start := time.Now()
 	ctx, _ = tag.New(ctx,
-		tag.Upsert(cache.TagCacheCollection, "type_two"),
-		tag.Upsert(cache.TagCacheInstance, x.name),
-		tag.Upsert(cache.TagCacheMethod, "set"),
-		tag.Upsert(cache.TagCacheType, "lru"),
+		tag.Upsert(cache.TagCollection, "type_two"),
+		tag.Upsert(cache.TagInstance, x.name),
+		tag.Upsert(cache.TagMethod, "set"),
+		tag.Upsert(cache.TagType, "lru"),
 	)
 	stats.Record(ctx, cache.MeasureInflight.M(1))
 	defer func() {

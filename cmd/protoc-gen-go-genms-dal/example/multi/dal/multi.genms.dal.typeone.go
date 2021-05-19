@@ -127,7 +127,7 @@ func (x *UnimplementedTypeOneCollection) InterfaceStubOnly(_ context.Context) ([
 	return nil, ErrTypeOneCollectionMethodImpl
 }
 
-func ReturnsOne(xs []*multi.TypeOne, err error) (*multi.TypeOne, error) {
+func ReturnsOneTypeOne(xs []*multi.TypeOne, err error) (*multi.TypeOne, error) {
 	if err != nil {
 		return nil, err
 	}
