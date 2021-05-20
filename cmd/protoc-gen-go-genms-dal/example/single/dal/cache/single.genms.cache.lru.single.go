@@ -42,7 +42,7 @@ func (x *SingleLRU) All(ctx context.Context) ([]*single.Single, error) {
 	return x.all, nil
 }
 
-// GetByKey implements keyvalue.SingleReadWriter.
+// GetByKey implements keyvalue.SingleReader.
 func (x *SingleLRU) GetByKey(ctx context.Context, key keyvalue.SingleKey) (*single.Single, error) {
 	start := time.Now()
 	ctx, _ = tag.New(ctx,
@@ -77,7 +77,7 @@ func (x *SingleLRU) GetByKey(ctx context.Context, key keyvalue.SingleKey) (*sing
 	return nil, nil
 }
 
-// SetByKey implements keyvalue.SingleReadWriter.
+// SetByKey implements keyvalue.SingleWriter.
 func (x *SingleLRU) SetByKey(ctx context.Context, key keyvalue.SingleKey, val *single.Single) error {
 	start := time.Now()
 	ctx, _ = tag.New(ctx,

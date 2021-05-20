@@ -117,12 +117,18 @@ func (c *Cache) defineCollection() error {
 type Nil{{ .C.Message.Name }}Cache struct{
 }
 
-// GetByKey implements {{ .P.KeyValue }}.{{ .C.Message.Name }}ReadWriter.
+// GetAll implements {{ .P.KeyValue }}.{{ .C.Message.Name }}ReadAller.
+func (x *Nil{{ .C.Message.Name }}Cache) GetAll(_ {{ .P.Context }}.Context) (*{{ .C.Message.QualifiedKind }}, error) {
+	return nil, nil
+}
+
+
+// GetByKey implements {{ .P.KeyValue }}.{{ .C.Message.Name }}Reader.
 func (x *Nil{{ .C.Message.Name }}Cache) GetByKey(_ {{ .P.Context }}.Context, _ {{ .P.KeyValue }}.{{ .C.Message.Name }}Key) (*{{ .C.Message.QualifiedKind }}, error) {
 	return nil, nil
 }
 
-// SetByKey implements {{ .P.KeyValue }}.{{ .C.Message.Name }}ReadWriter.
+// SetByKey implements {{ .P.KeyValue }}.{{ .C.Message.Name }}Writer.
 func (x *Nil{{ .C.Message.Name }}Cache) SetByKey(_ {{ .P.Context }}.Context, _ {{ .P.KeyValue }}.{{ .C.Message.Name }}Key, _ *{{ .C.Message.QualifiedKind }}) error {
 	return nil
 }

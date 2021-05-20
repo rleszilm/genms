@@ -19,7 +19,6 @@ type TypeOneReader interface {
 // TypeOneReadeAllr is defines the interface for getting values from a KV store.
 //go:generate go run github.com/maxbrunsfeld/counterfeiter/v6 . TypeOneReadAller
 type TypeOneReadAller interface {
-	TypeOneReader
 	All(context.Context) ([]*multi.TypeOne, error)
 }
 

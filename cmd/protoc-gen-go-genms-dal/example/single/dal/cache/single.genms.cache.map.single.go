@@ -111,7 +111,7 @@ func (x *SingleMap) WithWriter(w keyvalue.SingleWriter) {
 }
 
 // NewSingleMap returns a new SingleMap cache.
-func NewSingleMap(name string, i int) (*SingleMap, error) {
+func NewSingleMap(name string) (*SingleMap, error) {
 	return &SingleMap{
 		name:  name,
 		cache: map[keyvalue.SingleKey]*single.Single{},

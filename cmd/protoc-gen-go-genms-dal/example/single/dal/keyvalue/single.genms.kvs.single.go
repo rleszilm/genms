@@ -19,7 +19,6 @@ type SingleReader interface {
 // SingleReadeAllr is defines the interface for getting values from a KV store.
 //go:generate go run github.com/maxbrunsfeld/counterfeiter/v6 . SingleReadAller
 type SingleReadAller interface {
-	SingleReader
 	All(context.Context) ([]*single.Single, error)
 }
 

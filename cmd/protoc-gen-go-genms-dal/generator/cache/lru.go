@@ -143,7 +143,7 @@ func (x *{{ .C.Message.Name }}LRU) All(ctx {{ .P.Context }}.Context) ([]*{{ .C.M
 	return x.all, nil
 }
 
-// GetByKey implements {{ .P.KeyValue }}.{{ .C.Message.Name }}ReadWriter.
+// GetByKey implements {{ .P.KeyValue }}.{{ .C.Message.Name }}Reader.
 func (x *{{ .C.Message.Name }}LRU) GetByKey(ctx {{ .P.Context }}.Context, key {{ .P.KeyValue }}.{{ .C.Message.Name }}Key) (*{{ .C.Message.QualifiedKind }}, error) {
 	start := {{ .P.Time }}.Now()
 	ctx, _ = {{ .P.Tag }}.New(ctx,
@@ -178,7 +178,7 @@ func (x *{{ .C.Message.Name }}LRU) GetByKey(ctx {{ .P.Context }}.Context, key {{
 	return nil, nil
 }
 
-// SetByKey implements {{ .P.KeyValue }}.{{ .C.Message.Name }}ReadWriter.
+// SetByKey implements {{ .P.KeyValue }}.{{ .C.Message.Name }}Writer.
 func (x *{{ .C.Message.Name }}LRU) SetByKey(ctx {{ .P.Context }}.Context, key {{ .P.KeyValue }}.{{ .C.Message.Name }}Key, val *{{ .C.Message.QualifiedKind }}) error {
 	start := {{ .P.Time }}.Now()
 	ctx, _ = {{ .P.Tag }}.New(ctx,

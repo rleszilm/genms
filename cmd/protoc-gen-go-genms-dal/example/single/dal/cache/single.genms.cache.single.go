@@ -12,12 +12,17 @@ import (
 type NilSingleCache struct {
 }
 
-// GetByKey implements keyvalue.SingleReadWriter.
+// GetAll implements keyvalue.SingleReadAller.
+func (x *NilSingleCache) GetAll(_ context.Context) (*single.Single, error) {
+	return nil, nil
+}
+
+// GetByKey implements keyvalue.SingleReader.
 func (x *NilSingleCache) GetByKey(_ context.Context, _ keyvalue.SingleKey) (*single.Single, error) {
 	return nil, nil
 }
 
-// SetByKey implements keyvalue.SingleReadWriter.
+// SetByKey implements keyvalue.SingleWriter.
 func (x *NilSingleCache) SetByKey(_ context.Context, _ keyvalue.SingleKey, _ *single.Single) error {
 	return nil
 }

@@ -42,7 +42,7 @@ func (x *TypeOneLRU) All(ctx context.Context) ([]*multi.TypeOne, error) {
 	return x.all, nil
 }
 
-// GetByKey implements keyvalue.TypeOneReadWriter.
+// GetByKey implements keyvalue.TypeOneReader.
 func (x *TypeOneLRU) GetByKey(ctx context.Context, key keyvalue.TypeOneKey) (*multi.TypeOne, error) {
 	start := time.Now()
 	ctx, _ = tag.New(ctx,
@@ -77,7 +77,7 @@ func (x *TypeOneLRU) GetByKey(ctx context.Context, key keyvalue.TypeOneKey) (*mu
 	return nil, nil
 }
 
-// SetByKey implements keyvalue.TypeOneReadWriter.
+// SetByKey implements keyvalue.TypeOneWriter.
 func (x *TypeOneLRU) SetByKey(ctx context.Context, key keyvalue.TypeOneKey, val *multi.TypeOne) error {
 	start := time.Now()
 	ctx, _ = tag.New(ctx,

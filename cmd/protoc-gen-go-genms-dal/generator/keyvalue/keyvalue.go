@@ -125,7 +125,6 @@ type {{ .C.Message.Name }}Reader interface {
 // {{ .C.Message.Name }}ReadeAllr is defines the interface for getting values from a KV store.
 //{{ $Generate }} {{ .C.Message.Name }}ReadAller
 type {{ .C.Message.Name }}ReadAller interface {
-	{{ .C.Message.Name }}Reader
 	All({{ .P.Context }}.Context) ([]*{{ .C.Message.QualifiedKind }}, error)
 }
 

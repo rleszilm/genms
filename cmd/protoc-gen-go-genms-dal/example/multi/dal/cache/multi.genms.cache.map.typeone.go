@@ -111,7 +111,7 @@ func (x *TypeOneMap) WithWriter(w keyvalue.TypeOneWriter) {
 }
 
 // NewTypeOneMap returns a new TypeOneMap cache.
-func NewTypeOneMap(name string, i int) (*TypeOneMap, error) {
+func NewTypeOneMap(name string) (*TypeOneMap, error) {
 	return &TypeOneMap{
 		name:  name,
 		cache: map[keyvalue.TypeOneKey]*multi.TypeOne{},

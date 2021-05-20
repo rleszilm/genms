@@ -12,12 +12,17 @@ import (
 type NilTypeTwoCache struct {
 }
 
-// GetByKey implements keyvalue.TypeTwoReadWriter.
+// GetAll implements keyvalue.TypeTwoReadAller.
+func (x *NilTypeTwoCache) GetAll(_ context.Context) (*multi.TypeTwo, error) {
+	return nil, nil
+}
+
+// GetByKey implements keyvalue.TypeTwoReader.
 func (x *NilTypeTwoCache) GetByKey(_ context.Context, _ keyvalue.TypeTwoKey) (*multi.TypeTwo, error) {
 	return nil, nil
 }
 
-// SetByKey implements keyvalue.TypeTwoReadWriter.
+// SetByKey implements keyvalue.TypeTwoWriter.
 func (x *NilTypeTwoCache) SetByKey(_ context.Context, _ keyvalue.TypeTwoKey, _ *multi.TypeTwo) error {
 	return nil
 }

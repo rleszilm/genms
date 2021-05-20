@@ -19,7 +19,6 @@ type TypeTwoReader interface {
 // TypeTwoReadeAllr is defines the interface for getting values from a KV store.
 //go:generate go run github.com/maxbrunsfeld/counterfeiter/v6 . TypeTwoReadAller
 type TypeTwoReadAller interface {
-	TypeTwoReader
 	All(context.Context) ([]*multi.TypeTwo, error)
 }
 

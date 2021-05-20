@@ -213,7 +213,7 @@ func (x *{{ .C.Message.Name }}Map) WithWriter(w {{ .P.KeyValue }}.{{ .C.Message.
 }
 
 // New{{ .C.Message.Name }}Map returns a new {{ .C.Message.Name }}Map cache.
-func New{{ .C.Message.Name }}Map(name string, i int) (*{{ .C.Message.Name }}Map, error) {
+func New{{ .C.Message.Name }}Map(name string) (*{{ .C.Message.Name }}Map, error) {
 	return &{{ .C.Message.Name }}Map{
 		name: name,
 		cache: map[{{ .P.KeyValue }}.{{ .C.Message.Name }}Key]*{{ .C.Message.QualifiedKind }}{},
