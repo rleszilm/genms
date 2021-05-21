@@ -67,6 +67,7 @@ func (x *TypeTwoUpdater) update(ctx context.Context) {
 			if err == nil {
 				for _, val := range vals {
 					if err = x.writer.SetByKey(ctx, x.key(val), val); err != nil {
+						cache.Logs().Error("updater TypeTwo could not store value:", x.key(val), val, err)
 						break
 					}
 				}

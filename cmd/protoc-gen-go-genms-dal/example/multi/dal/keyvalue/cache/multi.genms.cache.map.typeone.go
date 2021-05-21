@@ -3,11 +3,13 @@ package cache_dal_multi
 
 import (
 	context "context"
+	fmt "fmt"
 	time "time"
 
 	cache "github.com/rleszilm/genms/cache"
 	multi "github.com/rleszilm/genms/cmd/protoc-gen-go-genms-dal/example/multi"
 	keyvalue "github.com/rleszilm/genms/cmd/protoc-gen-go-genms-dal/example/multi/dal/keyvalue"
+	service "github.com/rleszilm/genms/service"
 	stats "go.opencensus.io/stats"
 	tag "go.opencensus.io/tag"
 )
@@ -15,11 +17,35 @@ import (
 // TypeOneMap defines a Map base cache implementing keyvalue.TypeOneReadWriter.
 // If a key is queries that does not exist an attempt to read and store it is made.
 type TypeOneMap struct {
+	service.Dependencies
+	NilTypeOneCache
+
 	name   string
 	reader keyvalue.TypeOneReader
 	writer keyvalue.TypeOneWriter
 	cache  map[keyvalue.TypeOneKey]*multi.TypeOne
 	all    []*multi.TypeOne
+}
+
+// Initialize initializes and starts the service. Initialize should panic in case of
+// any errors. It is intended that Initialize be called only once during the service life-cycle.
+func (x *TypeOneMap) Initialize(ctx context.Context) error {
+	return nil
+}
+
+// Shutdown closes the long-running instance, or service.
+func (x *TypeOneMap) Shutdown(_ context.Context) error {
+	return nil
+}
+
+// NameOf returns the name of the map.
+func (x *TypeOneMap) NameOf() string {
+	return x.name
+}
+
+// String returns the name of the map.
+func (x *TypeOneMap) String() string {
+	return x.name
 }
 
 // All implements implements keyvalue.TypeOneReadAller.
@@ -64,13 +90,14 @@ func (x *TypeOneMap) GetByKey(ctx context.Context, key keyvalue.TypeOneKey) (*mu
 	if x.reader != nil {
 		val, err := x.reader.GetByKey(ctx, key)
 		if err != nil {
-			x.cache[key] = val
-			return val, nil
+			return nil, fmt.Errorf("map: <no value>.GetByKey - %w", err)
 		}
+		x.cache[key] = val
+		return val, nil
 	}
 
 	stats.Record(ctx, cache.MeasureError.M(1))
-	return nil, nil
+	return nil, fmt.Errorf("map: <no value>.GetByKey - %w", cache.ErrGetValue)
 }
 
 // SetByKey implements keyvalue.TypeOneWriter.
@@ -92,7 +119,7 @@ func (x *TypeOneMap) SetByKey(ctx context.Context, key keyvalue.TypeOneKey, val 
 	if x.writer != nil {
 		if err := x.writer.SetByKey(ctx, key, val); err != nil {
 			stats.Record(ctx, cache.MeasureError.M(1))
-			return err
+			return fmt.Errorf("map: <no value>.SetByKey - %w", err)
 		}
 	}
 

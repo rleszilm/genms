@@ -1,6 +1,8 @@
 package cache
 
 import (
+	"errors"
+
 	"github.com/rleszilm/genms/log"
 	"go.opencensus.io/stats"
 	"go.opencensus.io/stats/view"
@@ -8,6 +10,13 @@ import (
 )
 
 var (
+	logs = log.NewChannel("genms-cache")
+
+	ErrAll      = errors.New("cache: cannot get all values")
+	ErrGetNone  = errors.New("cache: no value for key")
+	ErrGetValue = errors.New("cache: cannot get value from cache")
+	ErrSetValue = errors.New("cache: cannot set value in cache")
+
 	TagCollection = tag.MustNewKey("genms_cache_collection")
 	TagInstance   = tag.MustNewKey("genms_cache_instance")
 	TagMethod     = tag.MustNewKey("genms_cache_method")
@@ -20,8 +29,6 @@ var (
 	MeasureMiss            = stats.Int64("genms_cache_miss", "Count of cache misses", stats.UnitDimensionless)
 	MeasureUpdatesInflight = stats.Int64("genms_cache_inflight", "Count of cache updates in flight", stats.UnitDimensionless)
 	MeasureUpdatesLatency  = stats.Float64("genms_cache_latency", "Latency of cache updates.", stats.UnitMilliseconds)
-
-	logs = log.NewChannel("genms-cache")
 )
 
 func init() {

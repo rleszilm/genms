@@ -13,7 +13,7 @@ type NilTypeOneCache struct {
 }
 
 // GetAll implements keyvalue.TypeOneReadAller.
-func (x *NilTypeOneCache) GetAll(_ context.Context) (*multi.TypeOne, error) {
+func (x *NilTypeOneCache) All(_ context.Context) (*multi.TypeOne, error) {
 	return nil, nil
 }
 

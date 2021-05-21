@@ -30,7 +30,7 @@ type Cache struct {
 func NewCache(plugin *protogen.Plugin, file *protogen.File, msg *protogen.Message, opts *annotations.DalOptions) *Cache {
 	base := path.Base(file.GeneratedFilenamePrefix)
 	dir := path.Dir(file.GeneratedFilenamePrefix)
-	filename := path.Join(dir, fmt.Sprintf("dal/cache/%s.genms.cache.%s.go", base, strings.ToLower(msg.GoIdent.GoName)))
+	filename := path.Join(dir, fmt.Sprintf("dal/keyvalue/cache/%s.genms.cache.%s.go", base, strings.ToLower(msg.GoIdent.GoName)))
 	outfile := plugin.NewGeneratedFile(filename, ".")
 
 	cfile := NewFile(outfile, file)
@@ -118,7 +118,7 @@ type Nil{{ .C.Message.Name }}Cache struct{
 }
 
 // GetAll implements {{ .P.KeyValue }}.{{ .C.Message.Name }}ReadAller.
-func (x *Nil{{ .C.Message.Name }}Cache) GetAll(_ {{ .P.Context }}.Context) (*{{ .C.Message.QualifiedKind }}, error) {
+func (x *Nil{{ .C.Message.Name }}Cache) All(_ {{ .P.Context }}.Context) (*{{ .C.Message.QualifiedKind }}, error) {
 	return nil, nil
 }
 

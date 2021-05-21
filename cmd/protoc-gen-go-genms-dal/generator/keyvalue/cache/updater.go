@@ -31,7 +31,7 @@ type Updater struct {
 func NewUpdater(plugin *protogen.Plugin, file *protogen.File, msg *protogen.Message, opts *annotations.DalOptions) *Updater {
 	base := path.Base(file.GeneratedFilenamePrefix)
 	dir := path.Dir(file.GeneratedFilenamePrefix)
-	filename := path.Join(dir, fmt.Sprintf("dal/cache/%s.genms.updater.%s.go", base, strings.ToLower(msg.GoIdent.GoName)))
+	filename := path.Join(dir, fmt.Sprintf("dal/keyvalue/cache/%s.genms.updater.%s.go", base, strings.ToLower(msg.GoIdent.GoName)))
 	outfile := plugin.NewGeneratedFile(filename, ".")
 
 	cfile := NewFile(outfile, file)
@@ -170,6 +170,7 @@ func (x *{{ .C.Message.Name }}Updater) update(ctx {{ .P.Context }}.Context) {
 			if err == nil {
 				for _, val := range vals {
 					if err = x.writer.SetByKey(ctx, x.key(val), val); err != nil {
+						{{ .P.Cache }}.Logs().Error("updater {{ .C.Message.Name }} could not store value:", x.key(val), val, err)
 						break
 					}
 				}

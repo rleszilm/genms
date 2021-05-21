@@ -13,7 +13,7 @@ type NilTypeTwoCache struct {
 }
 
 // GetAll implements keyvalue.TypeTwoReadAller.
-func (x *NilTypeTwoCache) GetAll(_ context.Context) (*multi.TypeTwo, error) {
+func (x *NilTypeTwoCache) All(_ context.Context) (*multi.TypeTwo, error) {
 	return nil, nil
 }
 

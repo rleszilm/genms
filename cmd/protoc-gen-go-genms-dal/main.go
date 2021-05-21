@@ -7,8 +7,8 @@ import (
 
 	"github.com/rleszilm/genms/cmd/protoc-gen-go-genms-dal/annotations"
 	"github.com/rleszilm/genms/cmd/protoc-gen-go-genms-dal/generator"
-	"github.com/rleszilm/genms/cmd/protoc-gen-go-genms-dal/generator/cache"
 	"github.com/rleszilm/genms/cmd/protoc-gen-go-genms-dal/generator/keyvalue"
+	"github.com/rleszilm/genms/cmd/protoc-gen-go-genms-dal/generator/keyvalue/cache"
 	"github.com/rleszilm/genms/cmd/protoc-gen-go-genms-dal/generator/rest"
 	"github.com/rleszilm/genms/cmd/protoc-gen-go-genms-dal/generator/sql/postgres"
 	"google.golang.org/protobuf/compiler/protogen"
