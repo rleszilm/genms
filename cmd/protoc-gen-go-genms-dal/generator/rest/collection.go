@@ -229,7 +229,7 @@ func (x *{{ .C.Message.Name }}Collection) DoReq(ctx {{ .P.Context }}.Context, la
 		{{ .P.Tag }}.Upsert({{ .P.Rest }}.TagRestMethod, req.Method),
 	)
 	{{ .P.Stats }}.Record(ctx, {{ .P.Rest }}.MeasureInflight.M(1))
-	defer func() {
+	defer func(ctx {{ .P.Context }}.Context) {
 		if resp != nil {
 			ctx, _ = {{ .P.Tag }}.New(ctx,
 				{{ .P.Tag }}.Upsert({{ .P.Rest }}.TagResponseCode, {{ .P.Strconv }}.Itoa(resp.StatusCode)),
@@ -239,25 +239,28 @@ func (x *{{ .C.Message.Name }}Collection) DoReq(ctx {{ .P.Context }}.Context, la
 		stop := time.Now()
 		dur := float64(stop.Sub(start).Nanoseconds()) / float64({{ .P.Time }}.Millisecond)
 		{{ .P.Stats }}.Record(ctx, {{ .P.Rest }}.MeasureLatency.M(dur), {{ .P.Rest }}.MeasureInflight.M(-1))
-	}()
+	}(ctx)
 
 	ctx, cancel := {{ .P.Context }}.WithTimeout(ctx, x.config.Timeout)
 	defer cancel()
 
 	resp, err = x.client.Do(req.WithContext(ctx))
 	if err != nil {
+		{{ .P.Rest }}.Logs().Error("could not execute rest request:", err)
 		{{ .P.Stats }}.Record(ctx, {{ .P.Rest }}.MeasureError.M(1))
 		return nil, err
 	}
 
 	buff, err := {{ .P.IOUtil }}.ReadAll(resp.Body)
 	if err != nil {
+		{{ .P.Rest }}.Logs().Error("could not read rest response:", err)
 		{{ .P.Stats }}.Record(ctx, {{ .P.Rest }}.MeasureError.M(1))
 		return nil, err
 	}
 
 	{{ .C.Message.Name }}Scanners := []*{{ ToTitleCase .C.Message.Name }}Scanner{}
 	if err := {{ .P.JSON }}.Unmarshal(buff, &{{ .C.Message.Name }}Scanners); err != nil {
+		{{ .P.Rest }}.Logs().Error("could not unmarshal rest response:", err)
 		{{ .P.Stats }}.Record(ctx, {{ .P.Rest }}.MeasureError.M(1))
 		return nil, err
 	}

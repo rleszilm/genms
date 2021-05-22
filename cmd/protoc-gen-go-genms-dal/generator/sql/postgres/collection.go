@@ -246,6 +246,7 @@ func (x *{{ .C.Message.Name }}Collection) DoInsert(ctx {{ .P.Context }}.Context,
 
 	res, err := x.db.ExecWithReplacements(ctx, x.execInsert, {{ ToSnakeCase .C.Message.Name }}WriterFromGeneric(arg))
 	if err != nil {
+		{{ .P.GenMSSql }}.Logs().Error("postgres: could not execute insert - ", err)
 		{{ .P.Stats }}.Record(ctx, {{ .P.GenMSSql }}.MeasureError.M(1))
 		return nil, err
 	}
@@ -273,6 +274,7 @@ func (x *{{ .C.Message.Name }}Collection) DoUpsert(ctx {{ .P.Context }}.Context,
 
 	res, err := x.db.ExecWithReplacements(ctx, x.execUpsert, {{ ToSnakeCase .C.Message.Name }}WriterFromGeneric(arg))
 	if err != nil {
+		{{ .P.GenMSSql }}.Logs().Error("postgres: could not execute upsert - ", err)
 		{{ .P.Stats }}.Record(ctx, {{ .P.GenMSSql }}.MeasureError.M(1))
 		return nil, err
 	}
@@ -314,12 +316,14 @@ func (x *{{ .C.Message.Name }}Collection) DoUpdate(ctx {{ .P.Context }}.Context,
 		"table": x.config.TableName,
 		"updates": strings.Join(updates, ", "),
 	}); err != nil {
+		{{ .P.GenMSSql }}.Logs().Error("postgres: could not format update - ", err)
 		{{ .P.Stats }}.Record(ctx, {{ .P.GenMSSql }}.MeasureError.M(1))
 		return nil, err
 	}
 
 	res, err := x.db.ExecWithReplacements(ctx, string(buf.Bytes()), {{ ToSnakeCase .C.Message.Name }}FieldValuesFromGeneric(fvs))
 	if err != nil {
+		{{ .P.GenMSSql }}.Logs().Error("could not execute update:", err)
 		{{ .P.Stats }}.Record(ctx, {{ .P.GenMSSql }}.MeasureError.M(1))
 		return nil, err
 	}
@@ -370,6 +374,7 @@ func (x *{{ .C.Message.Name }}Collection) find(ctx {{ .P.Context }}.Context, lab
 
 	rows, err := x.db.QueryWithReplacements(ctx, query, fvs)
 	if err != nil {
+		{{ .P.GenMSSql }}.Logs().Errorf("could not execute %s - %v", label, err)
 		{{ .P.Stats }}.Record(ctx, {{ .P.GenMSSql }}.MeasureError.M(1))
 		return nil, err
 	}
@@ -379,6 +384,7 @@ func (x *{{ .C.Message.Name }}Collection) find(ctx {{ .P.Context }}.Context, lab
 	for rows.Next() {
 		obj := &{{ .C.Message.Name }}Scanner{}
 		if err = rows.StructScan(obj); err != nil {
+			{{ .P.GenMSSql }}.Logs().Errorf("could not parse %s - %v", label, err)
 			{{ .P.Stats }}.Record(ctx, {{ .P.GenMSSql }}.MeasureError.M(1))
 			return nil, err
 		}
