@@ -163,6 +163,7 @@ func (x *{{ .C.Message.Name }}Updater) update(ctx {{ .P.Context }}.Context) {
 		case <- ctx.Done():
 			return
 		case <- ticker.C:
+			{{ .P.Cache }}.Logs().Infof("starting update for %s", x.name)
 			start := {{ .P.Time }}.Now()
 			{{ .P.Stats }}.Record(ctx, {{ .P.Cache }}.MeasureInflight.M(1))
 			
@@ -186,6 +187,7 @@ func (x *{{ .C.Message.Name }}Updater) update(ctx {{ .P.Context }}.Context) {
 			{{ .P.Stats }}.Record(ctx, {{ .P.Cache }}.MeasureLatency.M(dur))
 
 			if x.interval == 0 {
+				{{ .P.Cache }}.Logs().Infof("updater %s is terminating", x.name)
 				return
 			}
 			ticker.Reset(x.interval)
