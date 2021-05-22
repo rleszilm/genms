@@ -75,7 +75,7 @@ func (x *TypeOneCollection) DoReq(ctx context.Context, label string, req *http.R
 		tag.Upsert(rest.TagRestMethod, req.Method),
 	)
 	stats.Record(ctx, rest.MeasureInflight.M(1))
-	defer func() {
+	defer func(ctx context.Context) {
 		if resp != nil {
 			ctx, _ = tag.New(ctx,
 				tag.Upsert(rest.TagResponseCode, strconv.Itoa(resp.StatusCode)),
@@ -85,25 +85,28 @@ func (x *TypeOneCollection) DoReq(ctx context.Context, label string, req *http.R
 		stop := time.Now()
 		dur := float64(stop.Sub(start).Nanoseconds()) / float64(time.Millisecond)
 		stats.Record(ctx, rest.MeasureLatency.M(dur), rest.MeasureInflight.M(-1))
-	}()
+	}(ctx)
 
 	ctx, cancel := context.WithTimeout(ctx, x.config.Timeout)
 	defer cancel()
 
 	resp, err = x.client.Do(req.WithContext(ctx))
 	if err != nil {
+		rest.Logs().Error("could not execute rest request:", err)
 		stats.Record(ctx, rest.MeasureError.M(1))
 		return nil, err
 	}
 
 	buff, err := ioutil.ReadAll(resp.Body)
 	if err != nil {
+		rest.Logs().Error("could not read rest response:", err)
 		stats.Record(ctx, rest.MeasureError.M(1))
 		return nil, err
 	}
 
 	TypeOneScanners := []*TypeOneScanner{}
 	if err := json.Unmarshal(buff, &TypeOneScanners); err != nil {
+		rest.Logs().Error("could not unmarshal rest response:", err)
 		stats.Record(ctx, rest.MeasureError.M(1))
 		return nil, err
 	}

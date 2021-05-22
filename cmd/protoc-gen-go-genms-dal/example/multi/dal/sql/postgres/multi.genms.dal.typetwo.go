@@ -83,6 +83,7 @@ func (x *TypeTwoCollection) DoInsert(ctx context.Context, arg *multi.TypeTwo) (s
 
 	res, err := x.db.ExecWithReplacements(ctx, x.execInsert, type_twoWriterFromGeneric(arg))
 	if err != nil {
+		sql.Logs().Error("postgres: could not execute insert - ", err)
 		stats.Record(ctx, sql.MeasureError.M(1))
 		return nil, err
 	}
@@ -110,6 +111,7 @@ func (x *TypeTwoCollection) DoUpsert(ctx context.Context, arg *multi.TypeTwo) (s
 
 	res, err := x.db.ExecWithReplacements(ctx, x.execUpsert, type_twoWriterFromGeneric(arg))
 	if err != nil {
+		sql.Logs().Error("postgres: could not execute upsert - ", err)
 		stats.Record(ctx, sql.MeasureError.M(1))
 		return nil, err
 	}
@@ -190,12 +192,14 @@ func (x *TypeTwoCollection) DoUpdate(ctx context.Context, fvs *dal.TypeTwoFieldV
 		"table":   x.config.TableName,
 		"updates": strings.Join(updates, ", "),
 	}); err != nil {
+		sql.Logs().Error("postgres: could not format update - ", err)
 		stats.Record(ctx, sql.MeasureError.M(1))
 		return nil, err
 	}
 
 	res, err := x.db.ExecWithReplacements(ctx, string(buf.Bytes()), type_twoFieldValuesFromGeneric(fvs))
 	if err != nil {
+		sql.Logs().Error("could not execute update:", err)
 		stats.Record(ctx, sql.MeasureError.M(1))
 		return nil, err
 	}
@@ -275,6 +279,7 @@ func (x *TypeTwoCollection) find(ctx context.Context, label string, query string
 
 	rows, err := x.db.QueryWithReplacements(ctx, query, fvs)
 	if err != nil {
+		sql.Logs().Errorf("could not execute %s - %v", label, err)
 		stats.Record(ctx, sql.MeasureError.M(1))
 		return nil, err
 	}
@@ -284,6 +289,7 @@ func (x *TypeTwoCollection) find(ctx context.Context, label string, query string
 	for rows.Next() {
 		obj := &TypeTwoScanner{}
 		if err = rows.StructScan(obj); err != nil {
+			sql.Logs().Errorf("could not parse %s - %v", label, err)
 			stats.Record(ctx, sql.MeasureError.M(1))
 			return nil, err
 		}

@@ -83,6 +83,7 @@ func (x *SingleCollection) DoInsert(ctx context.Context, arg *single.Single) (sq
 
 	res, err := x.db.ExecWithReplacements(ctx, x.execInsert, singleWriterFromGeneric(arg))
 	if err != nil {
+		sql.Logs().Error("postgres: could not execute insert - ", err)
 		stats.Record(ctx, sql.MeasureError.M(1))
 		return nil, err
 	}
@@ -110,6 +111,7 @@ func (x *SingleCollection) DoUpsert(ctx context.Context, arg *single.Single) (sq
 
 	res, err := x.db.ExecWithReplacements(ctx, x.execUpsert, singleWriterFromGeneric(arg))
 	if err != nil {
+		sql.Logs().Error("postgres: could not execute upsert - ", err)
 		stats.Record(ctx, sql.MeasureError.M(1))
 		return nil, err
 	}
@@ -190,12 +192,14 @@ func (x *SingleCollection) DoUpdate(ctx context.Context, fvs *dal.SingleFieldVal
 		"table":   x.config.TableName,
 		"updates": strings.Join(updates, ", "),
 	}); err != nil {
+		sql.Logs().Error("postgres: could not format update - ", err)
 		stats.Record(ctx, sql.MeasureError.M(1))
 		return nil, err
 	}
 
 	res, err := x.db.ExecWithReplacements(ctx, string(buf.Bytes()), singleFieldValuesFromGeneric(fvs))
 	if err != nil {
+		sql.Logs().Error("could not execute update:", err)
 		stats.Record(ctx, sql.MeasureError.M(1))
 		return nil, err
 	}
@@ -275,6 +279,7 @@ func (x *SingleCollection) find(ctx context.Context, label string, query string,
 
 	rows, err := x.db.QueryWithReplacements(ctx, query, fvs)
 	if err != nil {
+		sql.Logs().Errorf("could not execute %s - %v", label, err)
 		stats.Record(ctx, sql.MeasureError.M(1))
 		return nil, err
 	}
@@ -284,6 +289,7 @@ func (x *SingleCollection) find(ctx context.Context, label string, query string,
 	for rows.Next() {
 		obj := &SingleScanner{}
 		if err = rows.StructScan(obj); err != nil {
+			sql.Logs().Errorf("could not parse %s - %v", label, err)
 			stats.Record(ctx, sql.MeasureError.M(1))
 			return nil, err
 		}
