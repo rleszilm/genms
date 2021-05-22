@@ -3,12 +3,16 @@ package grpc_service
 import (
 	"context"
 	"crypto/tls"
-	"log"
 	"net"
 
 	grpc_middleware "github.com/grpc-ecosystem/go-grpc-middleware"
+	"github.com/rleszilm/genms/log"
 	"github.com/rleszilm/genms/service"
 	"google.golang.org/grpc"
+)
+
+var (
+	logs = log.NewChannel("grpc")
 )
 
 // GrpcService is a function that registers a grpc service against a server.
@@ -52,9 +56,9 @@ func (s *Server) Initialize(_ context.Context) error {
 
 	go func() {
 		if err := s.grpc.Serve(listener); err != nil {
-			log.Fatalln("Error serving grpc requests", err)
+			logs.Fatal("Error serving grpc requests:", err)
 		}
-		log.Println("no longer serving grpc")
+		logs.Info("no longer serving grpc")
 	}()
 
 	return nil

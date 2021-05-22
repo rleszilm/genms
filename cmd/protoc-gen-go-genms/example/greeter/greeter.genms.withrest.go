@@ -3,6 +3,7 @@ package greeter
 
 import (
 	context "context"
+
 	service "github.com/rleszilm/genms/service"
 	grpc "github.com/rleszilm/genms/service/grpc"
 	rest "github.com/rleszilm/genms/service/rest"
@@ -16,6 +17,8 @@ type WithRestServerService struct {
 	impl       WithRestServer
 	grpcServer *grpc.Server
 	restServer *rest.Server
+
+	proxy *grpc.Proxy
 }
 
 // Initialize implements service.Service.Initialize
@@ -24,7 +27,7 @@ func (s *WithRestServerService) Initialize(ctx context.Context) error {
 		RegisterWithRestServer(server, s.impl)
 	})
 
-	if err := s.restServer.WithGrpcProxyHandler(ctx, "WithRest", RegisterWithRestHandlerFromEndpoint); err != nil {
+	if err := s.restServer.WithGrpcProxy(ctx, s.proxy, RegisterWithRestHandlerFromEndpoint); err != nil {
 		return err
 	}
 
@@ -47,11 +50,13 @@ func (s *WithRestServerService) String() string {
 }
 
 // NewWithRestServerService returns a new WithRestServerService
-func NewWithRestServerService(impl WithRestServer, grpcServer *grpc.Server, restServer *rest.Server) *WithRestServerService {
+func NewWithRestServerService(impl WithRestServer, grpcServer *grpc.Server, restServer *rest.Server, proxy *grpc.Proxy) *WithRestServerService {
 	server := &WithRestServerService{
 		impl:       impl,
 		grpcServer: grpcServer,
+
 		restServer: restServer,
+		proxy:      proxy,
 	}
 
 	if asService, ok := impl.(service.Service); ok {

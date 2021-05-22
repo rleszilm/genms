@@ -281,11 +281,27 @@ func (x *Unimplemented{{ .I.Message.Name }}Collection) Filter(_ {{ .P.Context }}
 	}
 {{ end }}
 
+func ReturnsOne{{ .I.Message.Name }}(xs []*{{ .I.Message.QualifiedKind }}, err error) (*{{ .I.Message.QualifiedKind }}, error) {
+	if err != nil {
+		return nil, err
+	}
+
+	switch len(xs) {
+	case 0:
+		return nil, err
+	case 1:
+		return xs[0], err
+	default:
+		return nil, {{ .P.Fmt }}.Errorf("{{ ToLowerCase .I.Message.QualifiedKind }}: more than 1 value returned - %w", err)
+	}
+}
+
 `
 
 	tmpl, err := template.New("defineInterfaceUnimplemented").
 		Funcs(template.FuncMap{
 			"Arg":         NewArg,
+			"ToLowerCase": strings.ToLower,
 			"ToTitleCase": protocgenlib.ToTitleCase,
 		}).
 		Parse(tmplSrc)
@@ -297,6 +313,7 @@ func (x *Unimplemented{{ .I.Message.Name }}Collection) Filter(_ {{ .P.Context }}
 	p := map[string]string{
 		"Context": i.File.QualifiedPackageName("context"),
 		"Errors":  i.File.QualifiedPackageName("errors"),
+		"Fmt":     i.File.QualifiedPackageName("fmt"),
 		"Service": i.File.QualifiedPackageName("github.com/rleszilm/genms/service"),
 	}
 

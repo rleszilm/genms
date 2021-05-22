@@ -3,6 +3,7 @@ package greeter
 
 import (
 	context "context"
+
 	service "github.com/rleszilm/genms/service"
 	graphql "github.com/rleszilm/genms/service/graphql"
 	grpc "github.com/rleszilm/genms/service/grpc"
@@ -18,6 +19,7 @@ type WithRestAndGraphQLServerService struct {
 	grpcServer    *grpc.Server
 	restServer    *rest.Server
 	graphqlServer *graphql.Server
+	proxy         *grpc.Proxy
 }
 
 // Initialize implements service.Service.Initialize
@@ -26,11 +28,11 @@ func (s *WithRestAndGraphQLServerService) Initialize(ctx context.Context) error 
 		RegisterWithRestAndGraphQLServer(server, s.impl)
 	})
 
-	if err := s.restServer.WithGrpcProxyHandler(ctx, "WithRestAndGraphQL", RegisterWithRestAndGraphQLHandlerFromEndpoint); err != nil {
+	if err := s.restServer.WithGrpcProxy(ctx, s.proxy, RegisterWithRestAndGraphQLHandlerFromEndpoint); err != nil {
 		return err
 	}
 
-	if err := s.graphqlServer.WithGrpcProxy(ctx, "WithRestAndGraphQL", RegisterWithRestAndGraphQLGraphqlWithOptions); err != nil {
+	if err := s.graphqlServer.WithGrpcProxy(ctx, s.proxy, RegisterWithRestAndGraphQLGraphqlWithOptions); err != nil {
 		return err
 	}
 	return nil
@@ -52,12 +54,13 @@ func (s *WithRestAndGraphQLServerService) String() string {
 }
 
 // NewWithRestAndGraphQLServerService returns a new WithRestAndGraphQLServerService
-func NewWithRestAndGraphQLServerService(impl WithRestAndGraphQLServer, grpcServer *grpc.Server, restServer *rest.Server, graphqlServer *graphql.Server) *WithRestAndGraphQLServerService {
+func NewWithRestAndGraphQLServerService(impl WithRestAndGraphQLServer, grpcServer *grpc.Server, restServer *rest.Server, graphqlServer *graphql.Server, proxy *grpc.Proxy) *WithRestAndGraphQLServerService {
 	server := &WithRestAndGraphQLServerService{
 		impl:          impl,
 		grpcServer:    grpcServer,
-		restServer:    restServer,
 		graphqlServer: graphqlServer,
+		restServer:    restServer,
+		proxy:         proxy,
 	}
 
 	if asService, ok := impl.(service.Service); ok {

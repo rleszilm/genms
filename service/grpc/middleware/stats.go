@@ -2,7 +2,6 @@ package middleware_grpc
 
 import (
 	"context"
-	"log"
 	"time"
 
 	"go.opencensus.io/stats"
@@ -13,23 +12,20 @@ import (
 
 // WithStatsUnary returns a UnaryServerInterceptor that reports stats.
 func WithStatsUnary() grpc.UnaryServerInterceptor {
-	if err := registerMetrics(); err != nil {
-		log.Panicln("Unable to register metrics", err)
-	}
 	return func(ctx context.Context, req interface{}, info *grpc.UnaryServerInfo, handler grpc.UnaryHandler) (interface{}, error) {
 		_, service, method := parseMethod(info.FullMethod)
 
 		ctx, err := tag.New(ctx,
-			tag.Upsert(requestService, service),
-			tag.Upsert(requestMethod, method),
+			tag.Upsert(tagReqService, service),
+			tag.Upsert(tagReqMethod, method),
 		)
 		if err != nil {
+			logs.Error("could not apply base metrics:", err)
 			return nil, err
 		}
-		err = nil
 
 		var resp interface{}
-		stats.Record(ctx, requestsInflight.M(1))
+		stats.Record(ctx, measureReqInflight.M(1))
 		start := time.Now()
 		defer func(ctx context.Context) {
 			stop := time.Now()
@@ -37,16 +33,19 @@ func WithStatsUnary() grpc.UnaryServerInterceptor {
 
 			code := status.Code(err)
 			ctx, err := tag.New(ctx,
-				tag.Upsert(requestCode, code.String()),
+				tag.Upsert(tagReqCode, code.String()),
 			)
 			if err != nil {
-				log.Println("Error when setting response code in metrics", err, requestCode, requestCode.Name(), code.String(), len(code.String()))
+				logs.Error("could not apply response code to metrics:", err, tagReqCode, tagReqCode.Name(), code.String(), len(code.String()))
 			}
 
-			stats.Record(ctx, requests.M(dur), requestsInflight.M(-1))
+			stats.Record(ctx, measureReqLatency.M(dur), measureReqInflight.M(-1))
 		}(ctx)
 
 		resp, err = handler(ctx, req)
+		if err != nil {
+			stats.Record(ctx, measureError.M(1))
+		}
 		return resp, err
 	}
 }

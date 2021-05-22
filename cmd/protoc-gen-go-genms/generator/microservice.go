@@ -7,8 +7,10 @@ import (
 	"strings"
 	"text/template"
 
+	"github.com/go-test/deep"
 	"github.com/rleszilm/genms/cmd/protoc-gen-go-genms/annotations"
 	protocgenlib "github.com/rleszilm/genms/internal/protoc-gen-lib"
+	"golang.org/x/tools/imports"
 	"google.golang.org/protobuf/compiler/protogen"
 )
 
@@ -17,6 +19,9 @@ type MicroService struct {
 	File    *protocgenlib.File
 	Service *protocgenlib.Service
 	Opts    *annotations.ServiceOptions
+
+	plugin   *protogen.Plugin
+	filename string
 }
 
 func (m *MicroService) render() error {
@@ -32,6 +37,20 @@ func (m *MicroService) render() error {
 		}
 	}
 
+	outfile := m.File.Outfile()
+	original, err := outfile.Content()
+	if err != nil {
+		return err
+	}
+	formatted, err := imports.Process(m.filename, original, nil)
+
+	if diff := deep.Equal(original, formatted); diff != nil {
+		formattedOutfile := m.plugin.NewGeneratedFile(m.filename, ".")
+		if _, err := formattedOutfile.Write(formatted); err != nil {
+			return err
+		}
+		outfile.Skip()
+	}
 	return nil
 }
 
@@ -67,8 +86,9 @@ type {{ .M.Service.Name }}ServerService struct {
 	
 	impl {{ .M.Service.Name }}Server
 	grpcServer *{{ .P.GRPCService }}.Server
-	{{ if .M.Opts.Rest -}} restServer *{{ .P.RESTService }}.Server {{- end }}
+	{{ if .M.Opts.Rest -}}restServer *{{ .P.RESTService }}.Server{{- end }}
 	{{ if .M.Opts.Graphql -}} graphqlServer *{{ .P.GraphQLService }}.Server {{- end }}
+	{{ if (or .M.Opts.Rest .M.Opts.Graphql) -}}proxy *{{ .P.GRPCService }}.Proxy{{- end }}
 }
 
 `
@@ -82,14 +102,10 @@ type {{ .M.Service.Name }}ServerService struct {
 	}
 
 	p := map[string]string{
-		"Service":     m.File.QualifiedPackageName("github.com/rleszilm/genms/service"),
-		"GRPCService": m.File.QualifiedPackageName("github.com/rleszilm/genms/service/grpc"),
-	}
-	if m.Opts.Graphql {
-		p["GraphQLService"] = m.File.QualifiedPackageName("github.com/rleszilm/genms/service/graphql")
-	}
-	if m.Opts.Rest {
-		p["RESTService"] = m.File.QualifiedPackageName("github.com/rleszilm/genms/service/rest")
+		"GRPCService":    m.File.QualifiedPackageName("github.com/rleszilm/genms/service/grpc"),
+		"GraphQLService": m.File.QualifiedPackageName("github.com/rleszilm/genms/service/graphql"),
+		"RESTService":    m.File.QualifiedPackageName("github.com/rleszilm/genms/service/rest"),
+		"Service":        m.File.QualifiedPackageName("github.com/rleszilm/genms/service"),
 	}
 
 	buf := &bytes.Buffer{}
@@ -114,12 +130,12 @@ func (s *{{ $M.Service.Name }}ServerService) Initialize(ctx {{ .P.Context }}.Con
 		Register{{ $M.Service.Name }}Server(server, s.impl)
 	})
 	{{ if $M.Opts.Rest }}
-		if err := s.restServer.WithGrpcProxyHandler(ctx, "{{ $M.Service.Name }}", Register{{ $M.Service.Name }}HandlerFromEndpoint); err != nil {
+		if err := s.restServer.WithGrpcProxy(ctx, s.proxy, Register{{ $M.Service.Name }}HandlerFromEndpoint); err != nil {
 			return err
 		}
 	{{- end }}
 	{{ if $M.Opts.Graphql }}
-		if err := s.graphqlServer.WithGrpcProxy(ctx, "{{ $M.Service.Name }}", Register{{ $M.Service.Name }}GraphqlWithOptions); err != nil {
+		if err := s.graphqlServer.WithGrpcProxy(ctx, s.proxy, Register{{ $M.Service.Name }}GraphqlWithOptions); err != nil {
 			return err
 		}
 	{{- end }}
@@ -141,12 +157,17 @@ func (s *{{ $M.Service.Name }}ServerService) String() string {
 }
 
 // New{{ $M.Service.Name }}ServerService returns a new {{ $M.Service.Name }}ServerService
-func New{{ $M.Service.Name }}ServerService(impl {{ $M.Service.Name }}Server, grpcServer *{{ .P.GRPCService }}.Server {{- if $M.Opts.Rest }}, restServer *{{ .P.RESTService }}.Server{{ end }} {{- if $M.Opts.Graphql }}, graphqlServer *{{ .P.GraphQLService }}.Server{{ end }}) *{{ $M.Service.Name }}ServerService {
+func New{{ $M.Service.Name }}ServerService(impl {{ $M.Service.Name }}Server, grpcServer *{{ .P.GRPCService }}.Server
+	{{- if $M.Opts.Rest -}}, restServer *{{ .P.RESTService }}.Server{{- end -}}
+	{{- if $M.Opts.Graphql -}}, graphqlServer *{{ .P.GraphQLService }}.Server{{- end -}}
+	{{- if (or $M.Opts.Rest $M.Opts.Graphql) }}, proxy *{{ .P.GRPCService }}.Proxy{{- end -}}
+) *{{ $M.Service.Name }}ServerService {
 	server := &{{ $M.Service.Name }}ServerService{
 		impl: impl,
 		grpcServer: grpcServer,
-		{{ if $M.Opts.Rest -}} restServer: restServer,{{- end }}
 		{{ if $M.Opts.Graphql -}} graphqlServer: graphqlServer,{{- end }}
+		{{ if $M.Opts.Rest -}} restServer: restServer,{{- end }}
+		{{ if (or $M.Opts.Graphql $M.Opts.Rest) -}}proxy: proxy,{{- end }}
 	}
 
 	if asService, ok := impl.({{ .P.Service }}.Service); ok {
@@ -212,9 +233,11 @@ func NewMicroService(plugin *protogen.Plugin, file *protogen.File, svc *protogen
 	pfile := protocgenlib.NewFile(outfile, file)
 
 	return &MicroService{
-		File:    pfile,
-		Service: protocgenlib.NewService(pfile, svc),
-		Opts:    opts,
+		File:     pfile,
+		Service:  protocgenlib.NewService(pfile, svc),
+		Opts:     opts,
+		plugin:   plugin,
+		filename: filename,
 	}
 }
 

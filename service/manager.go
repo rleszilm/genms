@@ -2,7 +2,6 @@ package service
 
 import (
 	"context"
-	"log"
 	"os"
 	"os/signal"
 )
@@ -28,7 +27,7 @@ func (m *Manager) Initialize(ctx context.Context) error {
 
 		if cycle, err := m.svcs.Sort(); err != nil {
 			if cycle != nil {
-				log.Println("cannot start services due to cyclical dependencies", cycle)
+				logs.Fatal("cannot start services due to cyclical dependencies:", cycle)
 			}
 			done <- err
 			return
@@ -36,7 +35,7 @@ func (m *Manager) Initialize(ctx context.Context) error {
 
 		for i := 0; i < len(m.svcs); i++ {
 			svc := m.svcs[i]
-			log.Printf("starting service %s(%T)\n", svc.NameOf(), svc)
+			logs.Infof("starting service %s(%T)\n", svc.NameOf(), svc)
 			if err := svc.Initialize(ctx); err != nil {
 				done <- err
 				return
@@ -61,7 +60,7 @@ func (m *Manager) Shutdown(ctx context.Context) error {
 
 		if cycle, err := m.svcs.Sort(); err != nil {
 			if cycle != nil {
-				log.Println("cannot shut down services due to cyclical dependencies", cycle)
+				logs.Fatal("cannot shut down services due to cyclical dependencies:", cycle)
 			}
 			done <- err
 			return
@@ -69,7 +68,7 @@ func (m *Manager) Shutdown(ctx context.Context) error {
 
 		for i := len(m.svcs); i > 0; i-- {
 			svc := m.svcs[i-1]
-			log.Printf("shutting down service %s(%T)\n", svc.NameOf(), svc)
+			logs.Infof("shutting down service %s(%T)\n", svc.NameOf(), svc)
 			if err := svc.Shutdown(ctx); err != nil {
 				done <- err
 				return
