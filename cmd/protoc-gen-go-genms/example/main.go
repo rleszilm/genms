@@ -37,13 +37,6 @@ func main() {
 	if err != nil {
 		log.Fatalln("Unable to instantiate rest api server: ", err)
 	}
-	restServer.WithGrpcProxy(ctx, &rest_service.ProxyGrpc{
-		Name:     "WithRestAndGraphQL",
-		Enabled:  true,
-		Pattern:  "/rest/",
-		Addr:     ":8080",
-		Insecure: true,
-	})
 	manager.Register(restServer)
 
 	health := healthcheck.NewService(&healthcheck.Config{RequestPrefix: "/health"}, restServer)
@@ -52,7 +45,7 @@ func main() {
 	graphqlServer, err := graphql_service.NewServer("graphql-api",
 		&graphql_service.Config{
 			RestServer: restServer,
-			Proxies: map[string]*graphql_service.ProxyGrpc{
+			Proxies: map[string]*graphql_service.GrpcProxy{
 				"WithRestAndGraphQL": {
 					Enabled:  true,
 					Pattern:  "/graphql",
@@ -85,7 +78,14 @@ func main() {
 
 	impl := &greets{}
 
-	service := greeter.NewWithRestAndGraphQLServerService(impl, grpcServer, restServer, graphqlServer)
+	proxy := &grpc_service.Proxy{
+		Enabled:  true,
+		Pattern:  "/v1/grpc",
+		Addr:     ":8080",
+		Insecure: true,
+	}
+
+	service := greeter.NewWithRestAndGraphQLServerService(impl, grpcServer, restServer, graphqlServer, proxy)
 	manager.Register(service)
 
 	if err := manager.Initialize(ctx); err != nil {

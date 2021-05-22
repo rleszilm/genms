@@ -2,6 +2,12 @@ package service
 
 import (
 	"context"
+
+	"github.com/rleszilm/genms/log"
+)
+
+var (
+	logs = log.NewChannel("service")
 )
 
 // Service describes a long-running instance whose life-cycle should start with Initialize and end

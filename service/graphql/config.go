@@ -13,11 +13,11 @@ type Config struct {
 
 	RestServer *rest_service.Server
 	ProxyNames []string `envconfig:"proxies" default:""`
-	Proxies    map[string]*ProxyGrpc
+	Proxies    map[string]*GrpcProxy
 }
 
-// ProxyGrpc is configuration used when configuring a rest service as a grpc proxy.
-type ProxyGrpc struct {
+// GrpcProxy is configuration used when configuring a rest service as a grpc proxy.
+type GrpcProxy struct {
 	Enabled  bool   `envconfig:"enabled" default:"true"`
 	Pattern  string `envconfig:"pattern" default:"/"`
 	Addr     string `envconfig:"addr" default:""`
@@ -27,7 +27,7 @@ type ProxyGrpc struct {
 // NewFromEnv generates a new set of configuration data.
 func NewFromEnv(namespace string) (*Config, error) {
 	c := &Config{
-		Proxies: map[string]*ProxyGrpc{},
+		Proxies: map[string]*GrpcProxy{},
 	}
 
 	err := envconfig.Process(namespace, c)
@@ -36,7 +36,7 @@ func NewFromEnv(namespace string) (*Config, error) {
 	}
 
 	for _, proxyName := range c.ProxyNames {
-		proxy := &ProxyGrpc{}
+		proxy := &GrpcProxy{}
 		err := envconfig.Process(config.Join(namespace, proxyName), proxy)
 		if err != nil {
 			return nil, err
