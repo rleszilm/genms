@@ -168,14 +168,17 @@ func (x *{{ .C.Message.Name }}Updater) update(ctx {{ .P.Context }}.Context) {
 			{{ .P.Stats }}.Record(ctx, {{ .P.Cache }}.MeasureInflight.M(1))
 			
 			vals, err := x.reader.All(ctx)
-			if err == nil {
-				for _, val := range vals {
-					if err = x.writer.SetByKey(ctx, x.key(val), val); err != nil {
-						{{ .P.Cache }}.Logs().Error("updater {{ .C.Message.Name }} could not store value:", x.key(val), val, err)
-						break
-					}
+			if err != nil {
+			}
+
+			for _, val := range vals {
+				{{ .P.Cache }}.Logs().Trace("updater {{ .C.Message.Name }} storing value:", x.key(val), val)
+				if err = x.writer.SetByKey(ctx, x.key(val), val); err != nil {
+					{{ .P.Cache }}.Logs().Error("updater {{ .C.Message.Name }} could not store value:", x.key(val), val, err)
+					break
 				}
 			}
+		
 			{{ .P.Stats }}.Record(ctx, {{ .P.Cache }}.MeasureInflight.M(-1))
 
 			if err != nil {
@@ -190,6 +193,7 @@ func (x *{{ .C.Message.Name }}Updater) update(ctx {{ .P.Context }}.Context) {
 				{{ .P.Cache }}.Logs().Infof("updater %s is terminating", x.name)
 				return
 			}
+			{{ .P.Cache }}.Logs().Infof("scheduling next update for %v", x.interval)
 			ticker.Reset(x.interval)
 		}
 	}

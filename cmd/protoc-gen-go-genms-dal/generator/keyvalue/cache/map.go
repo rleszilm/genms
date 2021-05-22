@@ -190,14 +190,14 @@ func (x *{{ .C.Message.Name }}Map) GetByKey(ctx {{ .P.Context }}.Context, key {{
 	if x.reader != nil {
 		val, err := x.reader.GetByKey(ctx, key)
 		if err != nil {
-			return nil, {{ .P.Fmt }}.Errorf("map: {{ .M.Message.Name }}.GetByKey - %w", err)
+			return nil, {{ .P.Fmt }}.Errorf("map: {{ .C.Message.Name }}.GetByKey - %w", err)
 		}
 		x.cache[key] = val
 		return val, nil
 	}
 
 	{{ .P.Stats }}.Record(ctx, {{ .P.Cache }}.MeasureError.M(1))
-	return nil, {{ .P.Fmt }}.Errorf("map: {{ .M.Message.Name }}.GetByKey - %w", {{ .P.Cache }}.ErrGetValue)
+	return nil, {{ .P.Fmt }}.Errorf("map: {{ .C.Message.Name }}.GetByKey - %w", {{ .P.Cache }}.ErrGetValue)
 }
 
 // SetByKey implements {{ .P.KeyValue }}.{{ .C.Message.Name }}Writer.
@@ -219,11 +219,18 @@ func (x *{{ .C.Message.Name }}Map) SetByKey(ctx {{ .P.Context }}.Context, key {{
 	if x.writer != nil {
 		if err := x.writer.SetByKey(ctx, key, val); err != nil {
 			{{ .P.Stats }}.Record(ctx, {{ .P.Cache }}.MeasureError.M(1))
-			return {{ .P.Fmt }}.Errorf("map: {{ .M.Message.Name }}.SetByKey - %w", err)
+			return {{ .P.Fmt }}.Errorf("map: {{ .C.Message.Name }}.SetByKey - %w", err)
 		}
 	}
 
 	x.cache[key] = val
+
+	all := []*{{ .C.Message.QualifiedKind }}{}
+	for _, v := range x.cache {
+		all = append(all, v)
+	}
+	x.all = all
+
 	return nil
 }
 
