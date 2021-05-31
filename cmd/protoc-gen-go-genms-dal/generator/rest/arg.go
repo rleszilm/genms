@@ -9,19 +9,35 @@ import (
 type Arg struct {
 	*generator.Arg
 
-	raw *annotations.DalOptions_Query_Arg
+	field *Field
+	raw   *annotations.Arg
 }
 
 // NewArg returns a new Arg
-func NewArg(file *File, fields *Fields, arg *annotations.DalOptions_Query_Arg) *Arg {
+func NewArg(file *File, fields *Fields, arg *annotations.Arg) *Arg {
+	field := fields.ByName(arg.GetName())
+
 	return &Arg{
-		Arg: generator.NewArg(file.Generator(), fields.Generator(), arg),
-		raw: arg,
+		Arg:   generator.NewArg(file.Generator(), fields.Generator(), arg),
+		field: field,
+		raw:   arg,
 	}
 }
 
 // QueryName returns the name of the field in the remote system.
 func (a *Arg) QueryName() (string, error) {
+	if a.field != nil {
+		fopts := a.field.Options()
+
+		if f := fopts.GetRest().GetField(); f != "" {
+			return f, nil
+		}
+
+		if f := fopts.GetField(); f != "" {
+			return f, nil
+		}
+	}
+
 	if a.raw.GetRest().GetName() != "" {
 		return a.raw.GetRest().GetName(), nil
 	}
@@ -31,20 +47,20 @@ func (a *Arg) QueryName() (string, error) {
 
 // IsQuery returns true if the field should be populated in the query.
 func (a *Arg) IsQuery() bool {
-	return a.raw.GetRest().GetLocation() == annotations.DalOptions_Query_Arg_Rest_Query
+	return a.raw.GetRest().GetLocation() == annotations.Arg_RestOptions_Query
 }
 
 // IsPath returns true if the field should be populated in the path.
 func (a *Arg) IsPath() bool {
-	return a.raw.GetRest().GetLocation() == annotations.DalOptions_Query_Arg_Rest_Path
+	return a.raw.GetRest().GetLocation() == annotations.Arg_RestOptions_Path
 }
 
 // IsBody returns true if the field should be populated in the body.
 func (a *Arg) IsBody() bool {
-	return a.raw.GetRest().GetLocation() == annotations.DalOptions_Query_Arg_Rest_Body
+	return a.raw.GetRest().GetLocation() == annotations.Arg_RestOptions_Body
 }
 
 // IsHeader returns true if the field should be populated as a header.
 func (a *Arg) IsHeader() bool {
-	return a.raw.GetRest().GetLocation() == annotations.DalOptions_Query_Arg_Rest_Header
+	return a.raw.GetRest().GetLocation() == annotations.Arg_RestOptions_Header
 }

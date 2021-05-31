@@ -10,17 +10,17 @@ import (
 
 // Query adds functionality to the query options.
 type Query struct {
-	*annotations.DalOptions_Query
+	*annotations.Query
 	File   *File
 	Fields *Fields
 }
 
 // NewQuery returns a new Query
-func NewQuery(file *File, fields *Fields, q *annotations.DalOptions_Query) *Query {
+func NewQuery(file *File, fields *Fields, q *annotations.Query) *Query {
 	return &Query{
-		DalOptions_Query: q,
-		File:             file,
-		Fields:           fields,
+		Query:  q,
+		File:   file,
+		Fields: fields,
 	}
 }
 
@@ -32,7 +32,7 @@ func (q *Query) Method() string {
 // QueryProvided returns whether a query should be formatted and stored.
 func (q *Query) QueryProvided() bool {
 	switch q.Mode {
-	case annotations.DalOptions_Query_Auto, annotations.DalOptions_Query_ProviderStub:
+	case annotations.Query_Auto, annotations.Query_ProviderStub:
 		return true
 	default:
 		return false
@@ -42,7 +42,7 @@ func (q *Query) QueryProvided() bool {
 // QueryImplemented returns whether a query should be formatted and stored.
 func (q *Query) QueryImplemented() bool {
 	switch q.Mode {
-	case annotations.DalOptions_Query_Auto:
+	case annotations.Query_Auto:
 		return true
 	default:
 		return false
@@ -50,7 +50,7 @@ func (q *Query) QueryImplemented() bool {
 }
 
 // ArgKind returns the kind of the specified arg.
-func (q *Query) ArgKind(a *annotations.DalOptions_Query_Arg) (string, error) {
+func (q *Query) ArgKind(a *annotations.Arg) (string, error) {
 	if a.GetName() != "" {
 		f := q.Fields.ByName(a.GetName())
 		if f == nil {

@@ -1,4 +1,4 @@
-package mongo
+package pool
 
 import (
 	"time"
@@ -6,14 +6,15 @@ import (
 	"github.com/kelseyhightower/envconfig"
 )
 
-// Config is the struct used to parse configuration from environment variables.
+// Config defines the configuration for dal mongo interactions.
 type Config struct {
 	URI             string        `envconfig:"uri" default:"mongodb://localhost:27017"`
 	AppName         string        `envconfig:"appname" default:""`
-	MaxPoolSize     uint64        `envconfig:"pool_size" default:"10"`
+	MaxPoolSize     uint64        `envconfig:"pool_size" default:"25"`
 	MaxConnIdleTime time.Duration `envconfig:"conn_idle_time" default:"30s"`
-	Database        string        `envconfig:"database" required:"true"`
+	Database        string        `envconfig:"database" default:"vvv-repl"`
 	Timeout         time.Duration `envconfig:"timeout" default:"5s"`
+	ReadPref        string        `envconfig:"read_pref" default:"primarypreferred"`
 }
 
 // NewFromEnv generates a new set of configuration data.

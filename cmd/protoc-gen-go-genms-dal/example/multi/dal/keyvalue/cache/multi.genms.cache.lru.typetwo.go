@@ -93,14 +93,14 @@ func (x *TypeTwoLRU) GetByKey(ctx context.Context, key keyvalue.TypeTwoKey) (*mu
 	if x.reader != nil {
 		val, err := x.reader.GetByKey(ctx, key)
 		if err != nil {
-			return nil, fmt.Errorf("lru: <no value>.GetByKey - %w", err)
+			return nil, fmt.Errorf("lru: TypeTwo.GetByKey - %w", err)
 		}
 		x.lru.Add(key, val)
 		return val, nil
 	}
 
 	stats.Record(ctx, cache.MeasureError.M(1))
-	return nil, fmt.Errorf("lru: <no value>.GetByKey - %w", cache.ErrGetValue)
+	return nil, fmt.Errorf("lru: TypeTwo.GetByKey - %w", cache.ErrGetValue)
 }
 
 // SetByKey implements keyvalue.TypeTwoWriter.
@@ -122,7 +122,7 @@ func (x *TypeTwoLRU) SetByKey(ctx context.Context, key keyvalue.TypeTwoKey, val 
 	if x.writer != nil {
 		if err := x.writer.SetByKey(ctx, key, val); err != nil {
 			stats.Record(ctx, cache.MeasureError.M(1))
-			return fmt.Errorf("lru: <no value>.SetBykey - %w", err)
+			return fmt.Errorf("lru: TypeTwo.SetBykey - %w", err)
 		}
 	}
 

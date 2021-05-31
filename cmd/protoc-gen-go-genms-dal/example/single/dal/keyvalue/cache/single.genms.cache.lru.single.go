@@ -93,14 +93,14 @@ func (x *SingleLRU) GetByKey(ctx context.Context, key keyvalue.SingleKey) (*sing
 	if x.reader != nil {
 		val, err := x.reader.GetByKey(ctx, key)
 		if err != nil {
-			return nil, fmt.Errorf("lru: <no value>.GetByKey - %w", err)
+			return nil, fmt.Errorf("lru: Single.GetByKey - %w", err)
 		}
 		x.lru.Add(key, val)
 		return val, nil
 	}
 
 	stats.Record(ctx, cache.MeasureError.M(1))
-	return nil, fmt.Errorf("lru: <no value>.GetByKey - %w", cache.ErrGetValue)
+	return nil, fmt.Errorf("lru: Single.GetByKey - %w", cache.ErrGetValue)
 }
 
 // SetByKey implements keyvalue.SingleWriter.
@@ -122,7 +122,7 @@ func (x *SingleLRU) SetByKey(ctx context.Context, key keyvalue.SingleKey, val *s
 	if x.writer != nil {
 		if err := x.writer.SetByKey(ctx, key, val); err != nil {
 			stats.Record(ctx, cache.MeasureError.M(1))
-			return fmt.Errorf("lru: <no value>.SetBykey - %w", err)
+			return fmt.Errorf("lru: Single.SetBykey - %w", err)
 		}
 	}
 

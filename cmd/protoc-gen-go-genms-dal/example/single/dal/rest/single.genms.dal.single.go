@@ -422,7 +422,9 @@ type SingleScanner struct {
 	IgnoredPostgres string `json:"ignored_postgres"`
 	RenamedPostgres string `json:"renamed_postgres"`
 
-	RenamedRest string `json:"aliased_rest"`
+	RenamedRest  string `json:"aliased_rest"`
+	IgnoredMongo string `json:"ignored_mongo"`
+	RenamedMongo string `json:"renamed_mongo"`
 }
 
 // Single returns a new single.Single populated with scanned values.
@@ -443,6 +445,8 @@ func (x *SingleScanner) Single() *single.Single {
 	y.RenamedPostgres = x.RenamedPostgres
 
 	y.RenamedRest = x.RenamedRest
+	y.IgnoredMongo = x.IgnoredMongo
+	y.RenamedMongo = x.RenamedMongo
 	return y
 }
 

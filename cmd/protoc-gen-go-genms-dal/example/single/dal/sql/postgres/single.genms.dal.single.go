@@ -186,6 +186,14 @@ func (x *SingleCollection) DoUpdate(ctx context.Context, fvs *dal.SingleFieldVal
 	if fvs.RenamedRest != nil {
 		updates = append(updates, "renamed_rest = :renamed_rest")
 	}
+
+	if fvs.IgnoredMongo != nil {
+		updates = append(updates, "ignored_mongo = :ignored_mongo")
+	}
+
+	if fvs.RenamedMongo != nil {
+		updates = append(updates, "renamed_mongo = :renamed_mongo")
+	}
 	buf := &bytes.Buffer{}
 	if err := x.execUpdateTmpl.Execute(buf, map[string]interface{}{
 		"clause":  clause,
@@ -214,7 +222,7 @@ func (x *SingleCollection) All(ctx context.Context) ([]*single.Single, error) {
 
 // Filter implements dal.SingleCollection.Filter
 func (x *SingleCollection) Filter(ctx context.Context, fvs *dal.SingleFieldValues) ([]*single.Single, error) {
-	query := "SELECT scalar_int32, scalar_int64, scalar_float32, scalar_float64, scalar_string, scalar_bool, scalar_enum, obj_message, ignored, aliased, ignored_postgres, aliased_postgres, ignored_rest, renamed_rest FROM " + x.config.TableName
+	query := "SELECT scalar_int32, scalar_int64, scalar_float32, scalar_float64, scalar_string, scalar_bool, scalar_enum, obj_message, ignored, aliased, ignored_postgres, aliased_postgres, ignored_rest, renamed_rest, ignored_mongo, renamed_mongo FROM " + x.config.TableName
 
 	fields := []string{}
 	if fvs.ScalarInt32 != nil {
@@ -254,6 +262,12 @@ func (x *SingleCollection) Filter(ctx context.Context, fvs *dal.SingleFieldValue
 	}
 	if fvs.RenamedRest != nil {
 		fields = append(fields, "renamed_rest = :renamed_rest")
+	}
+	if fvs.IgnoredMongo != nil {
+		fields = append(fields, "ignored_mongo = :ignored_mongo")
+	}
+	if fvs.RenamedMongo != nil {
+		fields = append(fields, "renamed_mongo = :renamed_mongo")
 	}
 	if len(fields) > 0 {
 		query = fmt.Sprintf("%s WHERE %s", query, strings.Join(fields, " AND "))
@@ -344,8 +358,8 @@ func NewSingleCollection(instance string, db sql.DB, queries SingleQueryTemplate
 
 	queryReplacements := map[string]string{
 		"table":       config.TableName,
-		"fields":      "scalar_int32, scalar_int64, scalar_float32, scalar_float64, scalar_string, scalar_bool, scalar_enum, obj_message, ignored, aliased, ignored_postgres, aliased_postgres, ignored_rest, renamed_rest",
-		"writeFields": ":scalar_int32, :scalar_int64, :scalar_float32, :scalar_float64, :scalar_string, :scalar_bool, :scalar_enum, :obj_message, :ignored, :aliased, :ignored_postgres, :aliased_postgres, :ignored_rest, :renamed_rest",
+		"fields":      "scalar_int32, scalar_int64, scalar_float32, scalar_float64, scalar_string, scalar_bool, scalar_enum, obj_message, ignored, aliased, ignored_postgres, aliased_postgres, ignored_rest, renamed_rest, ignored_mongo, renamed_mongo",
+		"writeFields": ":scalar_int32, :scalar_int64, :scalar_float32, :scalar_float64, :scalar_string, :scalar_bool, :scalar_enum, :obj_message, :ignored, :aliased, :ignored_postgres, :aliased_postgres, :ignored_rest, :renamed_rest, :ignored_mongo, :renamed_mongo",
 	}
 
 	// generate Insert exec
@@ -439,6 +453,8 @@ type SingleFieldValues struct {
 	RenamedPostgres *string `db:"aliased_postgres"`
 	IgnoredRest     *string `db:"ignored_rest"`
 	RenamedRest     *string `db:"renamed_rest"`
+	IgnoredMongo    *string `db:"ignored_mongo"`
+	RenamedMongo    *string `db:"renamed_mongo"`
 }
 
 func singleFieldValuesFromGeneric(y *dal.SingleFieldValues) *SingleFieldValues {
@@ -481,6 +497,12 @@ func singleFieldValuesFromGeneric(y *dal.SingleFieldValues) *SingleFieldValues {
 	if y.RenamedRest != nil {
 		f.RenamedRest = y.RenamedRest
 	}
+	if y.IgnoredMongo != nil {
+		f.IgnoredMongo = y.IgnoredMongo
+	}
+	if y.RenamedMongo != nil {
+		f.RenamedMongo = y.RenamedMongo
+	}
 	return f
 }
 
@@ -501,6 +523,8 @@ type SingleScanner struct {
 	RenamedPostgres sql1.NullString `db:"aliased_postgres"`
 	IgnoredRest     sql1.NullString `db:"ignored_rest"`
 	RenamedRest     sql1.NullString `db:"renamed_rest"`
+	IgnoredMongo    sql1.NullString `db:"ignored_mongo"`
+	RenamedMongo    sql1.NullString `db:"renamed_mongo"`
 }
 
 // Single returns a new single.Single populated with scanned values.
@@ -543,6 +567,12 @@ func (x *SingleScanner) Single() *single.Single {
 	if x.RenamedRest.Valid {
 		y.RenamedRest = x.RenamedRest.String
 	}
+	if x.IgnoredMongo.Valid {
+		y.IgnoredMongo = x.IgnoredMongo.String
+	}
+	if x.RenamedMongo.Valid {
+		y.RenamedMongo = x.RenamedMongo.String
+	}
 	return y
 }
 
@@ -562,6 +592,8 @@ type SingleWriter struct {
 	RenamedPostgres string `db:"aliased_postgres"`
 	IgnoredRest     string `db:"ignored_rest"`
 	RenamedRest     string `db:"renamed_rest"`
+	IgnoredMongo    string `db:"ignored_mongo"`
+	RenamedMongo    string `db:"renamed_mongo"`
 }
 
 func singleWriterFromGeneric(y *single.Single) *SingleWriter {
@@ -580,6 +612,8 @@ func singleWriterFromGeneric(y *single.Single) *SingleWriter {
 	x.RenamedPostgres = y.RenamedPostgres
 	x.IgnoredRest = y.IgnoredRest
 	x.RenamedRest = y.RenamedRest
+	x.IgnoredMongo = y.IgnoredMongo
+	x.RenamedMongo = y.RenamedMongo
 	return x
 }
 

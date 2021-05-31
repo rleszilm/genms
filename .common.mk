@@ -2,15 +2,14 @@
 BUILD_ARGS ?= CGO_ENABLED=0
 BUILD_FLAGS ?= -a -ldflags "-s"
 
-BUILD_MODULES ?= `go list ./... | grep -v tools`
-
 ## Testing config
-ifndef TESTS
-TESTS=$(BUILD_MODULES)
-endif
+TEST_MODE ?= unit
+TESTS_OPTS ?= -race
+TEST_EXCLUDE = tools
+TEST_REQUIRES_INTEGRATION = mongo
 
-ifndef TEST_OPTS
-TEST_OPTS=-race
+ifeq ($(TEST_MODE),integration)
+	TESTS ?= `go list ./... | egrep -v $(TEST_EXCLUDE) | egrep $(TEST_REQUIRES_INTEGRATION)`
 else
-TEST_OPTS += -race
+	TESTS ?= `go list ./... | egrep -v $(TEST_EXCLUDE) | egrep -v $(TEST_REQUIRES_INTEGRATION)`
 endif

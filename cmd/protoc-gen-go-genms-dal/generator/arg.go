@@ -11,13 +11,13 @@ import (
 
 // Arg wraps a QueryArg so additional logic can be applied.
 type Arg struct {
-	arg   *annotations.DalOptions_Query_Arg
+	arg   *annotations.Arg
 	file  *File
 	field *Field
 }
 
 // NewArg returns a new Arg
-func NewArg(file *File, fields *Fields, arg *annotations.DalOptions_Query_Arg) *Arg {
+func NewArg(file *File, fields *Fields, arg *annotations.Arg) *Arg {
 	field := fields.ByName(arg.GetName())
 	return &Arg{
 		arg:   arg,

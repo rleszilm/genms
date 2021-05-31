@@ -90,14 +90,14 @@ func (x *TypeTwoMap) GetByKey(ctx context.Context, key keyvalue.TypeTwoKey) (*mu
 	if x.reader != nil {
 		val, err := x.reader.GetByKey(ctx, key)
 		if err != nil {
-			return nil, fmt.Errorf("map: <no value>.GetByKey - %w", err)
+			return nil, fmt.Errorf("map: TypeTwo.GetByKey - %w", err)
 		}
 		x.cache[key] = val
 		return val, nil
 	}
 
 	stats.Record(ctx, cache.MeasureError.M(1))
-	return nil, fmt.Errorf("map: <no value>.GetByKey - %w", cache.ErrGetValue)
+	return nil, fmt.Errorf("map: TypeTwo.GetByKey - %w", cache.ErrGetValue)
 }
 
 // SetByKey implements keyvalue.TypeTwoWriter.
@@ -119,11 +119,18 @@ func (x *TypeTwoMap) SetByKey(ctx context.Context, key keyvalue.TypeTwoKey, val 
 	if x.writer != nil {
 		if err := x.writer.SetByKey(ctx, key, val); err != nil {
 			stats.Record(ctx, cache.MeasureError.M(1))
-			return fmt.Errorf("map: <no value>.SetByKey - %w", err)
+			return fmt.Errorf("map: TypeTwo.SetByKey - %w", err)
 		}
 	}
 
 	x.cache[key] = val
+
+	all := []*multi.TypeTwo{}
+	for _, v := range x.cache {
+		all = append(all, v)
+	}
+	x.all = all
+
 	return nil
 }
 

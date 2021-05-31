@@ -35,6 +35,9 @@ message Single {
     string ignored_rest = 13 [(genms.dal.field_options).rest.ignore = true];
     string renamed_rest = 14 [(genms.dal.field_options).rest.field = "aliased_rest"];
 
+    string ignored_mongo = 15 [(genms.dal.field_options).mongo.ignore = true];
+    string renamed_mongo = 16 [(genms.dal.field_options).mongo.field = "aliased_mongo"];
+
     option (genms.dal.message_options) = {
         queries: [
             {
@@ -93,6 +96,6 @@ message Single {
                 mode: InterfaceStub
             }
         ]
-        backends: [Postgres, Rest]
+        backends: [Postgres, Rest, Mongo]
     };
 }

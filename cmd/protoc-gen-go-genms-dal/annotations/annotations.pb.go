@@ -21,118 +21,72 @@ const (
 	_ = protoimpl.EnforceVersion(protoimpl.MaxVersion - 20)
 )
 
-type DalOptions_Backend int32
+type Backend int32
 
 const (
-	DalOptions_None     DalOptions_Backend = 0
-	DalOptions_Postgres DalOptions_Backend = 1
-	DalOptions_Rest     DalOptions_Backend = 2
+	Backend_NoBackend Backend = 0
+	Backend_Postgres  Backend = 1
+	Backend_Rest      Backend = 2
+	Backend_Mongo     Backend = 3
 )
 
-// Enum value maps for DalOptions_Backend.
+// Enum value maps for Backend.
 var (
-	DalOptions_Backend_name = map[int32]string{
-		0: "None",
+	Backend_name = map[int32]string{
+		0: "NoBackend",
 		1: "Postgres",
 		2: "Rest",
+		3: "Mongo",
 	}
-	DalOptions_Backend_value = map[string]int32{
-		"None":     0,
-		"Postgres": 1,
-		"Rest":     2,
+	Backend_value = map[string]int32{
+		"NoBackend": 0,
+		"Postgres":  1,
+		"Rest":      2,
+		"Mongo":     3,
 	}
 )
 
-func (x DalOptions_Backend) Enum() *DalOptions_Backend {
-	p := new(DalOptions_Backend)
+func (x Backend) Enum() *Backend {
+	p := new(Backend)
 	*p = x
 	return p
 }
 
-func (x DalOptions_Backend) String() string {
+func (x Backend) String() string {
 	return protoimpl.X.EnumStringOf(x.Descriptor(), protoreflect.EnumNumber(x))
 }
 
-func (DalOptions_Backend) Descriptor() protoreflect.EnumDescriptor {
+func (Backend) Descriptor() protoreflect.EnumDescriptor {
 	return file_cmd_protoc_gen_go_genms_dal_annotations_annotations_proto_enumTypes[0].Descriptor()
 }
 
-func (DalOptions_Backend) Type() protoreflect.EnumType {
+func (Backend) Type() protoreflect.EnumType {
 	return &file_cmd_protoc_gen_go_genms_dal_annotations_annotations_proto_enumTypes[0]
 }
 
-func (x DalOptions_Backend) Number() protoreflect.EnumNumber {
+func (x Backend) Number() protoreflect.EnumNumber {
 	return protoreflect.EnumNumber(x)
 }
 
-// Deprecated: Use DalOptions_Backend.Descriptor instead.
-func (DalOptions_Backend) EnumDescriptor() ([]byte, []int) {
-	return file_cmd_protoc_gen_go_genms_dal_annotations_annotations_proto_rawDescGZIP(), []int{0, 0}
+// Deprecated: Use Backend.Descriptor instead.
+func (Backend) EnumDescriptor() ([]byte, []int) {
+	return file_cmd_protoc_gen_go_genms_dal_annotations_annotations_proto_rawDescGZIP(), []int{0}
 }
 
-type DalOptions_Query_Mode int32
+type Comparator int32
 
 const (
-	DalOptions_Query_Auto          DalOptions_Query_Mode = 0
-	DalOptions_Query_ProviderStub  DalOptions_Query_Mode = 1
-	DalOptions_Query_InterfaceStub DalOptions_Query_Mode = 2
+	Comparator_EQ  Comparator = 0
+	Comparator_NE  Comparator = 1
+	Comparator_GT  Comparator = 2
+	Comparator_LT  Comparator = 3
+	Comparator_GTE Comparator = 4
+	Comparator_LTE Comparator = 5
 )
 
-// Enum value maps for DalOptions_Query_Mode.
+// Enum value maps for Comparator.
 var (
-	DalOptions_Query_Mode_name = map[int32]string{
-		0: "Auto",
-		1: "ProviderStub",
-		2: "InterfaceStub",
-	}
-	DalOptions_Query_Mode_value = map[string]int32{
-		"Auto":          0,
-		"ProviderStub":  1,
-		"InterfaceStub": 2,
-	}
-)
-
-func (x DalOptions_Query_Mode) Enum() *DalOptions_Query_Mode {
-	p := new(DalOptions_Query_Mode)
-	*p = x
-	return p
-}
-
-func (x DalOptions_Query_Mode) String() string {
-	return protoimpl.X.EnumStringOf(x.Descriptor(), protoreflect.EnumNumber(x))
-}
-
-func (DalOptions_Query_Mode) Descriptor() protoreflect.EnumDescriptor {
-	return file_cmd_protoc_gen_go_genms_dal_annotations_annotations_proto_enumTypes[1].Descriptor()
-}
-
-func (DalOptions_Query_Mode) Type() protoreflect.EnumType {
-	return &file_cmd_protoc_gen_go_genms_dal_annotations_annotations_proto_enumTypes[1]
-}
-
-func (x DalOptions_Query_Mode) Number() protoreflect.EnumNumber {
-	return protoreflect.EnumNumber(x)
-}
-
-// Deprecated: Use DalOptions_Query_Mode.Descriptor instead.
-func (DalOptions_Query_Mode) EnumDescriptor() ([]byte, []int) {
-	return file_cmd_protoc_gen_go_genms_dal_annotations_annotations_proto_rawDescGZIP(), []int{0, 0, 0}
-}
-
-type DalOptions_Query_Arg_Comparison int32
-
-const (
-	DalOptions_Query_Arg_EQ  DalOptions_Query_Arg_Comparison = 0
-	DalOptions_Query_Arg_NE  DalOptions_Query_Arg_Comparison = 1
-	DalOptions_Query_Arg_GT  DalOptions_Query_Arg_Comparison = 2
-	DalOptions_Query_Arg_LT  DalOptions_Query_Arg_Comparison = 3
-	DalOptions_Query_Arg_GTE DalOptions_Query_Arg_Comparison = 4
-	DalOptions_Query_Arg_LTE DalOptions_Query_Arg_Comparison = 5
-)
-
-// Enum value maps for DalOptions_Query_Arg_Comparison.
-var (
-	DalOptions_Query_Arg_Comparison_name = map[int32]string{
+	Comparator_name = map[int32]string{
 		0: "EQ",
 		1: "NE",
 		2: "GT",
@@ -140,7 +94,7 @@ var (
 		4: "GTE",
 		5: "LTE",
 	}
-	DalOptions_Query_Arg_Comparison_value = map[string]int32{
+	Comparator_value = map[string]int32{
 		"EQ":  0,
 		"NE":  1,
 		"GT":  2,
@@ -150,51 +104,97 @@ var (
 	}
 )
 
-func (x DalOptions_Query_Arg_Comparison) Enum() *DalOptions_Query_Arg_Comparison {
-	p := new(DalOptions_Query_Arg_Comparison)
+func (x Comparator) Enum() *Comparator {
+	p := new(Comparator)
 	*p = x
 	return p
 }
 
-func (x DalOptions_Query_Arg_Comparison) String() string {
+func (x Comparator) String() string {
 	return protoimpl.X.EnumStringOf(x.Descriptor(), protoreflect.EnumNumber(x))
 }
 
-func (DalOptions_Query_Arg_Comparison) Descriptor() protoreflect.EnumDescriptor {
-	return file_cmd_protoc_gen_go_genms_dal_annotations_annotations_proto_enumTypes[2].Descriptor()
+func (Comparator) Descriptor() protoreflect.EnumDescriptor {
+	return file_cmd_protoc_gen_go_genms_dal_annotations_annotations_proto_enumTypes[1].Descriptor()
 }
 
-func (DalOptions_Query_Arg_Comparison) Type() protoreflect.EnumType {
-	return &file_cmd_protoc_gen_go_genms_dal_annotations_annotations_proto_enumTypes[2]
+func (Comparator) Type() protoreflect.EnumType {
+	return &file_cmd_protoc_gen_go_genms_dal_annotations_annotations_proto_enumTypes[1]
 }
 
-func (x DalOptions_Query_Arg_Comparison) Number() protoreflect.EnumNumber {
+func (x Comparator) Number() protoreflect.EnumNumber {
 	return protoreflect.EnumNumber(x)
 }
 
-// Deprecated: Use DalOptions_Query_Arg_Comparison.Descriptor instead.
-func (DalOptions_Query_Arg_Comparison) EnumDescriptor() ([]byte, []int) {
-	return file_cmd_protoc_gen_go_genms_dal_annotations_annotations_proto_rawDescGZIP(), []int{0, 0, 0, 0}
+// Deprecated: Use Comparator.Descriptor instead.
+func (Comparator) EnumDescriptor() ([]byte, []int) {
+	return file_cmd_protoc_gen_go_genms_dal_annotations_annotations_proto_rawDescGZIP(), []int{1}
 }
 
-type DalOptions_Query_Arg_Rest_Location int32
+type BSONPrimitive int32
 
 const (
-	DalOptions_Query_Arg_Rest_Query  DalOptions_Query_Arg_Rest_Location = 0
-	DalOptions_Query_Arg_Rest_Path   DalOptions_Query_Arg_Rest_Location = 1
-	DalOptions_Query_Arg_Rest_Body   DalOptions_Query_Arg_Rest_Location = 2
-	DalOptions_Query_Arg_Rest_Header DalOptions_Query_Arg_Rest_Location = 3
+	BSONPrimitive_NoBSONPrimitive BSONPrimitive = 0
+	BSONPrimitive_ObjectID        BSONPrimitive = 1
 )
 
-// Enum value maps for DalOptions_Query_Arg_Rest_Location.
+// Enum value maps for BSONPrimitive.
 var (
-	DalOptions_Query_Arg_Rest_Location_name = map[int32]string{
+	BSONPrimitive_name = map[int32]string{
+		0: "NoBSONPrimitive",
+		1: "ObjectID",
+	}
+	BSONPrimitive_value = map[string]int32{
+		"NoBSONPrimitive": 0,
+		"ObjectID":        1,
+	}
+)
+
+func (x BSONPrimitive) Enum() *BSONPrimitive {
+	p := new(BSONPrimitive)
+	*p = x
+	return p
+}
+
+func (x BSONPrimitive) String() string {
+	return protoimpl.X.EnumStringOf(x.Descriptor(), protoreflect.EnumNumber(x))
+}
+
+func (BSONPrimitive) Descriptor() protoreflect.EnumDescriptor {
+	return file_cmd_protoc_gen_go_genms_dal_annotations_annotations_proto_enumTypes[2].Descriptor()
+}
+
+func (BSONPrimitive) Type() protoreflect.EnumType {
+	return &file_cmd_protoc_gen_go_genms_dal_annotations_annotations_proto_enumTypes[2]
+}
+
+func (x BSONPrimitive) Number() protoreflect.EnumNumber {
+	return protoreflect.EnumNumber(x)
+}
+
+// Deprecated: Use BSONPrimitive.Descriptor instead.
+func (BSONPrimitive) EnumDescriptor() ([]byte, []int) {
+	return file_cmd_protoc_gen_go_genms_dal_annotations_annotations_proto_rawDescGZIP(), []int{2}
+}
+
+type Arg_RestOptions_Location int32
+
+const (
+	Arg_RestOptions_Query  Arg_RestOptions_Location = 0
+	Arg_RestOptions_Path   Arg_RestOptions_Location = 1
+	Arg_RestOptions_Body   Arg_RestOptions_Location = 2
+	Arg_RestOptions_Header Arg_RestOptions_Location = 3
+)
+
+// Enum value maps for Arg_RestOptions_Location.
+var (
+	Arg_RestOptions_Location_name = map[int32]string{
 		0: "Query",
 		1: "Path",
 		2: "Body",
 		3: "Header",
 	}
-	DalOptions_Query_Arg_Rest_Location_value = map[string]int32{
+	Arg_RestOptions_Location_value = map[string]int32{
 		"Query":  0,
 		"Path":   1,
 		"Body":   2,
@@ -202,53 +202,148 @@ var (
 	}
 )
 
-func (x DalOptions_Query_Arg_Rest_Location) Enum() *DalOptions_Query_Arg_Rest_Location {
-	p := new(DalOptions_Query_Arg_Rest_Location)
+func (x Arg_RestOptions_Location) Enum() *Arg_RestOptions_Location {
+	p := new(Arg_RestOptions_Location)
 	*p = x
 	return p
 }
 
-func (x DalOptions_Query_Arg_Rest_Location) String() string {
+func (x Arg_RestOptions_Location) String() string {
 	return protoimpl.X.EnumStringOf(x.Descriptor(), protoreflect.EnumNumber(x))
 }
 
-func (DalOptions_Query_Arg_Rest_Location) Descriptor() protoreflect.EnumDescriptor {
+func (Arg_RestOptions_Location) Descriptor() protoreflect.EnumDescriptor {
 	return file_cmd_protoc_gen_go_genms_dal_annotations_annotations_proto_enumTypes[3].Descriptor()
 }
 
-func (DalOptions_Query_Arg_Rest_Location) Type() protoreflect.EnumType {
+func (Arg_RestOptions_Location) Type() protoreflect.EnumType {
 	return &file_cmd_protoc_gen_go_genms_dal_annotations_annotations_proto_enumTypes[3]
 }
 
-func (x DalOptions_Query_Arg_Rest_Location) Number() protoreflect.EnumNumber {
+func (x Arg_RestOptions_Location) Number() protoreflect.EnumNumber {
 	return protoreflect.EnumNumber(x)
 }
 
-// Deprecated: Use DalOptions_Query_Arg_Rest_Location.Descriptor instead.
-func (DalOptions_Query_Arg_Rest_Location) EnumDescriptor() ([]byte, []int) {
-	return file_cmd_protoc_gen_go_genms_dal_annotations_annotations_proto_rawDescGZIP(), []int{0, 0, 0, 0, 0}
+// Deprecated: Use Arg_RestOptions_Location.Descriptor instead.
+func (Arg_RestOptions_Location) EnumDescriptor() ([]byte, []int) {
+	return file_cmd_protoc_gen_go_genms_dal_annotations_annotations_proto_rawDescGZIP(), []int{0, 1, 0}
 }
 
-type DalOptions_Query_Rest_Method int32
+type Query_Mode int32
 
 const (
-	DalOptions_Query_Rest_GET    DalOptions_Query_Rest_Method = 0
-	DalOptions_Query_Rest_POST   DalOptions_Query_Rest_Method = 1
-	DalOptions_Query_Rest_PUT    DalOptions_Query_Rest_Method = 2
-	DalOptions_Query_Rest_PATCH  DalOptions_Query_Rest_Method = 3
-	DalOptions_Query_Rest_DELETE DalOptions_Query_Rest_Method = 4
+	Query_Auto          Query_Mode = 0
+	Query_ProviderStub  Query_Mode = 1
+	Query_InterfaceStub Query_Mode = 2
 )
 
-// Enum value maps for DalOptions_Query_Rest_Method.
+// Enum value maps for Query_Mode.
 var (
-	DalOptions_Query_Rest_Method_name = map[int32]string{
+	Query_Mode_name = map[int32]string{
+		0: "Auto",
+		1: "ProviderStub",
+		2: "InterfaceStub",
+	}
+	Query_Mode_value = map[string]int32{
+		"Auto":          0,
+		"ProviderStub":  1,
+		"InterfaceStub": 2,
+	}
+)
+
+func (x Query_Mode) Enum() *Query_Mode {
+	p := new(Query_Mode)
+	*p = x
+	return p
+}
+
+func (x Query_Mode) String() string {
+	return protoimpl.X.EnumStringOf(x.Descriptor(), protoreflect.EnumNumber(x))
+}
+
+func (Query_Mode) Descriptor() protoreflect.EnumDescriptor {
+	return file_cmd_protoc_gen_go_genms_dal_annotations_annotations_proto_enumTypes[4].Descriptor()
+}
+
+func (Query_Mode) Type() protoreflect.EnumType {
+	return &file_cmd_protoc_gen_go_genms_dal_annotations_annotations_proto_enumTypes[4]
+}
+
+func (x Query_Mode) Number() protoreflect.EnumNumber {
+	return protoreflect.EnumNumber(x)
+}
+
+// Deprecated: Use Query_Mode.Descriptor instead.
+func (Query_Mode) EnumDescriptor() ([]byte, []int) {
+	return file_cmd_protoc_gen_go_genms_dal_annotations_annotations_proto_rawDescGZIP(), []int{1, 0}
+}
+
+type Query_Returns int32
+
+const (
+	Query_Many   Query_Returns = 0
+	Query_Single Query_Returns = 1
+)
+
+// Enum value maps for Query_Returns.
+var (
+	Query_Returns_name = map[int32]string{
+		0: "Many",
+		1: "Single",
+	}
+	Query_Returns_value = map[string]int32{
+		"Many":   0,
+		"Single": 1,
+	}
+)
+
+func (x Query_Returns) Enum() *Query_Returns {
+	p := new(Query_Returns)
+	*p = x
+	return p
+}
+
+func (x Query_Returns) String() string {
+	return protoimpl.X.EnumStringOf(x.Descriptor(), protoreflect.EnumNumber(x))
+}
+
+func (Query_Returns) Descriptor() protoreflect.EnumDescriptor {
+	return file_cmd_protoc_gen_go_genms_dal_annotations_annotations_proto_enumTypes[5].Descriptor()
+}
+
+func (Query_Returns) Type() protoreflect.EnumType {
+	return &file_cmd_protoc_gen_go_genms_dal_annotations_annotations_proto_enumTypes[5]
+}
+
+func (x Query_Returns) Number() protoreflect.EnumNumber {
+	return protoreflect.EnumNumber(x)
+}
+
+// Deprecated: Use Query_Returns.Descriptor instead.
+func (Query_Returns) EnumDescriptor() ([]byte, []int) {
+	return file_cmd_protoc_gen_go_genms_dal_annotations_annotations_proto_rawDescGZIP(), []int{1, 1}
+}
+
+type Query_RestOptions_Method int32
+
+const (
+	Query_RestOptions_GET    Query_RestOptions_Method = 0
+	Query_RestOptions_POST   Query_RestOptions_Method = 1
+	Query_RestOptions_PUT    Query_RestOptions_Method = 2
+	Query_RestOptions_PATCH  Query_RestOptions_Method = 3
+	Query_RestOptions_DELETE Query_RestOptions_Method = 4
+)
+
+// Enum value maps for Query_RestOptions_Method.
+var (
+	Query_RestOptions_Method_name = map[int32]string{
 		0: "GET",
 		1: "POST",
 		2: "PUT",
 		3: "PATCH",
 		4: "DELETE",
 	}
-	DalOptions_Query_Rest_Method_value = map[string]int32{
+	Query_RestOptions_Method_value = map[string]int32{
 		"GET":    0,
 		"POST":   1,
 		"PUT":    2,
@@ -257,126 +352,259 @@ var (
 	}
 )
 
-func (x DalOptions_Query_Rest_Method) Enum() *DalOptions_Query_Rest_Method {
-	p := new(DalOptions_Query_Rest_Method)
+func (x Query_RestOptions_Method) Enum() *Query_RestOptions_Method {
+	p := new(Query_RestOptions_Method)
 	*p = x
 	return p
 }
 
-func (x DalOptions_Query_Rest_Method) String() string {
+func (x Query_RestOptions_Method) String() string {
 	return protoimpl.X.EnumStringOf(x.Descriptor(), protoreflect.EnumNumber(x))
 }
 
-func (DalOptions_Query_Rest_Method) Descriptor() protoreflect.EnumDescriptor {
-	return file_cmd_protoc_gen_go_genms_dal_annotations_annotations_proto_enumTypes[4].Descriptor()
+func (Query_RestOptions_Method) Descriptor() protoreflect.EnumDescriptor {
+	return file_cmd_protoc_gen_go_genms_dal_annotations_annotations_proto_enumTypes[6].Descriptor()
 }
 
-func (DalOptions_Query_Rest_Method) Type() protoreflect.EnumType {
-	return &file_cmd_protoc_gen_go_genms_dal_annotations_annotations_proto_enumTypes[4]
+func (Query_RestOptions_Method) Type() protoreflect.EnumType {
+	return &file_cmd_protoc_gen_go_genms_dal_annotations_annotations_proto_enumTypes[6]
 }
 
-func (x DalOptions_Query_Rest_Method) Number() protoreflect.EnumNumber {
+func (x Query_RestOptions_Method) Number() protoreflect.EnumNumber {
 	return protoreflect.EnumNumber(x)
 }
 
-// Deprecated: Use DalOptions_Query_Rest_Method.Descriptor instead.
-func (DalOptions_Query_Rest_Method) EnumDescriptor() ([]byte, []int) {
-	return file_cmd_protoc_gen_go_genms_dal_annotations_annotations_proto_rawDescGZIP(), []int{0, 0, 1, 0}
+// Deprecated: Use Query_RestOptions_Method.Descriptor instead.
+func (Query_RestOptions_Method) EnumDescriptor() ([]byte, []int) {
+	return file_cmd_protoc_gen_go_genms_dal_annotations_annotations_proto_rawDescGZIP(), []int{1, 1, 0}
 }
 
-type DalOptions_Query_Rest_ContentType int32
+type Query_RestOptions_ContentType int32
 
 const (
-	DalOptions_Query_Rest_JSON       DalOptions_Query_Rest_ContentType = 0
-	DalOptions_Query_Rest_URLEncoded DalOptions_Query_Rest_ContentType = 1
+	Query_RestOptions_JSON       Query_RestOptions_ContentType = 0
+	Query_RestOptions_URLEncoded Query_RestOptions_ContentType = 1
 )
 
-// Enum value maps for DalOptions_Query_Rest_ContentType.
+// Enum value maps for Query_RestOptions_ContentType.
 var (
-	DalOptions_Query_Rest_ContentType_name = map[int32]string{
+	Query_RestOptions_ContentType_name = map[int32]string{
 		0: "JSON",
 		1: "URLEncoded",
 	}
-	DalOptions_Query_Rest_ContentType_value = map[string]int32{
+	Query_RestOptions_ContentType_value = map[string]int32{
 		"JSON":       0,
 		"URLEncoded": 1,
 	}
 )
 
-func (x DalOptions_Query_Rest_ContentType) Enum() *DalOptions_Query_Rest_ContentType {
-	p := new(DalOptions_Query_Rest_ContentType)
+func (x Query_RestOptions_ContentType) Enum() *Query_RestOptions_ContentType {
+	p := new(Query_RestOptions_ContentType)
 	*p = x
 	return p
 }
 
-func (x DalOptions_Query_Rest_ContentType) String() string {
+func (x Query_RestOptions_ContentType) String() string {
 	return protoimpl.X.EnumStringOf(x.Descriptor(), protoreflect.EnumNumber(x))
 }
 
-func (DalOptions_Query_Rest_ContentType) Descriptor() protoreflect.EnumDescriptor {
-	return file_cmd_protoc_gen_go_genms_dal_annotations_annotations_proto_enumTypes[5].Descriptor()
+func (Query_RestOptions_ContentType) Descriptor() protoreflect.EnumDescriptor {
+	return file_cmd_protoc_gen_go_genms_dal_annotations_annotations_proto_enumTypes[7].Descriptor()
 }
 
-func (DalOptions_Query_Rest_ContentType) Type() protoreflect.EnumType {
-	return &file_cmd_protoc_gen_go_genms_dal_annotations_annotations_proto_enumTypes[5]
+func (Query_RestOptions_ContentType) Type() protoreflect.EnumType {
+	return &file_cmd_protoc_gen_go_genms_dal_annotations_annotations_proto_enumTypes[7]
 }
 
-func (x DalOptions_Query_Rest_ContentType) Number() protoreflect.EnumNumber {
+func (x Query_RestOptions_ContentType) Number() protoreflect.EnumNumber {
 	return protoreflect.EnumNumber(x)
 }
 
-// Deprecated: Use DalOptions_Query_Rest_ContentType.Descriptor instead.
-func (DalOptions_Query_Rest_ContentType) EnumDescriptor() ([]byte, []int) {
-	return file_cmd_protoc_gen_go_genms_dal_annotations_annotations_proto_rawDescGZIP(), []int{0, 0, 1, 1}
+// Deprecated: Use Query_RestOptions_ContentType.Descriptor instead.
+func (Query_RestOptions_ContentType) EnumDescriptor() ([]byte, []int) {
+	return file_cmd_protoc_gen_go_genms_dal_annotations_annotations_proto_rawDescGZIP(), []int{1, 1, 1}
 }
 
-type DalOptions_BackendOptions_ReadMode int32
+type Arg struct {
+	state         protoimpl.MessageState
+	sizeCache     protoimpl.SizeCache
+	unknownFields protoimpl.UnknownFields
 
-const (
-	DalOptions_BackendOptions_ReadWrite DalOptions_BackendOptions_ReadMode = 0
-	DalOptions_BackendOptions_ReadOnly  DalOptions_BackendOptions_ReadMode = 1
-	DalOptions_BackendOptions_WriteOnly DalOptions_BackendOptions_ReadMode = 2
-)
+	Name       string               `protobuf:"bytes,1,opt,name=name,proto3" json:"name,omitempty"`
+	Kind       string               `protobuf:"bytes,2,opt,name=kind,proto3" json:"kind,omitempty"`
+	Comparison Comparator           `protobuf:"varint,3,opt,name=comparison,proto3,enum=genms.dal.Comparator" json:"comparison,omitempty"`
+	Postgres   *Arg_PostgresOptions `protobuf:"bytes,4,opt,name=postgres,proto3" json:"postgres,omitempty"`
+	Rest       *Arg_RestOptions     `protobuf:"bytes,5,opt,name=rest,proto3" json:"rest,omitempty"`
+	Mongo      *Arg_MongoOptions    `protobuf:"bytes,6,opt,name=mongo,proto3" json:"mongo,omitempty"`
+}
 
-// Enum value maps for DalOptions_BackendOptions_ReadMode.
-var (
-	DalOptions_BackendOptions_ReadMode_name = map[int32]string{
-		0: "ReadWrite",
-		1: "ReadOnly",
-		2: "WriteOnly",
+func (x *Arg) Reset() {
+	*x = Arg{}
+	if protoimpl.UnsafeEnabled {
+		mi := &file_cmd_protoc_gen_go_genms_dal_annotations_annotations_proto_msgTypes[0]
+		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
+		ms.StoreMessageInfo(mi)
 	}
-	DalOptions_BackendOptions_ReadMode_value = map[string]int32{
-		"ReadWrite": 0,
-		"ReadOnly":  1,
-		"WriteOnly": 2,
+}
+
+func (x *Arg) String() string {
+	return protoimpl.X.MessageStringOf(x)
+}
+
+func (*Arg) ProtoMessage() {}
+
+func (x *Arg) ProtoReflect() protoreflect.Message {
+	mi := &file_cmd_protoc_gen_go_genms_dal_annotations_annotations_proto_msgTypes[0]
+	if protoimpl.UnsafeEnabled && x != nil {
+		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
+		if ms.LoadMessageInfo() == nil {
+			ms.StoreMessageInfo(mi)
+		}
+		return ms
 	}
-)
-
-func (x DalOptions_BackendOptions_ReadMode) Enum() *DalOptions_BackendOptions_ReadMode {
-	p := new(DalOptions_BackendOptions_ReadMode)
-	*p = x
-	return p
+	return mi.MessageOf(x)
 }
 
-func (x DalOptions_BackendOptions_ReadMode) String() string {
-	return protoimpl.X.EnumStringOf(x.Descriptor(), protoreflect.EnumNumber(x))
+// Deprecated: Use Arg.ProtoReflect.Descriptor instead.
+func (*Arg) Descriptor() ([]byte, []int) {
+	return file_cmd_protoc_gen_go_genms_dal_annotations_annotations_proto_rawDescGZIP(), []int{0}
 }
 
-func (DalOptions_BackendOptions_ReadMode) Descriptor() protoreflect.EnumDescriptor {
-	return file_cmd_protoc_gen_go_genms_dal_annotations_annotations_proto_enumTypes[6].Descriptor()
+func (x *Arg) GetName() string {
+	if x != nil {
+		return x.Name
+	}
+	return ""
 }
 
-func (DalOptions_BackendOptions_ReadMode) Type() protoreflect.EnumType {
-	return &file_cmd_protoc_gen_go_genms_dal_annotations_annotations_proto_enumTypes[6]
+func (x *Arg) GetKind() string {
+	if x != nil {
+		return x.Kind
+	}
+	return ""
 }
 
-func (x DalOptions_BackendOptions_ReadMode) Number() protoreflect.EnumNumber {
-	return protoreflect.EnumNumber(x)
+func (x *Arg) GetComparison() Comparator {
+	if x != nil {
+		return x.Comparison
+	}
+	return Comparator_EQ
 }
 
-// Deprecated: Use DalOptions_BackendOptions_ReadMode.Descriptor instead.
-func (DalOptions_BackendOptions_ReadMode) EnumDescriptor() ([]byte, []int) {
-	return file_cmd_protoc_gen_go_genms_dal_annotations_annotations_proto_rawDescGZIP(), []int{0, 1, 0}
+func (x *Arg) GetPostgres() *Arg_PostgresOptions {
+	if x != nil {
+		return x.Postgres
+	}
+	return nil
+}
+
+func (x *Arg) GetRest() *Arg_RestOptions {
+	if x != nil {
+		return x.Rest
+	}
+	return nil
+}
+
+func (x *Arg) GetMongo() *Arg_MongoOptions {
+	if x != nil {
+		return x.Mongo
+	}
+	return nil
+}
+
+type Query struct {
+	state         protoimpl.MessageState
+	sizeCache     protoimpl.SizeCache
+	unknownFields protoimpl.UnknownFields
+
+	Name     string                 `protobuf:"bytes,1,opt,name=name,proto3" json:"name,omitempty"`
+	Args     []*Arg                 `protobuf:"bytes,2,rep,name=args,proto3" json:"args,omitempty"`
+	Mode     Query_Mode             `protobuf:"varint,3,opt,name=mode,proto3,enum=genms.dal.Query_Mode" json:"mode,omitempty"`
+	Returns  Query_Returns          `protobuf:"varint,4,opt,name=returns,proto3,enum=genms.dal.Query_Returns" json:"returns,omitempty"`
+	Postgres *Query_PostgresOptions `protobuf:"bytes,5,opt,name=postgres,proto3" json:"postgres,omitempty"`
+	Rest     *Query_RestOptions     `protobuf:"bytes,6,opt,name=rest,proto3" json:"rest,omitempty"`
+	Mongo    *Query_MongoOptions    `protobuf:"bytes,7,opt,name=mongo,proto3" json:"mongo,omitempty"`
+}
+
+func (x *Query) Reset() {
+	*x = Query{}
+	if protoimpl.UnsafeEnabled {
+		mi := &file_cmd_protoc_gen_go_genms_dal_annotations_annotations_proto_msgTypes[1]
+		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
+		ms.StoreMessageInfo(mi)
+	}
+}
+
+func (x *Query) String() string {
+	return protoimpl.X.MessageStringOf(x)
+}
+
+func (*Query) ProtoMessage() {}
+
+func (x *Query) ProtoReflect() protoreflect.Message {
+	mi := &file_cmd_protoc_gen_go_genms_dal_annotations_annotations_proto_msgTypes[1]
+	if protoimpl.UnsafeEnabled && x != nil {
+		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
+		if ms.LoadMessageInfo() == nil {
+			ms.StoreMessageInfo(mi)
+		}
+		return ms
+	}
+	return mi.MessageOf(x)
+}
+
+// Deprecated: Use Query.ProtoReflect.Descriptor instead.
+func (*Query) Descriptor() ([]byte, []int) {
+	return file_cmd_protoc_gen_go_genms_dal_annotations_annotations_proto_rawDescGZIP(), []int{1}
+}
+
+func (x *Query) GetName() string {
+	if x != nil {
+		return x.Name
+	}
+	return ""
+}
+
+func (x *Query) GetArgs() []*Arg {
+	if x != nil {
+		return x.Args
+	}
+	return nil
+}
+
+func (x *Query) GetMode() Query_Mode {
+	if x != nil {
+		return x.Mode
+	}
+	return Query_Auto
+}
+
+func (x *Query) GetReturns() Query_Returns {
+	if x != nil {
+		return x.Returns
+	}
+	return Query_Many
+}
+
+func (x *Query) GetPostgres() *Query_PostgresOptions {
+	if x != nil {
+		return x.Postgres
+	}
+	return nil
+}
+
+func (x *Query) GetRest() *Query_RestOptions {
+	if x != nil {
+		return x.Rest
+	}
+	return nil
+}
+
+func (x *Query) GetMongo() *Query_MongoOptions {
+	if x != nil {
+		return x.Mongo
+	}
+	return nil
 }
 
 type DalOptions struct {
@@ -384,15 +612,14 @@ type DalOptions struct {
 	sizeCache     protoimpl.SizeCache
 	unknownFields protoimpl.UnknownFields
 
-	Queries  []*DalOptions_Query                   `protobuf:"bytes,1,rep,name=queries,proto3" json:"queries,omitempty"`
-	Backends []DalOptions_Backend                  `protobuf:"varint,2,rep,packed,name=backends,proto3,enum=genms.dal.DalOptions_Backend" json:"backends,omitempty"`
-	Options  map[string]*DalOptions_BackendOptions `protobuf:"bytes,3,rep,name=options,proto3" json:"options,omitempty" protobuf_key:"bytes,1,opt,name=key,proto3" protobuf_val:"bytes,2,opt,name=value,proto3"`
+	Queries  []*Query  `protobuf:"bytes,1,rep,name=queries,proto3" json:"queries,omitempty"`
+	Backends []Backend `protobuf:"varint,2,rep,packed,name=backends,proto3,enum=genms.dal.Backend" json:"backends,omitempty"`
 }
 
 func (x *DalOptions) Reset() {
 	*x = DalOptions{}
 	if protoimpl.UnsafeEnabled {
-		mi := &file_cmd_protoc_gen_go_genms_dal_annotations_annotations_proto_msgTypes[0]
+		mi := &file_cmd_protoc_gen_go_genms_dal_annotations_annotations_proto_msgTypes[2]
 		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 		ms.StoreMessageInfo(mi)
 	}
@@ -405,7 +632,7 @@ func (x *DalOptions) String() string {
 func (*DalOptions) ProtoMessage() {}
 
 func (x *DalOptions) ProtoReflect() protoreflect.Message {
-	mi := &file_cmd_protoc_gen_go_genms_dal_annotations_annotations_proto_msgTypes[0]
+	mi := &file_cmd_protoc_gen_go_genms_dal_annotations_annotations_proto_msgTypes[2]
 	if protoimpl.UnsafeEnabled && x != nil {
 		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 		if ms.LoadMessageInfo() == nil {
@@ -418,26 +645,19 @@ func (x *DalOptions) ProtoReflect() protoreflect.Message {
 
 // Deprecated: Use DalOptions.ProtoReflect.Descriptor instead.
 func (*DalOptions) Descriptor() ([]byte, []int) {
-	return file_cmd_protoc_gen_go_genms_dal_annotations_annotations_proto_rawDescGZIP(), []int{0}
+	return file_cmd_protoc_gen_go_genms_dal_annotations_annotations_proto_rawDescGZIP(), []int{2}
 }
 
-func (x *DalOptions) GetQueries() []*DalOptions_Query {
+func (x *DalOptions) GetQueries() []*Query {
 	if x != nil {
 		return x.Queries
 	}
 	return nil
 }
 
-func (x *DalOptions) GetBackends() []DalOptions_Backend {
+func (x *DalOptions) GetBackends() []Backend {
 	if x != nil {
 		return x.Backends
-	}
-	return nil
-}
-
-func (x *DalOptions) GetOptions() map[string]*DalOptions_BackendOptions {
-	if x != nil {
-		return x.Options
 	}
 	return nil
 }
@@ -451,12 +671,13 @@ type DalFieldOptions struct {
 	Field    string                               `protobuf:"bytes,2,opt,name=field,proto3" json:"field,omitempty"`
 	Postgres *DalFieldOptions_BackendFieldOptions `protobuf:"bytes,3,opt,name=postgres,proto3" json:"postgres,omitempty"`
 	Rest     *DalFieldOptions_BackendFieldOptions `protobuf:"bytes,4,opt,name=rest,proto3" json:"rest,omitempty"`
+	Mongo    *DalFieldOptions_BackendFieldOptions `protobuf:"bytes,5,opt,name=mongo,proto3" json:"mongo,omitempty"`
 }
 
 func (x *DalFieldOptions) Reset() {
 	*x = DalFieldOptions{}
 	if protoimpl.UnsafeEnabled {
-		mi := &file_cmd_protoc_gen_go_genms_dal_annotations_annotations_proto_msgTypes[1]
+		mi := &file_cmd_protoc_gen_go_genms_dal_annotations_annotations_proto_msgTypes[3]
 		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 		ms.StoreMessageInfo(mi)
 	}
@@ -469,7 +690,7 @@ func (x *DalFieldOptions) String() string {
 func (*DalFieldOptions) ProtoMessage() {}
 
 func (x *DalFieldOptions) ProtoReflect() protoreflect.Message {
-	mi := &file_cmd_protoc_gen_go_genms_dal_annotations_annotations_proto_msgTypes[1]
+	mi := &file_cmd_protoc_gen_go_genms_dal_annotations_annotations_proto_msgTypes[3]
 	if protoimpl.UnsafeEnabled && x != nil {
 		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 		if ms.LoadMessageInfo() == nil {
@@ -482,7 +703,7 @@ func (x *DalFieldOptions) ProtoReflect() protoreflect.Message {
 
 // Deprecated: Use DalFieldOptions.ProtoReflect.Descriptor instead.
 func (*DalFieldOptions) Descriptor() ([]byte, []int) {
-	return file_cmd_protoc_gen_go_genms_dal_annotations_annotations_proto_rawDescGZIP(), []int{1}
+	return file_cmd_protoc_gen_go_genms_dal_annotations_annotations_proto_rawDescGZIP(), []int{3}
 }
 
 func (x *DalFieldOptions) GetIgnore() bool {
@@ -513,34 +734,38 @@ func (x *DalFieldOptions) GetRest() *DalFieldOptions_BackendFieldOptions {
 	return nil
 }
 
-type DalOptions_Query struct {
+func (x *DalFieldOptions) GetMongo() *DalFieldOptions_BackendFieldOptions {
+	if x != nil {
+		return x.Mongo
+	}
+	return nil
+}
+
+type Arg_PostgresOptions struct {
 	state         protoimpl.MessageState
 	sizeCache     protoimpl.SizeCache
 	unknownFields protoimpl.UnknownFields
 
-	Name string                  `protobuf:"bytes,1,opt,name=name,proto3" json:"name,omitempty"`
-	Args []*DalOptions_Query_Arg `protobuf:"bytes,2,rep,name=args,proto3" json:"args,omitempty"`
-	Mode DalOptions_Query_Mode   `protobuf:"varint,3,opt,name=mode,proto3,enum=genms.dal.DalOptions_Query_Mode" json:"mode,omitempty"`
-	Rest *DalOptions_Query_Rest  `protobuf:"bytes,4,opt,name=rest,proto3" json:"rest,omitempty"`
+	Name string `protobuf:"bytes,1,opt,name=name,proto3" json:"name,omitempty"`
 }
 
-func (x *DalOptions_Query) Reset() {
-	*x = DalOptions_Query{}
+func (x *Arg_PostgresOptions) Reset() {
+	*x = Arg_PostgresOptions{}
 	if protoimpl.UnsafeEnabled {
-		mi := &file_cmd_protoc_gen_go_genms_dal_annotations_annotations_proto_msgTypes[2]
+		mi := &file_cmd_protoc_gen_go_genms_dal_annotations_annotations_proto_msgTypes[4]
 		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 		ms.StoreMessageInfo(mi)
 	}
 }
 
-func (x *DalOptions_Query) String() string {
+func (x *Arg_PostgresOptions) String() string {
 	return protoimpl.X.MessageStringOf(x)
 }
 
-func (*DalOptions_Query) ProtoMessage() {}
+func (*Arg_PostgresOptions) ProtoMessage() {}
 
-func (x *DalOptions_Query) ProtoReflect() protoreflect.Message {
-	mi := &file_cmd_protoc_gen_go_genms_dal_annotations_annotations_proto_msgTypes[2]
+func (x *Arg_PostgresOptions) ProtoReflect() protoreflect.Message {
+	mi := &file_cmd_protoc_gen_go_genms_dal_annotations_annotations_proto_msgTypes[4]
 	if protoimpl.UnsafeEnabled && x != nil {
 		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 		if ms.LoadMessageInfo() == nil {
@@ -551,99 +776,29 @@ func (x *DalOptions_Query) ProtoReflect() protoreflect.Message {
 	return mi.MessageOf(x)
 }
 
-// Deprecated: Use DalOptions_Query.ProtoReflect.Descriptor instead.
-func (*DalOptions_Query) Descriptor() ([]byte, []int) {
+// Deprecated: Use Arg_PostgresOptions.ProtoReflect.Descriptor instead.
+func (*Arg_PostgresOptions) Descriptor() ([]byte, []int) {
 	return file_cmd_protoc_gen_go_genms_dal_annotations_annotations_proto_rawDescGZIP(), []int{0, 0}
 }
 
-func (x *DalOptions_Query) GetName() string {
+func (x *Arg_PostgresOptions) GetName() string {
 	if x != nil {
 		return x.Name
 	}
 	return ""
 }
 
-func (x *DalOptions_Query) GetArgs() []*DalOptions_Query_Arg {
-	if x != nil {
-		return x.Args
-	}
-	return nil
-}
-
-func (x *DalOptions_Query) GetMode() DalOptions_Query_Mode {
-	if x != nil {
-		return x.Mode
-	}
-	return DalOptions_Query_Auto
-}
-
-func (x *DalOptions_Query) GetRest() *DalOptions_Query_Rest {
-	if x != nil {
-		return x.Rest
-	}
-	return nil
-}
-
-type DalOptions_BackendOptions struct {
+type Arg_RestOptions struct {
 	state         protoimpl.MessageState
 	sizeCache     protoimpl.SizeCache
 	unknownFields protoimpl.UnknownFields
 
-	Mode DalOptions_BackendOptions_ReadMode `protobuf:"varint,1,opt,name=mode,proto3,enum=genms.dal.DalOptions_BackendOptions_ReadMode" json:"mode,omitempty"`
+	Name     string                   `protobuf:"bytes,1,opt,name=name,proto3" json:"name,omitempty"`
+	Location Arg_RestOptions_Location `protobuf:"varint,2,opt,name=location,proto3,enum=genms.dal.Arg_RestOptions_Location" json:"location,omitempty"`
 }
 
-func (x *DalOptions_BackendOptions) Reset() {
-	*x = DalOptions_BackendOptions{}
-	if protoimpl.UnsafeEnabled {
-		mi := &file_cmd_protoc_gen_go_genms_dal_annotations_annotations_proto_msgTypes[3]
-		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
-		ms.StoreMessageInfo(mi)
-	}
-}
-
-func (x *DalOptions_BackendOptions) String() string {
-	return protoimpl.X.MessageStringOf(x)
-}
-
-func (*DalOptions_BackendOptions) ProtoMessage() {}
-
-func (x *DalOptions_BackendOptions) ProtoReflect() protoreflect.Message {
-	mi := &file_cmd_protoc_gen_go_genms_dal_annotations_annotations_proto_msgTypes[3]
-	if protoimpl.UnsafeEnabled && x != nil {
-		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
-		if ms.LoadMessageInfo() == nil {
-			ms.StoreMessageInfo(mi)
-		}
-		return ms
-	}
-	return mi.MessageOf(x)
-}
-
-// Deprecated: Use DalOptions_BackendOptions.ProtoReflect.Descriptor instead.
-func (*DalOptions_BackendOptions) Descriptor() ([]byte, []int) {
-	return file_cmd_protoc_gen_go_genms_dal_annotations_annotations_proto_rawDescGZIP(), []int{0, 1}
-}
-
-func (x *DalOptions_BackendOptions) GetMode() DalOptions_BackendOptions_ReadMode {
-	if x != nil {
-		return x.Mode
-	}
-	return DalOptions_BackendOptions_ReadWrite
-}
-
-type DalOptions_Query_Arg struct {
-	state         protoimpl.MessageState
-	sizeCache     protoimpl.SizeCache
-	unknownFields protoimpl.UnknownFields
-
-	Name       string                          `protobuf:"bytes,1,opt,name=name,proto3" json:"name,omitempty"`
-	Kind       string                          `protobuf:"bytes,2,opt,name=kind,proto3" json:"kind,omitempty"`
-	Comparison DalOptions_Query_Arg_Comparison `protobuf:"varint,3,opt,name=comparison,proto3,enum=genms.dal.DalOptions_Query_Arg_Comparison" json:"comparison,omitempty"`
-	Rest       *DalOptions_Query_Arg_Rest      `protobuf:"bytes,4,opt,name=rest,proto3" json:"rest,omitempty"`
-}
-
-func (x *DalOptions_Query_Arg) Reset() {
-	*x = DalOptions_Query_Arg{}
+func (x *Arg_RestOptions) Reset() {
+	*x = Arg_RestOptions{}
 	if protoimpl.UnsafeEnabled {
 		mi := &file_cmd_protoc_gen_go_genms_dal_annotations_annotations_proto_msgTypes[5]
 		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
@@ -651,13 +806,13 @@ func (x *DalOptions_Query_Arg) Reset() {
 	}
 }
 
-func (x *DalOptions_Query_Arg) String() string {
+func (x *Arg_RestOptions) String() string {
 	return protoimpl.X.MessageStringOf(x)
 }
 
-func (*DalOptions_Query_Arg) ProtoMessage() {}
+func (*Arg_RestOptions) ProtoMessage() {}
 
-func (x *DalOptions_Query_Arg) ProtoReflect() protoreflect.Message {
+func (x *Arg_RestOptions) ProtoReflect() protoreflect.Message {
 	mi := &file_cmd_protoc_gen_go_genms_dal_annotations_annotations_proto_msgTypes[5]
 	if protoimpl.UnsafeEnabled && x != nil {
 		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
@@ -669,50 +824,35 @@ func (x *DalOptions_Query_Arg) ProtoReflect() protoreflect.Message {
 	return mi.MessageOf(x)
 }
 
-// Deprecated: Use DalOptions_Query_Arg.ProtoReflect.Descriptor instead.
-func (*DalOptions_Query_Arg) Descriptor() ([]byte, []int) {
-	return file_cmd_protoc_gen_go_genms_dal_annotations_annotations_proto_rawDescGZIP(), []int{0, 0, 0}
+// Deprecated: Use Arg_RestOptions.ProtoReflect.Descriptor instead.
+func (*Arg_RestOptions) Descriptor() ([]byte, []int) {
+	return file_cmd_protoc_gen_go_genms_dal_annotations_annotations_proto_rawDescGZIP(), []int{0, 1}
 }
 
-func (x *DalOptions_Query_Arg) GetName() string {
+func (x *Arg_RestOptions) GetName() string {
 	if x != nil {
 		return x.Name
 	}
 	return ""
 }
 
-func (x *DalOptions_Query_Arg) GetKind() string {
+func (x *Arg_RestOptions) GetLocation() Arg_RestOptions_Location {
 	if x != nil {
-		return x.Kind
+		return x.Location
 	}
-	return ""
+	return Arg_RestOptions_Query
 }
 
-func (x *DalOptions_Query_Arg) GetComparison() DalOptions_Query_Arg_Comparison {
-	if x != nil {
-		return x.Comparison
-	}
-	return DalOptions_Query_Arg_EQ
-}
-
-func (x *DalOptions_Query_Arg) GetRest() *DalOptions_Query_Arg_Rest {
-	if x != nil {
-		return x.Rest
-	}
-	return nil
-}
-
-type DalOptions_Query_Rest struct {
+type Arg_MongoOptions struct {
 	state         protoimpl.MessageState
 	sizeCache     protoimpl.SizeCache
 	unknownFields protoimpl.UnknownFields
 
-	Method  DalOptions_Query_Rest_Method      `protobuf:"varint,1,opt,name=method,proto3,enum=genms.dal.DalOptions_Query_Rest_Method" json:"method,omitempty"`
-	Content DalOptions_Query_Rest_ContentType `protobuf:"varint,2,opt,name=content,proto3,enum=genms.dal.DalOptions_Query_Rest_ContentType" json:"content,omitempty"`
+	Name string `protobuf:"bytes,1,opt,name=name,proto3" json:"name,omitempty"`
 }
 
-func (x *DalOptions_Query_Rest) Reset() {
-	*x = DalOptions_Query_Rest{}
+func (x *Arg_MongoOptions) Reset() {
+	*x = Arg_MongoOptions{}
 	if protoimpl.UnsafeEnabled {
 		mi := &file_cmd_protoc_gen_go_genms_dal_annotations_annotations_proto_msgTypes[6]
 		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
@@ -720,13 +860,13 @@ func (x *DalOptions_Query_Rest) Reset() {
 	}
 }
 
-func (x *DalOptions_Query_Rest) String() string {
+func (x *Arg_MongoOptions) String() string {
 	return protoimpl.X.MessageStringOf(x)
 }
 
-func (*DalOptions_Query_Rest) ProtoMessage() {}
+func (*Arg_MongoOptions) ProtoMessage() {}
 
-func (x *DalOptions_Query_Rest) ProtoReflect() protoreflect.Message {
+func (x *Arg_MongoOptions) ProtoReflect() protoreflect.Message {
 	mi := &file_cmd_protoc_gen_go_genms_dal_annotations_annotations_proto_msgTypes[6]
 	if protoimpl.UnsafeEnabled && x != nil {
 		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
@@ -738,36 +878,26 @@ func (x *DalOptions_Query_Rest) ProtoReflect() protoreflect.Message {
 	return mi.MessageOf(x)
 }
 
-// Deprecated: Use DalOptions_Query_Rest.ProtoReflect.Descriptor instead.
-func (*DalOptions_Query_Rest) Descriptor() ([]byte, []int) {
-	return file_cmd_protoc_gen_go_genms_dal_annotations_annotations_proto_rawDescGZIP(), []int{0, 0, 1}
+// Deprecated: Use Arg_MongoOptions.ProtoReflect.Descriptor instead.
+func (*Arg_MongoOptions) Descriptor() ([]byte, []int) {
+	return file_cmd_protoc_gen_go_genms_dal_annotations_annotations_proto_rawDescGZIP(), []int{0, 2}
 }
 
-func (x *DalOptions_Query_Rest) GetMethod() DalOptions_Query_Rest_Method {
+func (x *Arg_MongoOptions) GetName() string {
 	if x != nil {
-		return x.Method
+		return x.Name
 	}
-	return DalOptions_Query_Rest_GET
+	return ""
 }
 
-func (x *DalOptions_Query_Rest) GetContent() DalOptions_Query_Rest_ContentType {
-	if x != nil {
-		return x.Content
-	}
-	return DalOptions_Query_Rest_JSON
-}
-
-type DalOptions_Query_Arg_Rest struct {
+type Query_PostgresOptions struct {
 	state         protoimpl.MessageState
 	sizeCache     protoimpl.SizeCache
 	unknownFields protoimpl.UnknownFields
-
-	Name     string                             `protobuf:"bytes,1,opt,name=name,proto3" json:"name,omitempty"`
-	Location DalOptions_Query_Arg_Rest_Location `protobuf:"varint,2,opt,name=location,proto3,enum=genms.dal.DalOptions_Query_Arg_Rest_Location" json:"location,omitempty"`
 }
 
-func (x *DalOptions_Query_Arg_Rest) Reset() {
-	*x = DalOptions_Query_Arg_Rest{}
+func (x *Query_PostgresOptions) Reset() {
+	*x = Query_PostgresOptions{}
 	if protoimpl.UnsafeEnabled {
 		mi := &file_cmd_protoc_gen_go_genms_dal_annotations_annotations_proto_msgTypes[7]
 		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
@@ -775,13 +905,13 @@ func (x *DalOptions_Query_Arg_Rest) Reset() {
 	}
 }
 
-func (x *DalOptions_Query_Arg_Rest) String() string {
+func (x *Query_PostgresOptions) String() string {
 	return protoimpl.X.MessageStringOf(x)
 }
 
-func (*DalOptions_Query_Arg_Rest) ProtoMessage() {}
+func (*Query_PostgresOptions) ProtoMessage() {}
 
-func (x *DalOptions_Query_Arg_Rest) ProtoReflect() protoreflect.Message {
+func (x *Query_PostgresOptions) ProtoReflect() protoreflect.Message {
 	mi := &file_cmd_protoc_gen_go_genms_dal_annotations_annotations_proto_msgTypes[7]
 	if protoimpl.UnsafeEnabled && x != nil {
 		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
@@ -793,23 +923,102 @@ func (x *DalOptions_Query_Arg_Rest) ProtoReflect() protoreflect.Message {
 	return mi.MessageOf(x)
 }
 
-// Deprecated: Use DalOptions_Query_Arg_Rest.ProtoReflect.Descriptor instead.
-func (*DalOptions_Query_Arg_Rest) Descriptor() ([]byte, []int) {
-	return file_cmd_protoc_gen_go_genms_dal_annotations_annotations_proto_rawDescGZIP(), []int{0, 0, 0, 0}
+// Deprecated: Use Query_PostgresOptions.ProtoReflect.Descriptor instead.
+func (*Query_PostgresOptions) Descriptor() ([]byte, []int) {
+	return file_cmd_protoc_gen_go_genms_dal_annotations_annotations_proto_rawDescGZIP(), []int{1, 0}
 }
 
-func (x *DalOptions_Query_Arg_Rest) GetName() string {
-	if x != nil {
-		return x.Name
-	}
-	return ""
+type Query_RestOptions struct {
+	state         protoimpl.MessageState
+	sizeCache     protoimpl.SizeCache
+	unknownFields protoimpl.UnknownFields
+
+	Method  Query_RestOptions_Method      `protobuf:"varint,1,opt,name=method,proto3,enum=genms.dal.Query_RestOptions_Method" json:"method,omitempty"`
+	Content Query_RestOptions_ContentType `protobuf:"varint,2,opt,name=content,proto3,enum=genms.dal.Query_RestOptions_ContentType" json:"content,omitempty"`
 }
 
-func (x *DalOptions_Query_Arg_Rest) GetLocation() DalOptions_Query_Arg_Rest_Location {
-	if x != nil {
-		return x.Location
+func (x *Query_RestOptions) Reset() {
+	*x = Query_RestOptions{}
+	if protoimpl.UnsafeEnabled {
+		mi := &file_cmd_protoc_gen_go_genms_dal_annotations_annotations_proto_msgTypes[8]
+		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
+		ms.StoreMessageInfo(mi)
 	}
-	return DalOptions_Query_Arg_Rest_Query
+}
+
+func (x *Query_RestOptions) String() string {
+	return protoimpl.X.MessageStringOf(x)
+}
+
+func (*Query_RestOptions) ProtoMessage() {}
+
+func (x *Query_RestOptions) ProtoReflect() protoreflect.Message {
+	mi := &file_cmd_protoc_gen_go_genms_dal_annotations_annotations_proto_msgTypes[8]
+	if protoimpl.UnsafeEnabled && x != nil {
+		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
+		if ms.LoadMessageInfo() == nil {
+			ms.StoreMessageInfo(mi)
+		}
+		return ms
+	}
+	return mi.MessageOf(x)
+}
+
+// Deprecated: Use Query_RestOptions.ProtoReflect.Descriptor instead.
+func (*Query_RestOptions) Descriptor() ([]byte, []int) {
+	return file_cmd_protoc_gen_go_genms_dal_annotations_annotations_proto_rawDescGZIP(), []int{1, 1}
+}
+
+func (x *Query_RestOptions) GetMethod() Query_RestOptions_Method {
+	if x != nil {
+		return x.Method
+	}
+	return Query_RestOptions_GET
+}
+
+func (x *Query_RestOptions) GetContent() Query_RestOptions_ContentType {
+	if x != nil {
+		return x.Content
+	}
+	return Query_RestOptions_JSON
+}
+
+type Query_MongoOptions struct {
+	state         protoimpl.MessageState
+	sizeCache     protoimpl.SizeCache
+	unknownFields protoimpl.UnknownFields
+}
+
+func (x *Query_MongoOptions) Reset() {
+	*x = Query_MongoOptions{}
+	if protoimpl.UnsafeEnabled {
+		mi := &file_cmd_protoc_gen_go_genms_dal_annotations_annotations_proto_msgTypes[9]
+		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
+		ms.StoreMessageInfo(mi)
+	}
+}
+
+func (x *Query_MongoOptions) String() string {
+	return protoimpl.X.MessageStringOf(x)
+}
+
+func (*Query_MongoOptions) ProtoMessage() {}
+
+func (x *Query_MongoOptions) ProtoReflect() protoreflect.Message {
+	mi := &file_cmd_protoc_gen_go_genms_dal_annotations_annotations_proto_msgTypes[9]
+	if protoimpl.UnsafeEnabled && x != nil {
+		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
+		if ms.LoadMessageInfo() == nil {
+			ms.StoreMessageInfo(mi)
+		}
+		return ms
+	}
+	return mi.MessageOf(x)
+}
+
+// Deprecated: Use Query_MongoOptions.ProtoReflect.Descriptor instead.
+func (*Query_MongoOptions) Descriptor() ([]byte, []int) {
+	return file_cmd_protoc_gen_go_genms_dal_annotations_annotations_proto_rawDescGZIP(), []int{1, 2}
 }
 
 type DalFieldOptions_BackendFieldOptions struct {
@@ -824,7 +1033,7 @@ type DalFieldOptions_BackendFieldOptions struct {
 func (x *DalFieldOptions_BackendFieldOptions) Reset() {
 	*x = DalFieldOptions_BackendFieldOptions{}
 	if protoimpl.UnsafeEnabled {
-		mi := &file_cmd_protoc_gen_go_genms_dal_annotations_annotations_proto_msgTypes[8]
+		mi := &file_cmd_protoc_gen_go_genms_dal_annotations_annotations_proto_msgTypes[10]
 		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 		ms.StoreMessageInfo(mi)
 	}
@@ -837,7 +1046,7 @@ func (x *DalFieldOptions_BackendFieldOptions) String() string {
 func (*DalFieldOptions_BackendFieldOptions) ProtoMessage() {}
 
 func (x *DalFieldOptions_BackendFieldOptions) ProtoReflect() protoreflect.Message {
-	mi := &file_cmd_protoc_gen_go_genms_dal_annotations_annotations_proto_msgTypes[8]
+	mi := &file_cmd_protoc_gen_go_genms_dal_annotations_annotations_proto_msgTypes[10]
 	if protoimpl.UnsafeEnabled && x != nil {
 		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 		if ms.LoadMessageInfo() == nil {
@@ -850,7 +1059,7 @@ func (x *DalFieldOptions_BackendFieldOptions) ProtoReflect() protoreflect.Messag
 
 // Deprecated: Use DalFieldOptions_BackendFieldOptions.ProtoReflect.Descriptor instead.
 func (*DalFieldOptions_BackendFieldOptions) Descriptor() ([]byte, []int) {
-	return file_cmd_protoc_gen_go_genms_dal_annotations_annotations_proto_rawDescGZIP(), []int{1, 0}
+	return file_cmd_protoc_gen_go_genms_dal_annotations_annotations_proto_rawDescGZIP(), []int{3, 0}
 }
 
 func (x *DalFieldOptions_BackendFieldOptions) GetIgnore() bool {
@@ -907,93 +1116,88 @@ var file_cmd_protoc_gen_go_genms_dal_annotations_annotations_proto_rawDesc = []b
 	0x74, 0x69, 0x6f, 0x6e, 0x73, 0x2e, 0x70, 0x72, 0x6f, 0x74, 0x6f, 0x12, 0x09, 0x67, 0x65, 0x6e,
 	0x6d, 0x73, 0x2e, 0x64, 0x61, 0x6c, 0x1a, 0x20, 0x67, 0x6f, 0x6f, 0x67, 0x6c, 0x65, 0x2f, 0x70,
 	0x72, 0x6f, 0x74, 0x6f, 0x62, 0x75, 0x66, 0x2f, 0x64, 0x65, 0x73, 0x63, 0x72, 0x69, 0x70, 0x74,
-	0x6f, 0x72, 0x2e, 0x70, 0x72, 0x6f, 0x74, 0x6f, 0x22, 0xdc, 0x0a, 0x0a, 0x0a, 0x44, 0x61, 0x6c,
-	0x4f, 0x70, 0x74, 0x69, 0x6f, 0x6e, 0x73, 0x12, 0x35, 0x0a, 0x07, 0x71, 0x75, 0x65, 0x72, 0x69,
-	0x65, 0x73, 0x18, 0x01, 0x20, 0x03, 0x28, 0x0b, 0x32, 0x1b, 0x2e, 0x67, 0x65, 0x6e, 0x6d, 0x73,
-	0x2e, 0x64, 0x61, 0x6c, 0x2e, 0x44, 0x61, 0x6c, 0x4f, 0x70, 0x74, 0x69, 0x6f, 0x6e, 0x73, 0x2e,
-	0x51, 0x75, 0x65, 0x72, 0x79, 0x52, 0x07, 0x71, 0x75, 0x65, 0x72, 0x69, 0x65, 0x73, 0x12, 0x39,
-	0x0a, 0x08, 0x62, 0x61, 0x63, 0x6b, 0x65, 0x6e, 0x64, 0x73, 0x18, 0x02, 0x20, 0x03, 0x28, 0x0e,
-	0x32, 0x1d, 0x2e, 0x67, 0x65, 0x6e, 0x6d, 0x73, 0x2e, 0x64, 0x61, 0x6c, 0x2e, 0x44, 0x61, 0x6c,
-	0x4f, 0x70, 0x74, 0x69, 0x6f, 0x6e, 0x73, 0x2e, 0x42, 0x61, 0x63, 0x6b, 0x65, 0x6e, 0x64, 0x52,
-	0x08, 0x62, 0x61, 0x63, 0x6b, 0x65, 0x6e, 0x64, 0x73, 0x12, 0x3c, 0x0a, 0x07, 0x6f, 0x70, 0x74,
-	0x69, 0x6f, 0x6e, 0x73, 0x18, 0x03, 0x20, 0x03, 0x28, 0x0b, 0x32, 0x22, 0x2e, 0x67, 0x65, 0x6e,
-	0x6d, 0x73, 0x2e, 0x64, 0x61, 0x6c, 0x2e, 0x44, 0x61, 0x6c, 0x4f, 0x70, 0x74, 0x69, 0x6f, 0x6e,
-	0x73, 0x2e, 0x4f, 0x70, 0x74, 0x69, 0x6f, 0x6e, 0x73, 0x45, 0x6e, 0x74, 0x72, 0x79, 0x52, 0x07,
-	0x6f, 0x70, 0x74, 0x69, 0x6f, 0x6e, 0x73, 0x1a, 0x80, 0x07, 0x0a, 0x05, 0x51, 0x75, 0x65, 0x72,
-	0x79, 0x12, 0x12, 0x0a, 0x04, 0x6e, 0x61, 0x6d, 0x65, 0x18, 0x01, 0x20, 0x01, 0x28, 0x09, 0x52,
-	0x04, 0x6e, 0x61, 0x6d, 0x65, 0x12, 0x33, 0x0a, 0x04, 0x61, 0x72, 0x67, 0x73, 0x18, 0x02, 0x20,
-	0x03, 0x28, 0x0b, 0x32, 0x1f, 0x2e, 0x67, 0x65, 0x6e, 0x6d, 0x73, 0x2e, 0x64, 0x61, 0x6c, 0x2e,
-	0x44, 0x61, 0x6c, 0x4f, 0x70, 0x74, 0x69, 0x6f, 0x6e, 0x73, 0x2e, 0x51, 0x75, 0x65, 0x72, 0x79,
-	0x2e, 0x41, 0x72, 0x67, 0x52, 0x04, 0x61, 0x72, 0x67, 0x73, 0x12, 0x34, 0x0a, 0x04, 0x6d, 0x6f,
-	0x64, 0x65, 0x18, 0x03, 0x20, 0x01, 0x28, 0x0e, 0x32, 0x20, 0x2e, 0x67, 0x65, 0x6e, 0x6d, 0x73,
-	0x2e, 0x64, 0x61, 0x6c, 0x2e, 0x44, 0x61, 0x6c, 0x4f, 0x70, 0x74, 0x69, 0x6f, 0x6e, 0x73, 0x2e,
-	0x51, 0x75, 0x65, 0x72, 0x79, 0x2e, 0x4d, 0x6f, 0x64, 0x65, 0x52, 0x04, 0x6d, 0x6f, 0x64, 0x65,
-	0x12, 0x34, 0x0a, 0x04, 0x72, 0x65, 0x73, 0x74, 0x18, 0x04, 0x20, 0x01, 0x28, 0x0b, 0x32, 0x20,
-	0x2e, 0x67, 0x65, 0x6e, 0x6d, 0x73, 0x2e, 0x64, 0x61, 0x6c, 0x2e, 0x44, 0x61, 0x6c, 0x4f, 0x70,
-	0x74, 0x69, 0x6f, 0x6e, 0x73, 0x2e, 0x51, 0x75, 0x65, 0x72, 0x79, 0x2e, 0x52, 0x65, 0x73, 0x74,
-	0x52, 0x04, 0x72, 0x65, 0x73, 0x74, 0x1a, 0x92, 0x03, 0x0a, 0x03, 0x41, 0x72, 0x67, 0x12, 0x12,
-	0x0a, 0x04, 0x6e, 0x61, 0x6d, 0x65, 0x18, 0x01, 0x20, 0x01, 0x28, 0x09, 0x52, 0x04, 0x6e, 0x61,
-	0x6d, 0x65, 0x12, 0x12, 0x0a, 0x04, 0x6b, 0x69, 0x6e, 0x64, 0x18, 0x02, 0x20, 0x01, 0x28, 0x09,
-	0x52, 0x04, 0x6b, 0x69, 0x6e, 0x64, 0x12, 0x4a, 0x0a, 0x0a, 0x63, 0x6f, 0x6d, 0x70, 0x61, 0x72,
-	0x69, 0x73, 0x6f, 0x6e, 0x18, 0x03, 0x20, 0x01, 0x28, 0x0e, 0x32, 0x2a, 0x2e, 0x67, 0x65, 0x6e,
-	0x6d, 0x73, 0x2e, 0x64, 0x61, 0x6c, 0x2e, 0x44, 0x61, 0x6c, 0x4f, 0x70, 0x74, 0x69, 0x6f, 0x6e,
-	0x73, 0x2e, 0x51, 0x75, 0x65, 0x72, 0x79, 0x2e, 0x41, 0x72, 0x67, 0x2e, 0x43, 0x6f, 0x6d, 0x70,
-	0x61, 0x72, 0x69, 0x73, 0x6f, 0x6e, 0x52, 0x0a, 0x63, 0x6f, 0x6d, 0x70, 0x61, 0x72, 0x69, 0x73,
-	0x6f, 0x6e, 0x12, 0x38, 0x0a, 0x04, 0x72, 0x65, 0x73, 0x74, 0x18, 0x04, 0x20, 0x01, 0x28, 0x0b,
-	0x32, 0x24, 0x2e, 0x67, 0x65, 0x6e, 0x6d, 0x73, 0x2e, 0x64, 0x61, 0x6c, 0x2e, 0x44, 0x61, 0x6c,
-	0x4f, 0x70, 0x74, 0x69, 0x6f, 0x6e, 0x73, 0x2e, 0x51, 0x75, 0x65, 0x72, 0x79, 0x2e, 0x41, 0x72,
-	0x67, 0x2e, 0x52, 0x65, 0x73, 0x74, 0x52, 0x04, 0x72, 0x65, 0x73, 0x74, 0x1a, 0x9c, 0x01, 0x0a,
-	0x04, 0x52, 0x65, 0x73, 0x74, 0x12, 0x12, 0x0a, 0x04, 0x6e, 0x61, 0x6d, 0x65, 0x18, 0x01, 0x20,
-	0x01, 0x28, 0x09, 0x52, 0x04, 0x6e, 0x61, 0x6d, 0x65, 0x12, 0x49, 0x0a, 0x08, 0x6c, 0x6f, 0x63,
-	0x61, 0x74, 0x69, 0x6f, 0x6e, 0x18, 0x02, 0x20, 0x01, 0x28, 0x0e, 0x32, 0x2d, 0x2e, 0x67, 0x65,
-	0x6e, 0x6d, 0x73, 0x2e, 0x64, 0x61, 0x6c, 0x2e, 0x44, 0x61, 0x6c, 0x4f, 0x70, 0x74, 0x69, 0x6f,
-	0x6e, 0x73, 0x2e, 0x51, 0x75, 0x65, 0x72, 0x79, 0x2e, 0x41, 0x72, 0x67, 0x2e, 0x52, 0x65, 0x73,
-	0x74, 0x2e, 0x4c, 0x6f, 0x63, 0x61, 0x74, 0x69, 0x6f, 0x6e, 0x52, 0x08, 0x6c, 0x6f, 0x63, 0x61,
-	0x74, 0x69, 0x6f, 0x6e, 0x22, 0x35, 0x0a, 0x08, 0x4c, 0x6f, 0x63, 0x61, 0x74, 0x69, 0x6f, 0x6e,
-	0x12, 0x09, 0x0a, 0x05, 0x51, 0x75, 0x65, 0x72, 0x79, 0x10, 0x00, 0x12, 0x08, 0x0a, 0x04, 0x50,
-	0x61, 0x74, 0x68, 0x10, 0x01, 0x12, 0x08, 0x0a, 0x04, 0x42, 0x6f, 0x64, 0x79, 0x10, 0x02, 0x12,
-	0x0a, 0x0a, 0x06, 0x48, 0x65, 0x61, 0x64, 0x65, 0x72, 0x10, 0x03, 0x22, 0x3e, 0x0a, 0x0a, 0x43,
-	0x6f, 0x6d, 0x70, 0x61, 0x72, 0x69, 0x73, 0x6f, 0x6e, 0x12, 0x06, 0x0a, 0x02, 0x45, 0x51, 0x10,
-	0x00, 0x12, 0x06, 0x0a, 0x02, 0x4e, 0x45, 0x10, 0x01, 0x12, 0x06, 0x0a, 0x02, 0x47, 0x54, 0x10,
-	0x02, 0x12, 0x06, 0x0a, 0x02, 0x4c, 0x54, 0x10, 0x03, 0x12, 0x07, 0x0a, 0x03, 0x47, 0x54, 0x45,
-	0x10, 0x04, 0x12, 0x07, 0x0a, 0x03, 0x4c, 0x54, 0x45, 0x10, 0x05, 0x1a, 0xf5, 0x01, 0x0a, 0x04,
-	0x52, 0x65, 0x73, 0x74, 0x12, 0x3f, 0x0a, 0x06, 0x6d, 0x65, 0x74, 0x68, 0x6f, 0x64, 0x18, 0x01,
-	0x20, 0x01, 0x28, 0x0e, 0x32, 0x27, 0x2e, 0x67, 0x65, 0x6e, 0x6d, 0x73, 0x2e, 0x64, 0x61, 0x6c,
-	0x2e, 0x44, 0x61, 0x6c, 0x4f, 0x70, 0x74, 0x69, 0x6f, 0x6e, 0x73, 0x2e, 0x51, 0x75, 0x65, 0x72,
-	0x79, 0x2e, 0x52, 0x65, 0x73, 0x74, 0x2e, 0x4d, 0x65, 0x74, 0x68, 0x6f, 0x64, 0x52, 0x06, 0x6d,
-	0x65, 0x74, 0x68, 0x6f, 0x64, 0x12, 0x46, 0x0a, 0x07, 0x63, 0x6f, 0x6e, 0x74, 0x65, 0x6e, 0x74,
-	0x18, 0x02, 0x20, 0x01, 0x28, 0x0e, 0x32, 0x2c, 0x2e, 0x67, 0x65, 0x6e, 0x6d, 0x73, 0x2e, 0x64,
-	0x61, 0x6c, 0x2e, 0x44, 0x61, 0x6c, 0x4f, 0x70, 0x74, 0x69, 0x6f, 0x6e, 0x73, 0x2e, 0x51, 0x75,
-	0x65, 0x72, 0x79, 0x2e, 0x52, 0x65, 0x73, 0x74, 0x2e, 0x43, 0x6f, 0x6e, 0x74, 0x65, 0x6e, 0x74,
-	0x54, 0x79, 0x70, 0x65, 0x52, 0x07, 0x63, 0x6f, 0x6e, 0x74, 0x65, 0x6e, 0x74, 0x22, 0x3b, 0x0a,
-	0x06, 0x4d, 0x65, 0x74, 0x68, 0x6f, 0x64, 0x12, 0x07, 0x0a, 0x03, 0x47, 0x45, 0x54, 0x10, 0x00,
-	0x12, 0x08, 0x0a, 0x04, 0x50, 0x4f, 0x53, 0x54, 0x10, 0x01, 0x12, 0x07, 0x0a, 0x03, 0x50, 0x55,
-	0x54, 0x10, 0x02, 0x12, 0x09, 0x0a, 0x05, 0x50, 0x41, 0x54, 0x43, 0x48, 0x10, 0x03, 0x12, 0x0a,
-	0x0a, 0x06, 0x44, 0x45, 0x4c, 0x45, 0x54, 0x45, 0x10, 0x04, 0x22, 0x27, 0x0a, 0x0b, 0x43, 0x6f,
-	0x6e, 0x74, 0x65, 0x6e, 0x74, 0x54, 0x79, 0x70, 0x65, 0x12, 0x08, 0x0a, 0x04, 0x4a, 0x53, 0x4f,
-	0x4e, 0x10, 0x00, 0x12, 0x0e, 0x0a, 0x0a, 0x55, 0x52, 0x4c, 0x45, 0x6e, 0x63, 0x6f, 0x64, 0x65,
-	0x64, 0x10, 0x01, 0x22, 0x35, 0x0a, 0x04, 0x4d, 0x6f, 0x64, 0x65, 0x12, 0x08, 0x0a, 0x04, 0x41,
-	0x75, 0x74, 0x6f, 0x10, 0x00, 0x12, 0x10, 0x0a, 0x0c, 0x50, 0x72, 0x6f, 0x76, 0x69, 0x64, 0x65,
-	0x72, 0x53, 0x74, 0x75, 0x62, 0x10, 0x01, 0x12, 0x11, 0x0a, 0x0d, 0x49, 0x6e, 0x74, 0x65, 0x72,
-	0x66, 0x61, 0x63, 0x65, 0x53, 0x74, 0x75, 0x62, 0x10, 0x02, 0x1a, 0x8b, 0x01, 0x0a, 0x0e, 0x42,
-	0x61, 0x63, 0x6b, 0x65, 0x6e, 0x64, 0x4f, 0x70, 0x74, 0x69, 0x6f, 0x6e, 0x73, 0x12, 0x41, 0x0a,
-	0x04, 0x6d, 0x6f, 0x64, 0x65, 0x18, 0x01, 0x20, 0x01, 0x28, 0x0e, 0x32, 0x2d, 0x2e, 0x67, 0x65,
-	0x6e, 0x6d, 0x73, 0x2e, 0x64, 0x61, 0x6c, 0x2e, 0x44, 0x61, 0x6c, 0x4f, 0x70, 0x74, 0x69, 0x6f,
-	0x6e, 0x73, 0x2e, 0x42, 0x61, 0x63, 0x6b, 0x65, 0x6e, 0x64, 0x4f, 0x70, 0x74, 0x69, 0x6f, 0x6e,
-	0x73, 0x2e, 0x52, 0x65, 0x61, 0x64, 0x4d, 0x6f, 0x64, 0x65, 0x52, 0x04, 0x6d, 0x6f, 0x64, 0x65,
-	0x22, 0x36, 0x0a, 0x08, 0x52, 0x65, 0x61, 0x64, 0x4d, 0x6f, 0x64, 0x65, 0x12, 0x0d, 0x0a, 0x09,
-	0x52, 0x65, 0x61, 0x64, 0x57, 0x72, 0x69, 0x74, 0x65, 0x10, 0x00, 0x12, 0x0c, 0x0a, 0x08, 0x52,
-	0x65, 0x61, 0x64, 0x4f, 0x6e, 0x6c, 0x79, 0x10, 0x01, 0x12, 0x0d, 0x0a, 0x09, 0x57, 0x72, 0x69,
-	0x74, 0x65, 0x4f, 0x6e, 0x6c, 0x79, 0x10, 0x02, 0x1a, 0x60, 0x0a, 0x0c, 0x4f, 0x70, 0x74, 0x69,
-	0x6f, 0x6e, 0x73, 0x45, 0x6e, 0x74, 0x72, 0x79, 0x12, 0x10, 0x0a, 0x03, 0x6b, 0x65, 0x79, 0x18,
-	0x01, 0x20, 0x01, 0x28, 0x09, 0x52, 0x03, 0x6b, 0x65, 0x79, 0x12, 0x3a, 0x0a, 0x05, 0x76, 0x61,
-	0x6c, 0x75, 0x65, 0x18, 0x02, 0x20, 0x01, 0x28, 0x0b, 0x32, 0x24, 0x2e, 0x67, 0x65, 0x6e, 0x6d,
-	0x73, 0x2e, 0x64, 0x61, 0x6c, 0x2e, 0x44, 0x61, 0x6c, 0x4f, 0x70, 0x74, 0x69, 0x6f, 0x6e, 0x73,
-	0x2e, 0x42, 0x61, 0x63, 0x6b, 0x65, 0x6e, 0x64, 0x4f, 0x70, 0x74, 0x69, 0x6f, 0x6e, 0x73, 0x52,
-	0x05, 0x76, 0x61, 0x6c, 0x75, 0x65, 0x3a, 0x02, 0x38, 0x01, 0x22, 0x2b, 0x0a, 0x07, 0x42, 0x61,
-	0x63, 0x6b, 0x65, 0x6e, 0x64, 0x12, 0x08, 0x0a, 0x04, 0x4e, 0x6f, 0x6e, 0x65, 0x10, 0x00, 0x12,
-	0x0c, 0x0a, 0x08, 0x50, 0x6f, 0x73, 0x74, 0x67, 0x72, 0x65, 0x73, 0x10, 0x01, 0x12, 0x08, 0x0a,
-	0x04, 0x52, 0x65, 0x73, 0x74, 0x10, 0x02, 0x22, 0x94, 0x02, 0x0a, 0x0f, 0x44, 0x61, 0x6c, 0x46,
+	0x6f, 0x72, 0x2e, 0x70, 0x72, 0x6f, 0x74, 0x6f, 0x22, 0xea, 0x03, 0x0a, 0x03, 0x41, 0x72, 0x67,
+	0x12, 0x12, 0x0a, 0x04, 0x6e, 0x61, 0x6d, 0x65, 0x18, 0x01, 0x20, 0x01, 0x28, 0x09, 0x52, 0x04,
+	0x6e, 0x61, 0x6d, 0x65, 0x12, 0x12, 0x0a, 0x04, 0x6b, 0x69, 0x6e, 0x64, 0x18, 0x02, 0x20, 0x01,
+	0x28, 0x09, 0x52, 0x04, 0x6b, 0x69, 0x6e, 0x64, 0x12, 0x35, 0x0a, 0x0a, 0x63, 0x6f, 0x6d, 0x70,
+	0x61, 0x72, 0x69, 0x73, 0x6f, 0x6e, 0x18, 0x03, 0x20, 0x01, 0x28, 0x0e, 0x32, 0x15, 0x2e, 0x67,
+	0x65, 0x6e, 0x6d, 0x73, 0x2e, 0x64, 0x61, 0x6c, 0x2e, 0x43, 0x6f, 0x6d, 0x70, 0x61, 0x72, 0x61,
+	0x74, 0x6f, 0x72, 0x52, 0x0a, 0x63, 0x6f, 0x6d, 0x70, 0x61, 0x72, 0x69, 0x73, 0x6f, 0x6e, 0x12,
+	0x3a, 0x0a, 0x08, 0x70, 0x6f, 0x73, 0x74, 0x67, 0x72, 0x65, 0x73, 0x18, 0x04, 0x20, 0x01, 0x28,
+	0x0b, 0x32, 0x1e, 0x2e, 0x67, 0x65, 0x6e, 0x6d, 0x73, 0x2e, 0x64, 0x61, 0x6c, 0x2e, 0x41, 0x72,
+	0x67, 0x2e, 0x50, 0x6f, 0x73, 0x74, 0x67, 0x72, 0x65, 0x73, 0x4f, 0x70, 0x74, 0x69, 0x6f, 0x6e,
+	0x73, 0x52, 0x08, 0x70, 0x6f, 0x73, 0x74, 0x67, 0x72, 0x65, 0x73, 0x12, 0x2e, 0x0a, 0x04, 0x72,
+	0x65, 0x73, 0x74, 0x18, 0x05, 0x20, 0x01, 0x28, 0x0b, 0x32, 0x1a, 0x2e, 0x67, 0x65, 0x6e, 0x6d,
+	0x73, 0x2e, 0x64, 0x61, 0x6c, 0x2e, 0x41, 0x72, 0x67, 0x2e, 0x52, 0x65, 0x73, 0x74, 0x4f, 0x70,
+	0x74, 0x69, 0x6f, 0x6e, 0x73, 0x52, 0x04, 0x72, 0x65, 0x73, 0x74, 0x12, 0x31, 0x0a, 0x05, 0x6d,
+	0x6f, 0x6e, 0x67, 0x6f, 0x18, 0x06, 0x20, 0x01, 0x28, 0x0b, 0x32, 0x1b, 0x2e, 0x67, 0x65, 0x6e,
+	0x6d, 0x73, 0x2e, 0x64, 0x61, 0x6c, 0x2e, 0x41, 0x72, 0x67, 0x2e, 0x4d, 0x6f, 0x6e, 0x67, 0x6f,
+	0x4f, 0x70, 0x74, 0x69, 0x6f, 0x6e, 0x73, 0x52, 0x05, 0x6d, 0x6f, 0x6e, 0x67, 0x6f, 0x1a, 0x25,
+	0x0a, 0x0f, 0x50, 0x6f, 0x73, 0x74, 0x67, 0x72, 0x65, 0x73, 0x4f, 0x70, 0x74, 0x69, 0x6f, 0x6e,
+	0x73, 0x12, 0x12, 0x0a, 0x04, 0x6e, 0x61, 0x6d, 0x65, 0x18, 0x01, 0x20, 0x01, 0x28, 0x09, 0x52,
+	0x04, 0x6e, 0x61, 0x6d, 0x65, 0x1a, 0x99, 0x01, 0x0a, 0x0b, 0x52, 0x65, 0x73, 0x74, 0x4f, 0x70,
+	0x74, 0x69, 0x6f, 0x6e, 0x73, 0x12, 0x12, 0x0a, 0x04, 0x6e, 0x61, 0x6d, 0x65, 0x18, 0x01, 0x20,
+	0x01, 0x28, 0x09, 0x52, 0x04, 0x6e, 0x61, 0x6d, 0x65, 0x12, 0x3f, 0x0a, 0x08, 0x6c, 0x6f, 0x63,
+	0x61, 0x74, 0x69, 0x6f, 0x6e, 0x18, 0x02, 0x20, 0x01, 0x28, 0x0e, 0x32, 0x23, 0x2e, 0x67, 0x65,
+	0x6e, 0x6d, 0x73, 0x2e, 0x64, 0x61, 0x6c, 0x2e, 0x41, 0x72, 0x67, 0x2e, 0x52, 0x65, 0x73, 0x74,
+	0x4f, 0x70, 0x74, 0x69, 0x6f, 0x6e, 0x73, 0x2e, 0x4c, 0x6f, 0x63, 0x61, 0x74, 0x69, 0x6f, 0x6e,
+	0x52, 0x08, 0x6c, 0x6f, 0x63, 0x61, 0x74, 0x69, 0x6f, 0x6e, 0x22, 0x35, 0x0a, 0x08, 0x4c, 0x6f,
+	0x63, 0x61, 0x74, 0x69, 0x6f, 0x6e, 0x12, 0x09, 0x0a, 0x05, 0x51, 0x75, 0x65, 0x72, 0x79, 0x10,
+	0x00, 0x12, 0x08, 0x0a, 0x04, 0x50, 0x61, 0x74, 0x68, 0x10, 0x01, 0x12, 0x08, 0x0a, 0x04, 0x42,
+	0x6f, 0x64, 0x79, 0x10, 0x02, 0x12, 0x0a, 0x0a, 0x06, 0x48, 0x65, 0x61, 0x64, 0x65, 0x72, 0x10,
+	0x03, 0x1a, 0x22, 0x0a, 0x0c, 0x4d, 0x6f, 0x6e, 0x67, 0x6f, 0x4f, 0x70, 0x74, 0x69, 0x6f, 0x6e,
+	0x73, 0x12, 0x12, 0x0a, 0x04, 0x6e, 0x61, 0x6d, 0x65, 0x18, 0x01, 0x20, 0x01, 0x28, 0x09, 0x52,
+	0x04, 0x6e, 0x61, 0x6d, 0x65, 0x22, 0xb5, 0x05, 0x0a, 0x05, 0x51, 0x75, 0x65, 0x72, 0x79, 0x12,
+	0x12, 0x0a, 0x04, 0x6e, 0x61, 0x6d, 0x65, 0x18, 0x01, 0x20, 0x01, 0x28, 0x09, 0x52, 0x04, 0x6e,
+	0x61, 0x6d, 0x65, 0x12, 0x22, 0x0a, 0x04, 0x61, 0x72, 0x67, 0x73, 0x18, 0x02, 0x20, 0x03, 0x28,
+	0x0b, 0x32, 0x0e, 0x2e, 0x67, 0x65, 0x6e, 0x6d, 0x73, 0x2e, 0x64, 0x61, 0x6c, 0x2e, 0x41, 0x72,
+	0x67, 0x52, 0x04, 0x61, 0x72, 0x67, 0x73, 0x12, 0x29, 0x0a, 0x04, 0x6d, 0x6f, 0x64, 0x65, 0x18,
+	0x03, 0x20, 0x01, 0x28, 0x0e, 0x32, 0x15, 0x2e, 0x67, 0x65, 0x6e, 0x6d, 0x73, 0x2e, 0x64, 0x61,
+	0x6c, 0x2e, 0x51, 0x75, 0x65, 0x72, 0x79, 0x2e, 0x4d, 0x6f, 0x64, 0x65, 0x52, 0x04, 0x6d, 0x6f,
+	0x64, 0x65, 0x12, 0x32, 0x0a, 0x07, 0x72, 0x65, 0x74, 0x75, 0x72, 0x6e, 0x73, 0x18, 0x04, 0x20,
+	0x01, 0x28, 0x0e, 0x32, 0x18, 0x2e, 0x67, 0x65, 0x6e, 0x6d, 0x73, 0x2e, 0x64, 0x61, 0x6c, 0x2e,
+	0x51, 0x75, 0x65, 0x72, 0x79, 0x2e, 0x52, 0x65, 0x74, 0x75, 0x72, 0x6e, 0x73, 0x52, 0x07, 0x72,
+	0x65, 0x74, 0x75, 0x72, 0x6e, 0x73, 0x12, 0x3c, 0x0a, 0x08, 0x70, 0x6f, 0x73, 0x74, 0x67, 0x72,
+	0x65, 0x73, 0x18, 0x05, 0x20, 0x01, 0x28, 0x0b, 0x32, 0x20, 0x2e, 0x67, 0x65, 0x6e, 0x6d, 0x73,
+	0x2e, 0x64, 0x61, 0x6c, 0x2e, 0x51, 0x75, 0x65, 0x72, 0x79, 0x2e, 0x50, 0x6f, 0x73, 0x74, 0x67,
+	0x72, 0x65, 0x73, 0x4f, 0x70, 0x74, 0x69, 0x6f, 0x6e, 0x73, 0x52, 0x08, 0x70, 0x6f, 0x73, 0x74,
+	0x67, 0x72, 0x65, 0x73, 0x12, 0x30, 0x0a, 0x04, 0x72, 0x65, 0x73, 0x74, 0x18, 0x06, 0x20, 0x01,
+	0x28, 0x0b, 0x32, 0x1c, 0x2e, 0x67, 0x65, 0x6e, 0x6d, 0x73, 0x2e, 0x64, 0x61, 0x6c, 0x2e, 0x51,
+	0x75, 0x65, 0x72, 0x79, 0x2e, 0x52, 0x65, 0x73, 0x74, 0x4f, 0x70, 0x74, 0x69, 0x6f, 0x6e, 0x73,
+	0x52, 0x04, 0x72, 0x65, 0x73, 0x74, 0x12, 0x33, 0x0a, 0x05, 0x6d, 0x6f, 0x6e, 0x67, 0x6f, 0x18,
+	0x07, 0x20, 0x01, 0x28, 0x0b, 0x32, 0x1d, 0x2e, 0x67, 0x65, 0x6e, 0x6d, 0x73, 0x2e, 0x64, 0x61,
+	0x6c, 0x2e, 0x51, 0x75, 0x65, 0x72, 0x79, 0x2e, 0x4d, 0x6f, 0x6e, 0x67, 0x6f, 0x4f, 0x70, 0x74,
+	0x69, 0x6f, 0x6e, 0x73, 0x52, 0x05, 0x6d, 0x6f, 0x6e, 0x67, 0x6f, 0x1a, 0x11, 0x0a, 0x0f, 0x50,
+	0x6f, 0x73, 0x74, 0x67, 0x72, 0x65, 0x73, 0x4f, 0x70, 0x74, 0x69, 0x6f, 0x6e, 0x73, 0x1a, 0xf4,
+	0x01, 0x0a, 0x0b, 0x52, 0x65, 0x73, 0x74, 0x4f, 0x70, 0x74, 0x69, 0x6f, 0x6e, 0x73, 0x12, 0x3b,
+	0x0a, 0x06, 0x6d, 0x65, 0x74, 0x68, 0x6f, 0x64, 0x18, 0x01, 0x20, 0x01, 0x28, 0x0e, 0x32, 0x23,
+	0x2e, 0x67, 0x65, 0x6e, 0x6d, 0x73, 0x2e, 0x64, 0x61, 0x6c, 0x2e, 0x51, 0x75, 0x65, 0x72, 0x79,
+	0x2e, 0x52, 0x65, 0x73, 0x74, 0x4f, 0x70, 0x74, 0x69, 0x6f, 0x6e, 0x73, 0x2e, 0x4d, 0x65, 0x74,
+	0x68, 0x6f, 0x64, 0x52, 0x06, 0x6d, 0x65, 0x74, 0x68, 0x6f, 0x64, 0x12, 0x42, 0x0a, 0x07, 0x63,
+	0x6f, 0x6e, 0x74, 0x65, 0x6e, 0x74, 0x18, 0x02, 0x20, 0x01, 0x28, 0x0e, 0x32, 0x28, 0x2e, 0x67,
+	0x65, 0x6e, 0x6d, 0x73, 0x2e, 0x64, 0x61, 0x6c, 0x2e, 0x51, 0x75, 0x65, 0x72, 0x79, 0x2e, 0x52,
+	0x65, 0x73, 0x74, 0x4f, 0x70, 0x74, 0x69, 0x6f, 0x6e, 0x73, 0x2e, 0x43, 0x6f, 0x6e, 0x74, 0x65,
+	0x6e, 0x74, 0x54, 0x79, 0x70, 0x65, 0x52, 0x07, 0x63, 0x6f, 0x6e, 0x74, 0x65, 0x6e, 0x74, 0x22,
+	0x3b, 0x0a, 0x06, 0x4d, 0x65, 0x74, 0x68, 0x6f, 0x64, 0x12, 0x07, 0x0a, 0x03, 0x47, 0x45, 0x54,
+	0x10, 0x00, 0x12, 0x08, 0x0a, 0x04, 0x50, 0x4f, 0x53, 0x54, 0x10, 0x01, 0x12, 0x07, 0x0a, 0x03,
+	0x50, 0x55, 0x54, 0x10, 0x02, 0x12, 0x09, 0x0a, 0x05, 0x50, 0x41, 0x54, 0x43, 0x48, 0x10, 0x03,
+	0x12, 0x0a, 0x0a, 0x06, 0x44, 0x45, 0x4c, 0x45, 0x54, 0x45, 0x10, 0x04, 0x22, 0x27, 0x0a, 0x0b,
+	0x43, 0x6f, 0x6e, 0x74, 0x65, 0x6e, 0x74, 0x54, 0x79, 0x70, 0x65, 0x12, 0x08, 0x0a, 0x04, 0x4a,
+	0x53, 0x4f, 0x4e, 0x10, 0x00, 0x12, 0x0e, 0x0a, 0x0a, 0x55, 0x52, 0x4c, 0x45, 0x6e, 0x63, 0x6f,
+	0x64, 0x65, 0x64, 0x10, 0x01, 0x1a, 0x0e, 0x0a, 0x0c, 0x4d, 0x6f, 0x6e, 0x67, 0x6f, 0x4f, 0x70,
+	0x74, 0x69, 0x6f, 0x6e, 0x73, 0x22, 0x35, 0x0a, 0x04, 0x4d, 0x6f, 0x64, 0x65, 0x12, 0x08, 0x0a,
+	0x04, 0x41, 0x75, 0x74, 0x6f, 0x10, 0x00, 0x12, 0x10, 0x0a, 0x0c, 0x50, 0x72, 0x6f, 0x76, 0x69,
+	0x64, 0x65, 0x72, 0x53, 0x74, 0x75, 0x62, 0x10, 0x01, 0x12, 0x11, 0x0a, 0x0d, 0x49, 0x6e, 0x74,
+	0x65, 0x72, 0x66, 0x61, 0x63, 0x65, 0x53, 0x74, 0x75, 0x62, 0x10, 0x02, 0x22, 0x1f, 0x0a, 0x07,
+	0x52, 0x65, 0x74, 0x75, 0x72, 0x6e, 0x73, 0x12, 0x08, 0x0a, 0x04, 0x4d, 0x61, 0x6e, 0x79, 0x10,
+	0x00, 0x12, 0x0a, 0x0a, 0x06, 0x53, 0x69, 0x6e, 0x67, 0x6c, 0x65, 0x10, 0x01, 0x22, 0x68, 0x0a,
+	0x0a, 0x44, 0x61, 0x6c, 0x4f, 0x70, 0x74, 0x69, 0x6f, 0x6e, 0x73, 0x12, 0x2a, 0x0a, 0x07, 0x71,
+	0x75, 0x65, 0x72, 0x69, 0x65, 0x73, 0x18, 0x01, 0x20, 0x03, 0x28, 0x0b, 0x32, 0x10, 0x2e, 0x67,
+	0x65, 0x6e, 0x6d, 0x73, 0x2e, 0x64, 0x61, 0x6c, 0x2e, 0x51, 0x75, 0x65, 0x72, 0x79, 0x52, 0x07,
+	0x71, 0x75, 0x65, 0x72, 0x69, 0x65, 0x73, 0x12, 0x2e, 0x0a, 0x08, 0x62, 0x61, 0x63, 0x6b, 0x65,
+	0x6e, 0x64, 0x73, 0x18, 0x02, 0x20, 0x03, 0x28, 0x0e, 0x32, 0x12, 0x2e, 0x67, 0x65, 0x6e, 0x6d,
+	0x73, 0x2e, 0x64, 0x61, 0x6c, 0x2e, 0x42, 0x61, 0x63, 0x6b, 0x65, 0x6e, 0x64, 0x52, 0x08, 0x62,
+	0x61, 0x63, 0x6b, 0x65, 0x6e, 0x64, 0x73, 0x22, 0xda, 0x02, 0x0a, 0x0f, 0x44, 0x61, 0x6c, 0x46,
 	0x69, 0x65, 0x6c, 0x64, 0x4f, 0x70, 0x74, 0x69, 0x6f, 0x6e, 0x73, 0x12, 0x16, 0x0a, 0x06, 0x69,
 	0x67, 0x6e, 0x6f, 0x72, 0x65, 0x18, 0x01, 0x20, 0x01, 0x28, 0x08, 0x52, 0x06, 0x69, 0x67, 0x6e,
 	0x6f, 0x72, 0x65, 0x12, 0x14, 0x0a, 0x05, 0x66, 0x69, 0x65, 0x6c, 0x64, 0x18, 0x02, 0x20, 0x01,
@@ -1006,28 +1210,44 @@ var file_cmd_protoc_gen_go_genms_dal_annotations_annotations_proto_rawDesc = []b
 	0x01, 0x28, 0x0b, 0x32, 0x2e, 0x2e, 0x67, 0x65, 0x6e, 0x6d, 0x73, 0x2e, 0x64, 0x61, 0x6c, 0x2e,
 	0x44, 0x61, 0x6c, 0x46, 0x69, 0x65, 0x6c, 0x64, 0x4f, 0x70, 0x74, 0x69, 0x6f, 0x6e, 0x73, 0x2e,
 	0x42, 0x61, 0x63, 0x6b, 0x65, 0x6e, 0x64, 0x46, 0x69, 0x65, 0x6c, 0x64, 0x4f, 0x70, 0x74, 0x69,
-	0x6f, 0x6e, 0x73, 0x52, 0x04, 0x72, 0x65, 0x73, 0x74, 0x1a, 0x43, 0x0a, 0x13, 0x42, 0x61, 0x63,
-	0x6b, 0x65, 0x6e, 0x64, 0x46, 0x69, 0x65, 0x6c, 0x64, 0x4f, 0x70, 0x74, 0x69, 0x6f, 0x6e, 0x73,
-	0x12, 0x16, 0x0a, 0x06, 0x69, 0x67, 0x6e, 0x6f, 0x72, 0x65, 0x18, 0x01, 0x20, 0x01, 0x28, 0x08,
-	0x52, 0x06, 0x69, 0x67, 0x6e, 0x6f, 0x72, 0x65, 0x12, 0x14, 0x0a, 0x05, 0x66, 0x69, 0x65, 0x6c,
-	0x64, 0x18, 0x02, 0x20, 0x01, 0x28, 0x09, 0x52, 0x05, 0x66, 0x69, 0x65, 0x6c, 0x64, 0x3a, 0x61,
-	0x0a, 0x0f, 0x6d, 0x65, 0x73, 0x73, 0x61, 0x67, 0x65, 0x5f, 0x6f, 0x70, 0x74, 0x69, 0x6f, 0x6e,
-	0x73, 0x12, 0x1f, 0x2e, 0x67, 0x6f, 0x6f, 0x67, 0x6c, 0x65, 0x2e, 0x70, 0x72, 0x6f, 0x74, 0x6f,
-	0x62, 0x75, 0x66, 0x2e, 0x4d, 0x65, 0x73, 0x73, 0x61, 0x67, 0x65, 0x4f, 0x70, 0x74, 0x69, 0x6f,
-	0x6e, 0x73, 0x18, 0xb8, 0x8e, 0x03, 0x20, 0x01, 0x28, 0x0b, 0x32, 0x15, 0x2e, 0x67, 0x65, 0x6e,
-	0x6d, 0x73, 0x2e, 0x64, 0x61, 0x6c, 0x2e, 0x44, 0x61, 0x6c, 0x4f, 0x70, 0x74, 0x69, 0x6f, 0x6e,
-	0x73, 0x52, 0x0e, 0x6d, 0x65, 0x73, 0x73, 0x61, 0x67, 0x65, 0x4f, 0x70, 0x74, 0x69, 0x6f, 0x6e,
-	0x73, 0x3a, 0x60, 0x0a, 0x0d, 0x66, 0x69, 0x65, 0x6c, 0x64, 0x5f, 0x6f, 0x70, 0x74, 0x69, 0x6f,
-	0x6e, 0x73, 0x12, 0x1d, 0x2e, 0x67, 0x6f, 0x6f, 0x67, 0x6c, 0x65, 0x2e, 0x70, 0x72, 0x6f, 0x74,
-	0x6f, 0x62, 0x75, 0x66, 0x2e, 0x46, 0x69, 0x65, 0x6c, 0x64, 0x4f, 0x70, 0x74, 0x69, 0x6f, 0x6e,
-	0x73, 0x18, 0xb8, 0x8e, 0x03, 0x20, 0x01, 0x28, 0x0b, 0x32, 0x1a, 0x2e, 0x67, 0x65, 0x6e, 0x6d,
-	0x73, 0x2e, 0x64, 0x61, 0x6c, 0x2e, 0x44, 0x61, 0x6c, 0x46, 0x69, 0x65, 0x6c, 0x64, 0x4f, 0x70,
-	0x74, 0x69, 0x6f, 0x6e, 0x73, 0x52, 0x0c, 0x66, 0x69, 0x65, 0x6c, 0x64, 0x4f, 0x70, 0x74, 0x69,
-	0x6f, 0x6e, 0x73, 0x42, 0x43, 0x5a, 0x41, 0x67, 0x69, 0x74, 0x68, 0x75, 0x62, 0x2e, 0x63, 0x6f,
-	0x6d, 0x2f, 0x72, 0x6c, 0x65, 0x73, 0x7a, 0x69, 0x6c, 0x6d, 0x2f, 0x67, 0x65, 0x6e, 0x6d, 0x73,
-	0x2f, 0x63, 0x6d, 0x64, 0x2f, 0x70, 0x72, 0x6f, 0x74, 0x6f, 0x63, 0x2d, 0x67, 0x65, 0x6e, 0x2d,
-	0x67, 0x6f, 0x2d, 0x67, 0x65, 0x6e, 0x6d, 0x73, 0x2d, 0x64, 0x61, 0x6c, 0x2f, 0x61, 0x6e, 0x6e,
-	0x6f, 0x74, 0x61, 0x74, 0x69, 0x6f, 0x6e, 0x73, 0x62, 0x06, 0x70, 0x72, 0x6f, 0x74, 0x6f, 0x33,
+	0x6f, 0x6e, 0x73, 0x52, 0x04, 0x72, 0x65, 0x73, 0x74, 0x12, 0x44, 0x0a, 0x05, 0x6d, 0x6f, 0x6e,
+	0x67, 0x6f, 0x18, 0x05, 0x20, 0x01, 0x28, 0x0b, 0x32, 0x2e, 0x2e, 0x67, 0x65, 0x6e, 0x6d, 0x73,
+	0x2e, 0x64, 0x61, 0x6c, 0x2e, 0x44, 0x61, 0x6c, 0x46, 0x69, 0x65, 0x6c, 0x64, 0x4f, 0x70, 0x74,
+	0x69, 0x6f, 0x6e, 0x73, 0x2e, 0x42, 0x61, 0x63, 0x6b, 0x65, 0x6e, 0x64, 0x46, 0x69, 0x65, 0x6c,
+	0x64, 0x4f, 0x70, 0x74, 0x69, 0x6f, 0x6e, 0x73, 0x52, 0x05, 0x6d, 0x6f, 0x6e, 0x67, 0x6f, 0x1a,
+	0x43, 0x0a, 0x13, 0x42, 0x61, 0x63, 0x6b, 0x65, 0x6e, 0x64, 0x46, 0x69, 0x65, 0x6c, 0x64, 0x4f,
+	0x70, 0x74, 0x69, 0x6f, 0x6e, 0x73, 0x12, 0x16, 0x0a, 0x06, 0x69, 0x67, 0x6e, 0x6f, 0x72, 0x65,
+	0x18, 0x01, 0x20, 0x01, 0x28, 0x08, 0x52, 0x06, 0x69, 0x67, 0x6e, 0x6f, 0x72, 0x65, 0x12, 0x14,
+	0x0a, 0x05, 0x66, 0x69, 0x65, 0x6c, 0x64, 0x18, 0x02, 0x20, 0x01, 0x28, 0x09, 0x52, 0x05, 0x66,
+	0x69, 0x65, 0x6c, 0x64, 0x2a, 0x3b, 0x0a, 0x07, 0x42, 0x61, 0x63, 0x6b, 0x65, 0x6e, 0x64, 0x12,
+	0x0d, 0x0a, 0x09, 0x4e, 0x6f, 0x42, 0x61, 0x63, 0x6b, 0x65, 0x6e, 0x64, 0x10, 0x00, 0x12, 0x0c,
+	0x0a, 0x08, 0x50, 0x6f, 0x73, 0x74, 0x67, 0x72, 0x65, 0x73, 0x10, 0x01, 0x12, 0x08, 0x0a, 0x04,
+	0x52, 0x65, 0x73, 0x74, 0x10, 0x02, 0x12, 0x09, 0x0a, 0x05, 0x4d, 0x6f, 0x6e, 0x67, 0x6f, 0x10,
+	0x03, 0x2a, 0x3e, 0x0a, 0x0a, 0x43, 0x6f, 0x6d, 0x70, 0x61, 0x72, 0x61, 0x74, 0x6f, 0x72, 0x12,
+	0x06, 0x0a, 0x02, 0x45, 0x51, 0x10, 0x00, 0x12, 0x06, 0x0a, 0x02, 0x4e, 0x45, 0x10, 0x01, 0x12,
+	0x06, 0x0a, 0x02, 0x47, 0x54, 0x10, 0x02, 0x12, 0x06, 0x0a, 0x02, 0x4c, 0x54, 0x10, 0x03, 0x12,
+	0x07, 0x0a, 0x03, 0x47, 0x54, 0x45, 0x10, 0x04, 0x12, 0x07, 0x0a, 0x03, 0x4c, 0x54, 0x45, 0x10,
+	0x05, 0x2a, 0x32, 0x0a, 0x0d, 0x42, 0x53, 0x4f, 0x4e, 0x50, 0x72, 0x69, 0x6d, 0x69, 0x74, 0x69,
+	0x76, 0x65, 0x12, 0x13, 0x0a, 0x0f, 0x4e, 0x6f, 0x42, 0x53, 0x4f, 0x4e, 0x50, 0x72, 0x69, 0x6d,
+	0x69, 0x74, 0x69, 0x76, 0x65, 0x10, 0x00, 0x12, 0x0c, 0x0a, 0x08, 0x4f, 0x62, 0x6a, 0x65, 0x63,
+	0x74, 0x49, 0x44, 0x10, 0x01, 0x3a, 0x61, 0x0a, 0x0f, 0x6d, 0x65, 0x73, 0x73, 0x61, 0x67, 0x65,
+	0x5f, 0x6f, 0x70, 0x74, 0x69, 0x6f, 0x6e, 0x73, 0x12, 0x1f, 0x2e, 0x67, 0x6f, 0x6f, 0x67, 0x6c,
+	0x65, 0x2e, 0x70, 0x72, 0x6f, 0x74, 0x6f, 0x62, 0x75, 0x66, 0x2e, 0x4d, 0x65, 0x73, 0x73, 0x61,
+	0x67, 0x65, 0x4f, 0x70, 0x74, 0x69, 0x6f, 0x6e, 0x73, 0x18, 0xb8, 0x8e, 0x03, 0x20, 0x01, 0x28,
+	0x0b, 0x32, 0x15, 0x2e, 0x67, 0x65, 0x6e, 0x6d, 0x73, 0x2e, 0x64, 0x61, 0x6c, 0x2e, 0x44, 0x61,
+	0x6c, 0x4f, 0x70, 0x74, 0x69, 0x6f, 0x6e, 0x73, 0x52, 0x0e, 0x6d, 0x65, 0x73, 0x73, 0x61, 0x67,
+	0x65, 0x4f, 0x70, 0x74, 0x69, 0x6f, 0x6e, 0x73, 0x3a, 0x60, 0x0a, 0x0d, 0x66, 0x69, 0x65, 0x6c,
+	0x64, 0x5f, 0x6f, 0x70, 0x74, 0x69, 0x6f, 0x6e, 0x73, 0x12, 0x1d, 0x2e, 0x67, 0x6f, 0x6f, 0x67,
+	0x6c, 0x65, 0x2e, 0x70, 0x72, 0x6f, 0x74, 0x6f, 0x62, 0x75, 0x66, 0x2e, 0x46, 0x69, 0x65, 0x6c,
+	0x64, 0x4f, 0x70, 0x74, 0x69, 0x6f, 0x6e, 0x73, 0x18, 0xb8, 0x8e, 0x03, 0x20, 0x01, 0x28, 0x0b,
+	0x32, 0x1a, 0x2e, 0x67, 0x65, 0x6e, 0x6d, 0x73, 0x2e, 0x64, 0x61, 0x6c, 0x2e, 0x44, 0x61, 0x6c,
+	0x46, 0x69, 0x65, 0x6c, 0x64, 0x4f, 0x70, 0x74, 0x69, 0x6f, 0x6e, 0x73, 0x52, 0x0c, 0x66, 0x69,
+	0x65, 0x6c, 0x64, 0x4f, 0x70, 0x74, 0x69, 0x6f, 0x6e, 0x73, 0x42, 0x43, 0x5a, 0x41, 0x67, 0x69,
+	0x74, 0x68, 0x75, 0x62, 0x2e, 0x63, 0x6f, 0x6d, 0x2f, 0x72, 0x6c, 0x65, 0x73, 0x7a, 0x69, 0x6c,
+	0x6d, 0x2f, 0x67, 0x65, 0x6e, 0x6d, 0x73, 0x2f, 0x63, 0x6d, 0x64, 0x2f, 0x70, 0x72, 0x6f, 0x74,
+	0x6f, 0x63, 0x2d, 0x67, 0x65, 0x6e, 0x2d, 0x67, 0x6f, 0x2d, 0x67, 0x65, 0x6e, 0x6d, 0x73, 0x2d,
+	0x64, 0x61, 0x6c, 0x2f, 0x61, 0x6e, 0x6e, 0x6f, 0x74, 0x61, 0x74, 0x69, 0x6f, 0x6e, 0x73, 0x62,
+	0x06, 0x70, 0x72, 0x6f, 0x74, 0x6f, 0x33,
 }
 
 var (
@@ -1042,53 +1262,59 @@ func file_cmd_protoc_gen_go_genms_dal_annotations_annotations_proto_rawDescGZIP(
 	return file_cmd_protoc_gen_go_genms_dal_annotations_annotations_proto_rawDescData
 }
 
-var file_cmd_protoc_gen_go_genms_dal_annotations_annotations_proto_enumTypes = make([]protoimpl.EnumInfo, 7)
-var file_cmd_protoc_gen_go_genms_dal_annotations_annotations_proto_msgTypes = make([]protoimpl.MessageInfo, 9)
+var file_cmd_protoc_gen_go_genms_dal_annotations_annotations_proto_enumTypes = make([]protoimpl.EnumInfo, 8)
+var file_cmd_protoc_gen_go_genms_dal_annotations_annotations_proto_msgTypes = make([]protoimpl.MessageInfo, 11)
 var file_cmd_protoc_gen_go_genms_dal_annotations_annotations_proto_goTypes = []interface{}{
-	(DalOptions_Backend)(0),                     // 0: genms.dal.DalOptions.Backend
-	(DalOptions_Query_Mode)(0),                  // 1: genms.dal.DalOptions.Query.Mode
-	(DalOptions_Query_Arg_Comparison)(0),        // 2: genms.dal.DalOptions.Query.Arg.Comparison
-	(DalOptions_Query_Arg_Rest_Location)(0),     // 3: genms.dal.DalOptions.Query.Arg.Rest.Location
-	(DalOptions_Query_Rest_Method)(0),           // 4: genms.dal.DalOptions.Query.Rest.Method
-	(DalOptions_Query_Rest_ContentType)(0),      // 5: genms.dal.DalOptions.Query.Rest.ContentType
-	(DalOptions_BackendOptions_ReadMode)(0),     // 6: genms.dal.DalOptions.BackendOptions.ReadMode
-	(*DalOptions)(nil),                          // 7: genms.dal.DalOptions
-	(*DalFieldOptions)(nil),                     // 8: genms.dal.DalFieldOptions
-	(*DalOptions_Query)(nil),                    // 9: genms.dal.DalOptions.Query
-	(*DalOptions_BackendOptions)(nil),           // 10: genms.dal.DalOptions.BackendOptions
-	nil,                                         // 11: genms.dal.DalOptions.OptionsEntry
-	(*DalOptions_Query_Arg)(nil),                // 12: genms.dal.DalOptions.Query.Arg
-	(*DalOptions_Query_Rest)(nil),               // 13: genms.dal.DalOptions.Query.Rest
-	(*DalOptions_Query_Arg_Rest)(nil),           // 14: genms.dal.DalOptions.Query.Arg.Rest
-	(*DalFieldOptions_BackendFieldOptions)(nil), // 15: genms.dal.DalFieldOptions.BackendFieldOptions
-	(*descriptorpb.MessageOptions)(nil),         // 16: google.protobuf.MessageOptions
-	(*descriptorpb.FieldOptions)(nil),           // 17: google.protobuf.FieldOptions
+	(Backend)(0),                                // 0: genms.dal.Backend
+	(Comparator)(0),                             // 1: genms.dal.Comparator
+	(BSONPrimitive)(0),                          // 2: genms.dal.BSONPrimitive
+	(Arg_RestOptions_Location)(0),               // 3: genms.dal.Arg.RestOptions.Location
+	(Query_Mode)(0),                             // 4: genms.dal.Query.Mode
+	(Query_Returns)(0),                          // 5: genms.dal.Query.Returns
+	(Query_RestOptions_Method)(0),               // 6: genms.dal.Query.RestOptions.Method
+	(Query_RestOptions_ContentType)(0),          // 7: genms.dal.Query.RestOptions.ContentType
+	(*Arg)(nil),                                 // 8: genms.dal.Arg
+	(*Query)(nil),                               // 9: genms.dal.Query
+	(*DalOptions)(nil),                          // 10: genms.dal.DalOptions
+	(*DalFieldOptions)(nil),                     // 11: genms.dal.DalFieldOptions
+	(*Arg_PostgresOptions)(nil),                 // 12: genms.dal.Arg.PostgresOptions
+	(*Arg_RestOptions)(nil),                     // 13: genms.dal.Arg.RestOptions
+	(*Arg_MongoOptions)(nil),                    // 14: genms.dal.Arg.MongoOptions
+	(*Query_PostgresOptions)(nil),               // 15: genms.dal.Query.PostgresOptions
+	(*Query_RestOptions)(nil),                   // 16: genms.dal.Query.RestOptions
+	(*Query_MongoOptions)(nil),                  // 17: genms.dal.Query.MongoOptions
+	(*DalFieldOptions_BackendFieldOptions)(nil), // 18: genms.dal.DalFieldOptions.BackendFieldOptions
+	(*descriptorpb.MessageOptions)(nil),         // 19: google.protobuf.MessageOptions
+	(*descriptorpb.FieldOptions)(nil),           // 20: google.protobuf.FieldOptions
 }
 var file_cmd_protoc_gen_go_genms_dal_annotations_annotations_proto_depIdxs = []int32{
-	9,  // 0: genms.dal.DalOptions.queries:type_name -> genms.dal.DalOptions.Query
-	0,  // 1: genms.dal.DalOptions.backends:type_name -> genms.dal.DalOptions.Backend
-	11, // 2: genms.dal.DalOptions.options:type_name -> genms.dal.DalOptions.OptionsEntry
-	15, // 3: genms.dal.DalFieldOptions.postgres:type_name -> genms.dal.DalFieldOptions.BackendFieldOptions
-	15, // 4: genms.dal.DalFieldOptions.rest:type_name -> genms.dal.DalFieldOptions.BackendFieldOptions
-	12, // 5: genms.dal.DalOptions.Query.args:type_name -> genms.dal.DalOptions.Query.Arg
-	1,  // 6: genms.dal.DalOptions.Query.mode:type_name -> genms.dal.DalOptions.Query.Mode
-	13, // 7: genms.dal.DalOptions.Query.rest:type_name -> genms.dal.DalOptions.Query.Rest
-	6,  // 8: genms.dal.DalOptions.BackendOptions.mode:type_name -> genms.dal.DalOptions.BackendOptions.ReadMode
-	10, // 9: genms.dal.DalOptions.OptionsEntry.value:type_name -> genms.dal.DalOptions.BackendOptions
-	2,  // 10: genms.dal.DalOptions.Query.Arg.comparison:type_name -> genms.dal.DalOptions.Query.Arg.Comparison
-	14, // 11: genms.dal.DalOptions.Query.Arg.rest:type_name -> genms.dal.DalOptions.Query.Arg.Rest
-	4,  // 12: genms.dal.DalOptions.Query.Rest.method:type_name -> genms.dal.DalOptions.Query.Rest.Method
-	5,  // 13: genms.dal.DalOptions.Query.Rest.content:type_name -> genms.dal.DalOptions.Query.Rest.ContentType
-	3,  // 14: genms.dal.DalOptions.Query.Arg.Rest.location:type_name -> genms.dal.DalOptions.Query.Arg.Rest.Location
-	16, // 15: genms.dal.message_options:extendee -> google.protobuf.MessageOptions
-	17, // 16: genms.dal.field_options:extendee -> google.protobuf.FieldOptions
-	7,  // 17: genms.dal.message_options:type_name -> genms.dal.DalOptions
-	8,  // 18: genms.dal.field_options:type_name -> genms.dal.DalFieldOptions
-	19, // [19:19] is the sub-list for method output_type
-	19, // [19:19] is the sub-list for method input_type
-	17, // [17:19] is the sub-list for extension type_name
-	15, // [15:17] is the sub-list for extension extendee
-	0,  // [0:15] is the sub-list for field type_name
+	1,  // 0: genms.dal.Arg.comparison:type_name -> genms.dal.Comparator
+	12, // 1: genms.dal.Arg.postgres:type_name -> genms.dal.Arg.PostgresOptions
+	13, // 2: genms.dal.Arg.rest:type_name -> genms.dal.Arg.RestOptions
+	14, // 3: genms.dal.Arg.mongo:type_name -> genms.dal.Arg.MongoOptions
+	8,  // 4: genms.dal.Query.args:type_name -> genms.dal.Arg
+	4,  // 5: genms.dal.Query.mode:type_name -> genms.dal.Query.Mode
+	5,  // 6: genms.dal.Query.returns:type_name -> genms.dal.Query.Returns
+	15, // 7: genms.dal.Query.postgres:type_name -> genms.dal.Query.PostgresOptions
+	16, // 8: genms.dal.Query.rest:type_name -> genms.dal.Query.RestOptions
+	17, // 9: genms.dal.Query.mongo:type_name -> genms.dal.Query.MongoOptions
+	9,  // 10: genms.dal.DalOptions.queries:type_name -> genms.dal.Query
+	0,  // 11: genms.dal.DalOptions.backends:type_name -> genms.dal.Backend
+	18, // 12: genms.dal.DalFieldOptions.postgres:type_name -> genms.dal.DalFieldOptions.BackendFieldOptions
+	18, // 13: genms.dal.DalFieldOptions.rest:type_name -> genms.dal.DalFieldOptions.BackendFieldOptions
+	18, // 14: genms.dal.DalFieldOptions.mongo:type_name -> genms.dal.DalFieldOptions.BackendFieldOptions
+	3,  // 15: genms.dal.Arg.RestOptions.location:type_name -> genms.dal.Arg.RestOptions.Location
+	6,  // 16: genms.dal.Query.RestOptions.method:type_name -> genms.dal.Query.RestOptions.Method
+	7,  // 17: genms.dal.Query.RestOptions.content:type_name -> genms.dal.Query.RestOptions.ContentType
+	19, // 18: genms.dal.message_options:extendee -> google.protobuf.MessageOptions
+	20, // 19: genms.dal.field_options:extendee -> google.protobuf.FieldOptions
+	10, // 20: genms.dal.message_options:type_name -> genms.dal.DalOptions
+	11, // 21: genms.dal.field_options:type_name -> genms.dal.DalFieldOptions
+	22, // [22:22] is the sub-list for method output_type
+	22, // [22:22] is the sub-list for method input_type
+	20, // [20:22] is the sub-list for extension type_name
+	18, // [18:20] is the sub-list for extension extendee
+	0,  // [0:18] is the sub-list for field type_name
 }
 
 func init() { file_cmd_protoc_gen_go_genms_dal_annotations_annotations_proto_init() }
@@ -1098,7 +1324,7 @@ func file_cmd_protoc_gen_go_genms_dal_annotations_annotations_proto_init() {
 	}
 	if !protoimpl.UnsafeEnabled {
 		file_cmd_protoc_gen_go_genms_dal_annotations_annotations_proto_msgTypes[0].Exporter = func(v interface{}, i int) interface{} {
-			switch v := v.(*DalOptions); i {
+			switch v := v.(*Arg); i {
 			case 0:
 				return &v.state
 			case 1:
@@ -1110,7 +1336,7 @@ func file_cmd_protoc_gen_go_genms_dal_annotations_annotations_proto_init() {
 			}
 		}
 		file_cmd_protoc_gen_go_genms_dal_annotations_annotations_proto_msgTypes[1].Exporter = func(v interface{}, i int) interface{} {
-			switch v := v.(*DalFieldOptions); i {
+			switch v := v.(*Query); i {
 			case 0:
 				return &v.state
 			case 1:
@@ -1122,7 +1348,7 @@ func file_cmd_protoc_gen_go_genms_dal_annotations_annotations_proto_init() {
 			}
 		}
 		file_cmd_protoc_gen_go_genms_dal_annotations_annotations_proto_msgTypes[2].Exporter = func(v interface{}, i int) interface{} {
-			switch v := v.(*DalOptions_Query); i {
+			switch v := v.(*DalOptions); i {
 			case 0:
 				return &v.state
 			case 1:
@@ -1134,7 +1360,19 @@ func file_cmd_protoc_gen_go_genms_dal_annotations_annotations_proto_init() {
 			}
 		}
 		file_cmd_protoc_gen_go_genms_dal_annotations_annotations_proto_msgTypes[3].Exporter = func(v interface{}, i int) interface{} {
-			switch v := v.(*DalOptions_BackendOptions); i {
+			switch v := v.(*DalFieldOptions); i {
+			case 0:
+				return &v.state
+			case 1:
+				return &v.sizeCache
+			case 2:
+				return &v.unknownFields
+			default:
+				return nil
+			}
+		}
+		file_cmd_protoc_gen_go_genms_dal_annotations_annotations_proto_msgTypes[4].Exporter = func(v interface{}, i int) interface{} {
+			switch v := v.(*Arg_PostgresOptions); i {
 			case 0:
 				return &v.state
 			case 1:
@@ -1146,7 +1384,7 @@ func file_cmd_protoc_gen_go_genms_dal_annotations_annotations_proto_init() {
 			}
 		}
 		file_cmd_protoc_gen_go_genms_dal_annotations_annotations_proto_msgTypes[5].Exporter = func(v interface{}, i int) interface{} {
-			switch v := v.(*DalOptions_Query_Arg); i {
+			switch v := v.(*Arg_RestOptions); i {
 			case 0:
 				return &v.state
 			case 1:
@@ -1158,7 +1396,7 @@ func file_cmd_protoc_gen_go_genms_dal_annotations_annotations_proto_init() {
 			}
 		}
 		file_cmd_protoc_gen_go_genms_dal_annotations_annotations_proto_msgTypes[6].Exporter = func(v interface{}, i int) interface{} {
-			switch v := v.(*DalOptions_Query_Rest); i {
+			switch v := v.(*Arg_MongoOptions); i {
 			case 0:
 				return &v.state
 			case 1:
@@ -1170,7 +1408,7 @@ func file_cmd_protoc_gen_go_genms_dal_annotations_annotations_proto_init() {
 			}
 		}
 		file_cmd_protoc_gen_go_genms_dal_annotations_annotations_proto_msgTypes[7].Exporter = func(v interface{}, i int) interface{} {
-			switch v := v.(*DalOptions_Query_Arg_Rest); i {
+			switch v := v.(*Query_PostgresOptions); i {
 			case 0:
 				return &v.state
 			case 1:
@@ -1182,6 +1420,30 @@ func file_cmd_protoc_gen_go_genms_dal_annotations_annotations_proto_init() {
 			}
 		}
 		file_cmd_protoc_gen_go_genms_dal_annotations_annotations_proto_msgTypes[8].Exporter = func(v interface{}, i int) interface{} {
+			switch v := v.(*Query_RestOptions); i {
+			case 0:
+				return &v.state
+			case 1:
+				return &v.sizeCache
+			case 2:
+				return &v.unknownFields
+			default:
+				return nil
+			}
+		}
+		file_cmd_protoc_gen_go_genms_dal_annotations_annotations_proto_msgTypes[9].Exporter = func(v interface{}, i int) interface{} {
+			switch v := v.(*Query_MongoOptions); i {
+			case 0:
+				return &v.state
+			case 1:
+				return &v.sizeCache
+			case 2:
+				return &v.unknownFields
+			default:
+				return nil
+			}
+		}
+		file_cmd_protoc_gen_go_genms_dal_annotations_annotations_proto_msgTypes[10].Exporter = func(v interface{}, i int) interface{} {
 			switch v := v.(*DalFieldOptions_BackendFieldOptions); i {
 			case 0:
 				return &v.state
@@ -1199,8 +1461,8 @@ func file_cmd_protoc_gen_go_genms_dal_annotations_annotations_proto_init() {
 		File: protoimpl.DescBuilder{
 			GoPackagePath: reflect.TypeOf(x{}).PkgPath(),
 			RawDescriptor: file_cmd_protoc_gen_go_genms_dal_annotations_annotations_proto_rawDesc,
-			NumEnums:      7,
-			NumMessages:   9,
+			NumEnums:      8,
+			NumMessages:   11,
 			NumExtensions: 2,
 			NumServices:   0,
 		},
