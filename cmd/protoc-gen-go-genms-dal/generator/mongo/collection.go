@@ -203,7 +203,8 @@ func (x *{{ .C.Message.Name }}Collection) String() string {
 }
 
 func (c *Collection) defineDefaultQueries() error {
-	tmplSrc := `// find scans the collection for records matching the filter. 
+	tmplSrc := `{{- $C := .C -}}
+// find scans the collection for records matching the filter. 
 func (x *{{ .C.Message.Name }}Collection) find(ctx {{ .P.Context }}.Context, label string, filter interface{}, opts ...*{{ .P.Mongo }}.FindOptions) ([]*{{ .C.Message.QualifiedKind }}, error) {
 	ctx, cancel := {{ .P.Context }}.WithTimeout(ctx, x.config.Timeout)
 	defer cancel()
@@ -251,22 +252,46 @@ func (x *{{ .C.Message.Name }}Collection) All(ctx {{ .P.Context }}.Context) ([]*
 }
 
 // Filter implements {{ .C.Message.Name }}CollectionReader
-func (x *{{ .C.Message.Name }}Collection) Filter({{ .P.Context }}.Context, *{{ .P.Collection }}.{{ .C.Message.Name }}FieldValues) ([]*{{ .C.Message.QualifiedKind }}, error) {
-	return nil, nil
+func (x *{{ .C.Message.Name }}Collection) Filter(ctx {{ .P.Context }}.Context, fvs *{{ .P.Collection }}.{{ .C.Message.Name }}FieldValues) ([]*{{ .C.Message.QualifiedKind }}, error) {
+	filter := {{ .P.Bson }}.M{}
+	
+	{{ range $fn := .C.Fields.Names -}}
+		{{- $f := ($C.Fields.ByName $fn) -}}
+		{{- if not $f.Ignore -}}
+			if fvs.{{ ToTitleCase $f.Name }} != nil {
+				filter["{{ $f.QueryName }}"] = {{ if not $f.IsRef }}*{{ end }}fvs.{{ ToTitleCase $f.Name }}
+			}
+		{{- end }}
+	{{ end -}}
+
+	return x.find(ctx, "filter", filter)
 }
 
 // Insert implements {{ .C.Message.Name }}CollectionWriter
-func (x *{{ .C.Message.Name }}Collection) Insert({{ .P.Context }}.Context, *{{ .C.Message.QualifiedKind }}) (*{{ .C.Message.QualifiedKind }}, error) {
-	return nil, nil
+func (x *{{ .C.Message.Name }}Collection) Insert(ctx {{ .P.Context }}.Context, obj *{{ .C.Message.QualifiedKind }}) (*{{ .C.Message.QualifiedKind }}, error) {
+	{{- $id := .C.Fields.ID -}}	
+	{{ if $id -}}res{{- else -}}_{{- end }}, err := x.client.
+		Database(x.config.Database).
+		Collection(x.config.Collection).
+		InsertOne(ctx, obj)
+	if err != nil {
+		return nil, err
+	}
+
+	{{ if $id -}}
+		obj.{{ ToTitleCase $id.Name }} = res.InsertedID.({{ $id.QualifiedKind }})
+	{{- end }}
+
+	return obj, nil
 }
 
 // Upsert implements {{ .C.Message.Name }}CollectionWriter
-func (x *{{ .C.Message.Name }}Collection) Upsert({{ .P.Context }}.Context, *{{ .C.Message.QualifiedKind }}) (*{{ .C.Message.QualifiedKind }}, error) {
+func (x *{{ .C.Message.Name }}Collection) Upsert(ctx {{ .P.Context }}.Context, _ *{{ .C.Message.QualifiedKind }}) (*{{ .C.Message.QualifiedKind }}, error) {
 	return nil, nil
 }
 
 // Update implements {{ .C.Message.Name }}CollectionWriter
-func (x *{{ .C.Message.Name }}Collection) Update({{ .P.Context }}.Context, *{{ .C.Message.QualifiedKind }}, *{{ .P.Collection }}.{{ .C.Message.Name }}FieldValues) (*{{ .C.Message.QualifiedKind }}, error){
+func (x *{{ .C.Message.Name }}Collection) Update(ctx {{ .P.Context }}.Context, _ *{{ .C.Message.QualifiedKind }}, _ *{{ .P.Collection }}.{{ .C.Message.Name }}FieldValues) (*{{ .C.Message.QualifiedKind }}, error){
 	return nil, nil
 }
 

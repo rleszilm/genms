@@ -7,6 +7,7 @@ import (
 
 // Fields is a struct that contains data about the messages fields.
 type Fields struct {
+	id *Field
 	*generator.Fields
 }
 
@@ -25,4 +26,20 @@ func AsFields(fields *protocgenlib.Fields) *Fields {
 // ByName returns the specified field.
 func (f *Fields) ByName(n string) *Field {
 	return AsField(f.Fields.ByName(n).ProtocGenLib())
+}
+
+// ID returns the field that contains the _id of hte collection.
+func (f *Fields) ID() *Field {
+	if f.id != nil {
+		return f.id
+	}
+
+	for _, n := range f.Names() {
+		field := f.ByName(n)
+		if field.QueryName() == "_id" {
+			f.id = field
+		}
+	}
+
+	return f.id
 }

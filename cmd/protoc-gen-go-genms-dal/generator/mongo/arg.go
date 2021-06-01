@@ -29,11 +29,11 @@ func (a *Arg) QueryName() (string, error) {
 	if a.field != nil {
 		fopts := a.field.Options()
 
-		if f := fopts.GetMongo().GetField(); f != "" {
+		if f := fopts.GetMongo().GetName(); f != "" {
 			return f, nil
 		}
 
-		if f := fopts.GetField(); f != "" {
+		if f := fopts.GetName(); f != "" {
 			return f, nil
 		}
 	}

@@ -111,11 +111,11 @@ extend google.protobuf.MessageOptions {
 
 message DalFieldOptions {
     bool ignore = 1;
-    string field = 2;
+    string name = 2;
 
     message BackendFieldOptions{
         bool ignore = 1;
-        string field = 2;
+        string name = 2;
     }
     BackendFieldOptions postgres = 3;
     BackendFieldOptions rest = 4;
