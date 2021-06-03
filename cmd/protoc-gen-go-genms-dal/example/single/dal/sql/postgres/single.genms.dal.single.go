@@ -33,6 +33,7 @@ type SingleCollection struct {
 
 	execUpdateTmpl *template.Template
 
+	queryById             string
 	queryOneParam         string
 	queryMultipleParam    string
 	queryMessageParam     string
@@ -159,6 +160,10 @@ func (x *SingleCollection) DoUpdate(ctx context.Context, fvs *dal.SingleFieldVal
 		updates = append(updates, "scalar_string = :scalar_string")
 	}
 
+	if fvs.ScalarBytes != nil {
+		updates = append(updates, "scalar_bytes = :scalar_bytes")
+	}
+
 	if fvs.ScalarBool != nil {
 		updates = append(updates, "scalar_bool = :scalar_bool")
 	}
@@ -194,6 +199,14 @@ func (x *SingleCollection) DoUpdate(ctx context.Context, fvs *dal.SingleFieldVal
 	if fvs.RenamedMongo != nil {
 		updates = append(updates, "renamed_mongo = :renamed_mongo")
 	}
+
+	if fvs.BsonStringOid != nil {
+		updates = append(updates, "bson_string_oid = :bson_string_oid")
+	}
+
+	if fvs.BsonBytesOid != nil {
+		updates = append(updates, "bson_bytes_oid = :bson_bytes_oid")
+	}
 	buf := &bytes.Buffer{}
 	if err := x.execUpdateTmpl.Execute(buf, map[string]interface{}{
 		"clause":  clause,
@@ -222,7 +235,7 @@ func (x *SingleCollection) All(ctx context.Context) ([]*single.Single, error) {
 
 // Filter implements dal.SingleCollection.Filter
 func (x *SingleCollection) Filter(ctx context.Context, fvs *dal.SingleFieldValues) ([]*single.Single, error) {
-	query := "SELECT scalar_int32, scalar_int64, scalar_float32, scalar_float64, scalar_string, scalar_bool, scalar_enum, obj_message, ignored, aliased, ignored_postgres, aliased_postgres, ignored_rest, renamed_rest, ignored_mongo, renamed_mongo FROM " + x.config.TableName
+	query := "SELECT scalar_int32, scalar_int64, scalar_float32, scalar_float64, scalar_string, scalar_bytes, scalar_bool, scalar_enum, obj_message, ignored, aliased, ignored_postgres, aliased_postgres, ignored_rest, renamed_rest, ignored_mongo, renamed_mongo, bson_string_oid, bson_bytes_oid FROM " + x.config.TableName
 
 	fields := []string{}
 	if fvs.ScalarInt32 != nil {
@@ -239,6 +252,9 @@ func (x *SingleCollection) Filter(ctx context.Context, fvs *dal.SingleFieldValue
 	}
 	if fvs.ScalarString != nil {
 		fields = append(fields, "scalar_string = :scalar_string")
+	}
+	if fvs.ScalarBytes != nil {
+		fields = append(fields, "scalar_bytes = :scalar_bytes")
 	}
 	if fvs.ScalarBool != nil {
 		fields = append(fields, "scalar_bool = :scalar_bool")
@@ -268,6 +284,12 @@ func (x *SingleCollection) Filter(ctx context.Context, fvs *dal.SingleFieldValue
 	}
 	if fvs.RenamedMongo != nil {
 		fields = append(fields, "renamed_mongo = :renamed_mongo")
+	}
+	if fvs.BsonStringOid != nil {
+		fields = append(fields, "bson_string_oid = :bson_string_oid")
+	}
+	if fvs.BsonBytesOid != nil {
+		fields = append(fields, "bson_bytes_oid = :bson_bytes_oid")
 	}
 	if len(fields) > 0 {
 		query = fmt.Sprintf("%s WHERE %s", query, strings.Join(fields, " AND "))
@@ -310,6 +332,12 @@ func (x *SingleCollection) find(ctx context.Context, label string, query string,
 		Singles = append(Singles, obj.Single())
 	}
 	return Singles, nil
+}
+
+// ById implements dal.SingleCollection.ById
+func (x *SingleCollection) ById(ctx context.Context, bson_string_oid string) ([]*single.Single, error) {
+	fvs := map[string]interface{}{"bson_string_oid": &bson_string_oid}
+	return x.find(ctx, "by_id", x.queryById, fvs)
 }
 
 // OneParam implements dal.SingleCollection.OneParam
@@ -358,8 +386,8 @@ func NewSingleCollection(instance string, db sql.DB, queries SingleQueryTemplate
 
 	queryReplacements := map[string]string{
 		"table":       config.TableName,
-		"fields":      "scalar_int32, scalar_int64, scalar_float32, scalar_float64, scalar_string, scalar_bool, scalar_enum, obj_message, ignored, aliased, ignored_postgres, aliased_postgres, ignored_rest, renamed_rest, ignored_mongo, renamed_mongo",
-		"writeFields": ":scalar_int32, :scalar_int64, :scalar_float32, :scalar_float64, :scalar_string, :scalar_bool, :scalar_enum, :obj_message, :ignored, :aliased, :ignored_postgres, :aliased_postgres, :ignored_rest, :renamed_rest, :ignored_mongo, :renamed_mongo",
+		"fields":      "scalar_int32, scalar_int64, scalar_float32, scalar_float64, scalar_string, scalar_bytes, scalar_bool, scalar_enum, obj_message, ignored, aliased, ignored_postgres, aliased_postgres, ignored_rest, renamed_rest, ignored_mongo, renamed_mongo, bson_string_oid, bson_bytes_oid",
+		"writeFields": ":scalar_int32, :scalar_int64, :scalar_float32, :scalar_float64, :scalar_string, :scalar_bytes, :scalar_bool, :scalar_enum, :obj_message, :ignored, :aliased, :ignored_postgres, :aliased_postgres, :ignored_rest, :renamed_rest, :ignored_mongo, :renamed_mongo, :bson_string_oid, :bson_bytes_oid",
 	}
 
 	// generate Insert exec
@@ -391,6 +419,13 @@ func NewSingleCollection(instance string, db sql.DB, queries SingleQueryTemplate
 		return nil, err
 	}
 	coll.queryAll = queryAll
+
+	// generate ById query
+	queryById, err := dal1.RenderQuery("dal.Single-query-by_id", queries.ById(), queryReplacements)
+	if err != nil {
+		return nil, err
+	}
+	coll.queryById = queryById
 
 	// generate OneParam query
 	queryOneParam, err := dal1.RenderQuery("dal.Single-query-one_param", queries.OneParam(), queryReplacements)
@@ -444,6 +479,7 @@ type SingleFieldValues struct {
 	ScalarFloat32 *float32               `db:"scalar_float32"`
 	ScalarFloat64 *float64               `db:"scalar_float64"`
 	ScalarString  *string                `db:"scalar_string"`
+	ScalarBytes   *[]byte                `db:"scalar_bytes"`
 	ScalarBool    *bool                  `db:"scalar_bool"`
 	ScalarEnum    *single.Single_Enum    `db:"scalar_enum"`
 	ObjMessage    *single.Single_Message `db:"obj_message"`
@@ -455,6 +491,8 @@ type SingleFieldValues struct {
 	RenamedRest     *string `db:"renamed_rest"`
 	IgnoredMongo    *string `db:"ignored_mongo"`
 	RenamedMongo    *string `db:"renamed_mongo"`
+	BsonStringOid   *string `db:"bson_string_oid"`
+	BsonBytesOid    *[]byte `db:"bson_bytes_oid"`
 }
 
 func singleFieldValuesFromGeneric(y *dal.SingleFieldValues) *SingleFieldValues {
@@ -473,6 +511,9 @@ func singleFieldValuesFromGeneric(y *dal.SingleFieldValues) *SingleFieldValues {
 	}
 	if y.ScalarString != nil {
 		f.ScalarString = y.ScalarString
+	}
+	if y.ScalarBytes != nil {
+		f.ScalarBytes = y.ScalarBytes
 	}
 	if y.ScalarBool != nil {
 		f.ScalarBool = y.ScalarBool
@@ -503,6 +544,12 @@ func singleFieldValuesFromGeneric(y *dal.SingleFieldValues) *SingleFieldValues {
 	if y.RenamedMongo != nil {
 		f.RenamedMongo = y.RenamedMongo
 	}
+	if y.BsonStringOid != nil {
+		f.BsonStringOid = y.BsonStringOid
+	}
+	if y.BsonBytesOid != nil {
+		f.BsonBytesOid = y.BsonBytesOid
+	}
 	return f
 }
 
@@ -514,6 +561,7 @@ type SingleScanner struct {
 	ScalarFloat32 sql1.NullFloat64       `db:"scalar_float32"`
 	ScalarFloat64 sql1.NullFloat64       `db:"scalar_float64"`
 	ScalarString  sql1.NullString        `db:"scalar_string"`
+	ScalarBytes   []byte                 `db:"scalar_bytes"`
 	ScalarBool    sql1.NullBool          `db:"scalar_bool"`
 	ScalarEnum    sql1.NullInt32         `db:"scalar_enum"`
 	ObjMessage    *single.Single_Message `db:"obj_message"`
@@ -525,6 +573,8 @@ type SingleScanner struct {
 	RenamedRest     sql1.NullString `db:"renamed_rest"`
 	IgnoredMongo    sql1.NullString `db:"ignored_mongo"`
 	RenamedMongo    sql1.NullString `db:"renamed_mongo"`
+	BsonStringOid   sql1.NullString `db:"bson_string_oid"`
+	BsonBytesOid    []byte          `db:"bson_bytes_oid"`
 }
 
 // Single returns a new single.Single populated with scanned values.
@@ -545,6 +595,9 @@ func (x *SingleScanner) Single() *single.Single {
 	}
 	if x.ScalarString.Valid {
 		y.ScalarString = x.ScalarString.String
+	}
+	if x.ScalarBytes.Valid {
+		y.ScalarBytes = x.ScalarBytes
 	}
 	if x.ScalarBool.Valid {
 		y.ScalarBool = x.ScalarBool.Bool
@@ -573,6 +626,12 @@ func (x *SingleScanner) Single() *single.Single {
 	if x.RenamedMongo.Valid {
 		y.RenamedMongo = x.RenamedMongo.String
 	}
+	if x.BsonStringOid.Valid {
+		y.BsonStringOid = x.BsonStringOid.String
+	}
+	if x.BsonBytesOid.Valid {
+		y.BsonBytesOid = x.BsonBytesOid
+	}
 	return y
 }
 
@@ -583,6 +642,7 @@ type SingleWriter struct {
 	ScalarFloat32 float32                `db:"scalar_float32"`
 	ScalarFloat64 float64                `db:"scalar_float64"`
 	ScalarString  string                 `db:"scalar_string"`
+	ScalarBytes   []byte                 `db:"scalar_bytes"`
 	ScalarBool    bool                   `db:"scalar_bool"`
 	ScalarEnum    single.Single_Enum     `db:"scalar_enum"`
 	ObjMessage    *single.Single_Message `db:"obj_message"`
@@ -594,6 +654,8 @@ type SingleWriter struct {
 	RenamedRest     string `db:"renamed_rest"`
 	IgnoredMongo    string `db:"ignored_mongo"`
 	RenamedMongo    string `db:"renamed_mongo"`
+	BsonStringOid   string `db:"bson_string_oid"`
+	BsonBytesOid    []byte `db:"bson_bytes_oid"`
 }
 
 func singleWriterFromGeneric(y *single.Single) *SingleWriter {
@@ -603,6 +665,7 @@ func singleWriterFromGeneric(y *single.Single) *SingleWriter {
 	x.ScalarFloat32 = y.ScalarFloat32
 	x.ScalarFloat64 = y.ScalarFloat64
 	x.ScalarString = y.ScalarString
+	x.ScalarBytes = y.ScalarBytes
 	x.ScalarBool = y.ScalarBool
 	x.ScalarEnum = y.ScalarEnum
 	x.ObjMessage = y.ObjMessage
@@ -614,6 +677,8 @@ func singleWriterFromGeneric(y *single.Single) *SingleWriter {
 	x.RenamedRest = y.RenamedRest
 	x.IgnoredMongo = y.IgnoredMongo
 	x.RenamedMongo = y.RenamedMongo
+	x.BsonStringOid = y.BsonStringOid
+	x.BsonBytesOid = y.BsonBytesOid
 	return x
 }
 
@@ -630,6 +695,7 @@ type SingleQueryTemplateProvider interface {
 	Upsert() string
 	Update() string
 	All() string
+	ById() string
 	OneParam() string
 	MultipleParam() string
 	MessageParam() string
@@ -661,6 +727,13 @@ func (x *SingleQueries) Update() string {
 // All implements SingleQueryTemplateProvider.All.
 func (x *SingleQueries) All() string {
 	return `SELECT {{ .fields }} FROM {{ .table }};`
+}
+
+//ByIdimplements SingleQueryTemplateProvider.ById.
+func (x *SingleQueries) ById() string {
+	return `SELECT {{ .fields }} FROM {{ .table }} WHERE
+			1 = 1 AND
+				bson_string_oid = :bson_string_oid;`
 }
 
 //OneParamimplements SingleQueryTemplateProvider.OneParam.

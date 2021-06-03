@@ -1,6 +1,9 @@
 package mongo
 
 import (
+	"fmt"
+
+	"github.com/rleszilm/genms/cmd/protoc-gen-go-genms-dal/annotations"
 	"github.com/rleszilm/genms/cmd/protoc-gen-go-genms-dal/generator"
 	protocgenlib "github.com/rleszilm/genms/internal/protoc-gen-lib"
 	"google.golang.org/protobuf/compiler/protogen"
@@ -37,6 +40,38 @@ func (f *Field) QueryName() string {
 	return f.Generator().QueryName()
 }
 
+// QueryKind returns the fields go type.
+func (f *Field) QueryKind() (string, error) {
+	if f.Options().GetMongo().GetBson() == annotations.BSONPrimitive_NoBSONPrimitive {
+		return f.Kind(), nil
+	}
+
+	switch f.Options().GetMongo().GetBson() {
+	case annotations.BSONPrimitive_NoBSONPrimitive:
+		return f.Kind(), nil
+	case annotations.BSONPrimitive_ObjectID:
+		return "ObjectID", nil
+	default:
+		return "", fmt.Errorf("invalid bson primitive: %v", f.Options().GetMongo().GetBson())
+	}
+}
+
+// QualifiedQueryKind returns the fully qualified kind.
+func (f *Field) QualifiedQueryKind() (string, error) {
+	if f.Options().GetMongo().GetBson() == annotations.BSONPrimitive_NoBSONPrimitive {
+		return f.QualifiedKind(), nil
+	}
+
+	switch f.Options().GetMongo().GetBson() {
+	case annotations.BSONPrimitive_NoBSONPrimitive:
+		return f.Kind(), nil
+	case annotations.BSONPrimitive_ObjectID:
+		return f.Outfile().QualifiedGoIdent(protogen.GoIdent{GoName: "ObjectID", GoImportPath: "github.com/rleszilm/genms/mongo/bson"}), nil
+	default:
+		return "", fmt.Errorf("invalid bson primitive: %v", f.Options().GetMongo().GetBson())
+	}
+}
+
 // Ignore returns the name of the field as it should appear in database queries.
 func (f *Field) Ignore() bool {
 	opts := f.Options()
@@ -45,4 +80,23 @@ func (f *Field) Ignore() bool {
 	}
 
 	return f.Generator().Ignore()
+}
+
+// ToMongo indicates what type the field value should be converted to.
+func (f *Field) ToMongo() string {
+	kind := f.Options().GetMongo().GetBson()
+	if kind == annotations.BSONPrimitive_NoBSONPrimitive {
+		return ""
+	}
+	return annotations.BSONPrimitive_name[int32(kind)]
+}
+
+// ToGo indicates what type the mongo field should be converted to.
+func (f *Field) ToGo() (string, error) {
+	kind := f.Options().GetMongo().GetBson()
+	switch kind {
+	case annotations.BSONPrimitive_NoBSONPrimitive:
+		return "", nil
+	}
+	return f.Kind(), nil
 }

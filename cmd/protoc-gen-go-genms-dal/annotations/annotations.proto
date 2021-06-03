@@ -116,6 +116,7 @@ message DalFieldOptions {
     message BackendFieldOptions{
         bool ignore = 1;
         string name = 2;
+        BSONPrimitive bson = 3;
     }
     BackendFieldOptions postgres = 3;
     BackendFieldOptions rest = 4;

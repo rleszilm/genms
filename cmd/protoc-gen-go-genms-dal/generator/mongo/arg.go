@@ -24,6 +24,16 @@ func NewArg(file *File, fields *Fields, arg *annotations.Arg) *Arg {
 	}
 }
 
+// ToMongo indicates what type the field value should be converted to.
+func (a *Arg) ToMongo() string {
+	return a.field.ToMongo()
+}
+
+// ToGo indicates what type the field value should be converted to.
+func (a *Arg) ToGo() (string, error) {
+	return a.field.ToGo()
+}
+
 // QueryName returns the name of the field in the remote system.
 func (a *Arg) QueryName() (string, error) {
 	if a.field != nil {

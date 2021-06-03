@@ -6,14 +6,22 @@ import (
 	"go.mongodb.org/mongo-driver/bson/primitive"
 )
 
-// ObjectIDHex returns an ObjectID from the given hex string. It panics if the
-// hexstring is not valid.
-func ObjectIDHex(in string) ObjectID {
+// ObjectIDHex returns an ObjectID from the given hex string.
+func ObjectIDHex(in string) (ObjectID, error) {
 	out, err := primitive.ObjectIDFromHex(in)
+	if err != nil {
+		return ObjectID{}, err
+	}
+	return ObjectID(out), nil
+}
+
+// MustObjectIDHex panics if the provided hexstring is not valid.
+func MustObjectIDHex(in string) ObjectID {
+	out, err := ObjectIDHex(in)
 	if err != nil {
 		panic(err)
 	}
-	return ObjectID(out)
+	return out
 }
 
 // NewObjectID generates a new ObjectID.
@@ -45,14 +53,36 @@ func (id ObjectID) IsZero() bool {
 	return primitive.ObjectID(id).IsZero()
 }
 
-// ObjectIDFromHex creates a new ObjectID from a hex string. It returns an error if the hex string is not a
-// valid ObjectID.
-func ObjectIDFromHex(s string) (ObjectID, error) {
-	id, err := primitive.ObjectIDFromHex(s)
-	return ObjectID(id), err
-}
-
 // IsValidObjectID returns true if the provided hex string represents a valid ObjectID and false if not.
 func IsValidObjectID(s string) bool {
 	return primitive.IsValidObjectID(s)
+}
+
+// ToObjectID converts the given value into an ObjectID.
+func ToObjectID(in interface{}) (ObjectID, error) {
+	switch in.(type) {
+	case ObjectID:
+		return in.(ObjectID), nil
+	case primitive.ObjectID:
+		return ObjectID(in.(primitive.ObjectID)), nil
+	case [12]byte:
+		return ObjectID(in.([12]byte)), nil
+	case []byte:
+		oid := in.([]byte)
+		if len(oid) != 12 {
+			return ObjectID{}, ErrNonObjectID
+		}
+
+		out := [12]byte{}
+		copy(out[:], oid)
+		return ObjectID(out), nil
+	case string:
+		oid, err := primitive.ObjectIDFromHex(in.(string))
+		if err != nil {
+			return ObjectID{}, err
+		}
+		return ObjectID(oid), nil
+	default:
+		return ObjectID{}, ErrNonObjectID
+	}
 }

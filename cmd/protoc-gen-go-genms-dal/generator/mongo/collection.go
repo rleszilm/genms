@@ -204,6 +204,7 @@ func (x *{{ .C.Message.Name }}Collection) String() string {
 
 func (c *Collection) defineDefaultQueries() error {
 	tmplSrc := `{{- $C := .C -}}
+{{- $P := .P -}}
 // find scans the collection for records matching the filter. 
 func (x *{{ .C.Message.Name }}Collection) find(ctx {{ .P.Context }}.Context, label string, filter interface{}, opts ...*{{ .P.Mongo }}.FindOptions) ([]*{{ .C.Message.QualifiedKind }}, error) {
 	ctx, cancel := {{ .P.Context }}.WithTimeout(ctx, x.config.Timeout)
@@ -240,7 +241,13 @@ func (x *{{ .C.Message.Name }}Collection) find(ctx {{ .P.Context }}.Context, lab
 			{{ .P.Stats }}.Record(ctx, {{ .P.Mongo }}.MeasureError.M(1))
 			return nil, err
 		}
-		vals = append(vals, obj.{{ .C.Message.Name }}())
+
+		val, err := obj.{{ .C.Message.Name }}()
+		if err != nil {
+			return nil, err
+		}
+
+		vals = append(vals, val)
 	}
 
 	return vals, nil
@@ -254,12 +261,21 @@ func (x *{{ .C.Message.Name }}Collection) All(ctx {{ .P.Context }}.Context) ([]*
 // Filter implements {{ .C.Message.Name }}CollectionReader
 func (x *{{ .C.Message.Name }}Collection) Filter(ctx {{ .P.Context }}.Context, fvs *{{ .P.Collection }}.{{ .C.Message.Name }}FieldValues) ([]*{{ .C.Message.QualifiedKind }}, error) {
 	filter := {{ .P.Bson }}.M{}
-	
+
 	{{ range $fn := .C.Fields.Names -}}
 		{{- $f := ($C.Fields.ByName $fn) -}}
 		{{- if not $f.Ignore -}}
+			{{- $conv := $f.ToMongo -}}
 			if fvs.{{ ToTitleCase $f.Name }} != nil {
-				filter["{{ $f.QueryName }}"] = {{ if not $f.IsRef }}*{{ end }}fvs.{{ ToTitleCase $f.Name }}
+				{{ if eq $conv "ObjectID" -}}
+					conv{{ ToTitleCase $f.Name }}, err := {{ $P.Bson }}.ToObjectID({{ if not $f.IsRef }}*{{ end }}fvs.{{ ToTitleCase $f.Name }})
+					if err != nil {
+						return nil, err
+					}
+					filter["{{ $f.QueryName }}"] = conv{{ ToTitleCase $f.Name }}
+				{{- else -}}
+					filter["{{ $f.QueryName }}"] = {{ if not $f.IsRef }}*{{ end }}fvs.{{ ToTitleCase $f.Name }}
+				{{- end }}
 			}
 		{{- end }}
 	{{ end -}}
@@ -299,6 +315,7 @@ func (x *{{ .C.Message.Name }}Collection) Update(ctx {{ .P.Context }}.Context, _
 
 	tmpl, err := template.New("defineMongoDefaultQueries").
 		Funcs(template.FuncMap{
+			"Arg":         NewArg,
 			"ToCamelCase": protocgenlib.ToCamelCase,
 			"ToLower":     strings.ToLower,
 			"ToSnakeCase": protocgenlib.ToSnakeCase,
@@ -347,12 +364,21 @@ func (c *Collection) defineQueries() error {
 				, {{ ToSnakeCase $arg.Name }} {{ $arg.QualifiedKind }}
 			{{- end -}}
 		) ([]*{{ $C.Message.QualifiedKind }}, error) {
-			filter := {{ $P.Bson }}.M{
+			filter := {{ $P.Bson }}.M{}
+			
 			{{ range $a := $q.Args }}
-				{{- $arg := (Arg $C.File $C.Fields $a) -}}
-				"{{ $arg.QueryName }}": {{ ToSnakeCase $arg.Name }},
+				{{ $arg := (Arg $C.File $C.Fields $a) }}
+				{{ $conv := $arg.ToMongo }}
+				{{ if eq $conv "ObjectID" -}}
+					conv{{ ToTitleCase $arg.Name }}, err := {{ $P.Bson }}.ToObjectID({{ $arg.Name }})
+					if err != nil {
+						return nil, err
+					}
+					filter["{{ $arg.QueryName }}"] = conv{{ ToTitleCase $arg.Name }}
+				{{- else -}}
+					filter["{{ $arg.QueryName }}"] = {{ ToSnakeCase $arg.Name }}
+				{{- end }}
 			{{- end }}
-			}
 						
 			return x.find(ctx, "{{ ToSnakeCase $q.Name }}", filter)
 		}
@@ -438,12 +464,13 @@ func New{{ .C.Message.Name }}Collection(instance string, client {{ .P.Mongo }}.C
 
 func (c *Collection) defineInternalStructs() error {
 	tmplSrc := `{{- $C := .C -}}
+{{- $P := .P -}}
 var (
 	{{ ToLower .C.Message.Name }}Projection = {{ .P.Bson }}.M{
 		{{ range $n := .C.Fields.Names -}}
 			{{- $f := ($C.Fields.ByName $n) -}}
 			{{- if not $f.Ignore -}}
-				"{{ $f.Name }}": 1,
+				"{{ $f.QueryName }}": 1,
 			{{- end }}
 		{{ end -}}
 	}
@@ -455,22 +482,32 @@ type {{ .C.Message.Name }}Scanner struct {
 	{{ range $n := .C.Fields.Names -}}
 		{{- $f := ($C.Fields.ByName $n) -}}
 		{{- if not $f.Ignore -}}
-			{{ ToTitleCase $f.Name }} {{ $f.QualifiedKind }} ` + "`" + `bson:"{{ $f.QueryName }},omitempty"` + "`" + `
+			{{ ToTitleCase $f.Name }} {{ $f.QualifiedQueryKind }} ` + "`" + `bson:"{{ $f.QueryName }},omitempty"` + "`" + `
 		{{- end }}
 	{{ end -}}
 }
 
 // {{ .C.Message.Name }} returns a new {{ .C.Message.QualifiedKind }} populated with scanned values.
-func (x *{{ .C.Message.Name }}Scanner) {{ .C.Message.Name }}() *{{ .C.Message.QualifiedKind }} {
+func (x *{{ .C.Message.Name }}Scanner) {{ .C.Message.Name }}() (*{{ .C.Message.QualifiedKind }}, error) {
 	y := &{{ .C.Message.QualifiedKind }}{}
 
 	{{ range $n := .C.Fields.Names -}}
 		{{- $f := ($C.Fields.ByName $n) -}}
 		{{- if not $f.Ignore -}}
-			y.{{ ToTitleCase $f.Name }} = x.{{ ToTitleCase $f.Name }}
+			{{- $convFrom := $f.ToMongo -}}
+			{{ if eq $convFrom "ObjectID" -}}
+				{{- $convTo := $f.ToGo -}}
+				{{- if eq $convTo "string" -}}
+					y.{{ ToTitleCase $f.Name }} = x.{{ ToTitleCase $f.Name }}.Hex()
+				{{- else if eq $convTo "[]byte" -}}
+					y.{{ ToTitleCase $f.Name }} = x.{{ ToTitleCase $f.Name }}[:]
+				{{- end -}}
+			{{- else -}}
+				y.{{ ToTitleCase $f.Name }} = x.{{ ToTitleCase $f.Name }}
+			{{- end }}
 		{{- end }}
 	{{ end -}}
-	return y
+	return y, nil
 }
 
 `
