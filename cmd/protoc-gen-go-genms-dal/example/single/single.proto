@@ -107,6 +107,12 @@ message Single {
             {
                 name: "interface stub only"
                 mode: InterfaceStub
+            },
+            {
+                name: "non field only"
+                args: [
+                    {name: "kind" kind: "string" rest: {location: Path}}
+                ]
             }
         ]
         backends: [Postgres, Rest, Mongo]

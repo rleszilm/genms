@@ -39,6 +39,8 @@ type SingleCollection struct {
 	urlTmplWithComparator   *template.Template
 	urlTmplWithRest         *template.Template
 	urlTmplProviderStubOnly *template.Template
+
+	urlTmplNonFieldOnly *template.Template
 }
 
 // Initialize initializes and starts the service. Initialize should panic in case of
@@ -359,6 +361,35 @@ func (x *SingleCollection) ProviderStubOnly(ctx context.Context) ([]*single.Sing
 	return x.DoReq(ctx, "provider_stub_only", req)
 }
 
+// NonFieldOnly implements dal.SingleCollection.NonFieldOnly
+func (x *SingleCollection) NonFieldOnly(ctx context.Context, kind string) ([]*single.Single, error) {
+	u := &url.URL{}
+	copier.Copy(u, x.url)
+
+	req := &http.Request{
+		Method: "GET",
+		Header: http.Header{},
+		URL:    u,
+	}
+
+	queryValues := url.Values{}
+
+	req.URL.RawQuery = queryValues.Encode()
+
+	pathValues := map[string]interface{}{"kind": kind}
+	pathBuf := &bytes.Buffer{}
+	if err := x.urlTmplNonFieldOnly.Execute(pathBuf, pathValues); err != nil {
+		return nil, err
+	}
+	req.URL.Path = pathBuf.String()
+
+	for k, v := range x.config.Headers {
+		req.Header.Add(k, v)
+	}
+
+	return x.DoReq(ctx, "non_field_only", req)
+}
+
 // NewSingleCollection returns a new SingleCollection.
 func NewSingleCollection(instance string, client *http.Client, urls SingleUrlTemplateProvider, config *SingleConfig) (*SingleCollection, error) {
 	coll := &SingleCollection{
@@ -444,6 +475,16 @@ func NewSingleCollection(instance string, client *http.Client, urls SingleUrlTem
 		coll.urlTmplProviderStubOnly = urlTmplProviderStubOnly
 	}
 
+	if urls.NonFieldOnly() != "" {
+		urlTmplNonFieldOnly, err := template.New("urlTmplNonFieldOnly").
+			Funcs(template.FuncMap{}).
+			Parse(urls.NonFieldOnly())
+		if err != nil {
+			return nil, err
+		}
+		coll.urlTmplNonFieldOnly = urlTmplNonFieldOnly
+	}
+
 	return coll, nil
 }
 
@@ -517,4 +558,5 @@ type SingleUrlTemplateProvider interface {
 	WithComparator() string
 	WithRest() string
 	ProviderStubOnly() string
+	NonFieldOnly() string
 }

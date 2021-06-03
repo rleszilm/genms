@@ -40,6 +40,8 @@ type SingleCollection struct {
 	queryWithComparator   string
 	queryWithRest         string
 	queryProviderStubOnly string
+
+	queryNonFieldOnly string
 }
 
 // Initialize initializes and starts the service. Initialize should panic in case of
@@ -376,6 +378,12 @@ func (x *SingleCollection) ProviderStubOnly(ctx context.Context) ([]*single.Sing
 	return x.find(ctx, "provider_stub_only", x.queryProviderStubOnly, fvs)
 }
 
+// NonFieldOnly implements dal.SingleCollection.NonFieldOnly
+func (x *SingleCollection) NonFieldOnly(ctx context.Context, kind string) ([]*single.Single, error) {
+	fvs := map[string]interface{}{"kind": kind}
+	return x.find(ctx, "non_field_only", x.queryNonFieldOnly, fvs)
+}
+
 // NewSingleCollection returns a new SingleCollection.
 func NewSingleCollection(instance string, db sql.DB, queries SingleQueryTemplateProvider, config *SingleConfig) (*SingleCollection, error) {
 	coll := &SingleCollection{
@@ -468,6 +476,13 @@ func NewSingleCollection(instance string, db sql.DB, queries SingleQueryTemplate
 		return nil, err
 	}
 	coll.queryProviderStubOnly = queryProviderStubOnly
+
+	// generate NonFieldOnly query
+	queryNonFieldOnly, err := dal1.RenderQuery("dal.Single-query-non_field_only", queries.NonFieldOnly(), queryReplacements)
+	if err != nil {
+		return nil, err
+	}
+	coll.queryNonFieldOnly = queryNonFieldOnly
 
 	return coll, nil
 }
@@ -702,6 +717,7 @@ type SingleQueryTemplateProvider interface {
 	WithComparator() string
 	WithRest() string
 	ProviderStubOnly() string
+	NonFieldOnly() string
 }
 
 // SingleQueries provides auto-generated queries when possible. This is not gauranteed to be a complete
@@ -774,4 +790,11 @@ func (x *SingleQueries) WithRest() string {
 				scalar_int64 = :scalar_int64 AND
 				scalar_float32 = :scalar_float32 AND
 				scalar_float64 = :scalar_float64;`
+}
+
+//NonFieldOnlyimplements SingleQueryTemplateProvider.NonFieldOnly.
+func (x *SingleQueries) NonFieldOnly() string {
+	return `SELECT {{ .fields }} FROM {{ .table }} WHERE
+			1 = 1 AND
+				kind = :kind;`
 }

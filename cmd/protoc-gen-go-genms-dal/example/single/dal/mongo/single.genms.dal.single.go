@@ -347,6 +347,15 @@ func (x *SingleCollection) ProviderStubOnly(ctx context.Context) ([]*single.Sing
 	return x.find(ctx, "provider_stub_only", filter)
 }
 
+// NonFieldOnly implements dal.SingleCollection.NonFieldOnly
+func (x *SingleCollection) NonFieldOnly(ctx context.Context, kind string) ([]*single.Single, error) {
+	filter := bson.M{}
+
+	filter["kind"] = kind
+
+	return x.find(ctx, "non_field_only", filter)
+}
+
 // NewSingleCollection returns a new SingleCollection.
 func NewSingleCollection(instance string, client mongo.Client, config *SingleConfig) (*SingleCollection, error) {
 	coll := &SingleCollection{

@@ -26,6 +26,10 @@ func NewArg(file *File, fields *Fields, arg *annotations.Arg) *Arg {
 
 // ToMongo indicates what type the field value should be converted to.
 func (a *Arg) ToMongo() string {
+	if a.field == nil {
+		return a.raw.Kind
+	}
+
 	return a.field.ToMongo()
 }
 
