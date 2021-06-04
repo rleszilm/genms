@@ -99,9 +99,15 @@ func (x *SingleScanner) Single() (*single.Single, error) {
 type SingleCollection struct {
 	dal.UnimplementedSingleCollection
 
-	name   string
-	client mongo.Client
-	config *SingleConfig
+	name     string
+	client   mongo.Client
+	config   *SingleConfig
+	mutators []dal.SingleMutator
+}
+
+// WithMutators adds dal.SingleMutators to the collection. These will be applied to all values after they are read from mongo.
+func (x *SingleCollection) WithMutators(muts ...dal.SingleMutator) {
+	x.mutators = append(x.mutators, muts...)
 }
 
 // Initialize initializes and starts the service. Initialize should panic in case of
@@ -126,8 +132,8 @@ func (x *SingleCollection) String() string {
 	return x.NameOf()
 }
 
-// find scans the collection for records matching the filter.
-func (x *SingleCollection) find(ctx context.Context, label string, filter interface{}, opts ...*mongo.FindOptions) ([]*single.Single, error) {
+// Find scans the collection for records matching the filter.
+func (x *SingleCollection) Find(ctx context.Context, label string, filter interface{}, opts ...*mongo.FindOptions) ([]*single.Single, error) {
 	ctx, cancel := context.WithTimeout(ctx, x.config.Timeout)
 	defer cancel()
 
@@ -168,6 +174,13 @@ func (x *SingleCollection) find(ctx context.Context, label string, filter interf
 			return nil, err
 		}
 
+		for _, m := range x.mutators {
+			val, err = m(val)
+			if err != nil {
+				return nil, err
+			}
+		}
+
 		vals = append(vals, val)
 	}
 
@@ -176,7 +189,7 @@ func (x *SingleCollection) find(ctx context.Context, label string, filter interf
 
 // All implements dal.SingleCollection.All
 func (x *SingleCollection) All(ctx context.Context) ([]*single.Single, error) {
-	return x.find(ctx, "all", bson.M{})
+	return x.Find(ctx, "all", bson.M{})
 }
 
 // Filter implements SingleCollectionReader
@@ -244,7 +257,7 @@ func (x *SingleCollection) Filter(ctx context.Context, fvs *dal.SingleFieldValue
 		}
 		filter["bson_bytes_oid"] = convBsonBytesOid
 	}
-	return x.find(ctx, "filter", filter)
+	return x.Find(ctx, "filter", filter)
 }
 
 // Insert implements SingleCollectionWriter
@@ -282,7 +295,7 @@ func (x *SingleCollection) ById(ctx context.Context, bson_string_oid string) ([]
 	}
 	filter["_id"] = bson.M{"$eq": convBsonStringOid}
 
-	return x.find(ctx, "by_id", filter)
+	return x.Find(ctx, "by_id", filter)
 }
 
 // OneParam implements dal.SingleCollection.OneParam
@@ -291,7 +304,7 @@ func (x *SingleCollection) OneParam(ctx context.Context, scalar_int32 int32) ([]
 
 	filter["scalar_int32"] = bson.M{"$eq": scalar_int32}
 
-	return x.find(ctx, "one_param", filter)
+	return x.Find(ctx, "one_param", filter)
 }
 
 // MultipleParam implements dal.SingleCollection.MultipleParam
@@ -304,7 +317,7 @@ func (x *SingleCollection) MultipleParam(ctx context.Context, scalar_int32 int32
 
 	filter["scalar_float32"] = bson.M{"$eq": scalar_float32}
 
-	return x.find(ctx, "multiple_param", filter)
+	return x.Find(ctx, "multiple_param", filter)
 }
 
 // MessageParam implements dal.SingleCollection.MessageParam
@@ -313,7 +326,7 @@ func (x *SingleCollection) MessageParam(ctx context.Context, obj_message *single
 
 	filter["obj_message"] = bson.M{"$eq": obj_message}
 
-	return x.find(ctx, "message_param", filter)
+	return x.Find(ctx, "message_param", filter)
 }
 
 // WithComparator implements dal.SingleCollection.WithComparator
@@ -322,7 +335,7 @@ func (x *SingleCollection) WithComparator(ctx context.Context, scalar_int32 int3
 
 	filter["scalar_int32"] = bson.M{"$gt": scalar_int32}
 
-	return x.find(ctx, "with_comparator", filter)
+	return x.Find(ctx, "with_comparator", filter)
 }
 
 // WithRest implements dal.SingleCollection.WithRest
@@ -337,14 +350,14 @@ func (x *SingleCollection) WithRest(ctx context.Context, scalar_int32 int32, sca
 
 	filter["scalar_float64"] = bson.M{"$eq": scalar_float64}
 
-	return x.find(ctx, "with_rest", filter)
+	return x.Find(ctx, "with_rest", filter)
 }
 
 // ProviderStubOnly implements dal.SingleCollection.ProviderStubOnly
 func (x *SingleCollection) ProviderStubOnly(ctx context.Context) ([]*single.Single, error) {
 	filter := bson.M{}
 
-	return x.find(ctx, "provider_stub_only", filter)
+	return x.Find(ctx, "provider_stub_only", filter)
 }
 
 // NonFieldOnly implements dal.SingleCollection.NonFieldOnly
@@ -353,7 +366,7 @@ func (x *SingleCollection) NonFieldOnly(ctx context.Context, kind string) ([]*si
 
 	filter["kind"] = bson.M{"$eq": kind}
 
-	return x.find(ctx, "non_field_only", filter)
+	return x.Find(ctx, "non_field_only", filter)
 }
 
 // NewSingleCollection returns a new SingleCollection.

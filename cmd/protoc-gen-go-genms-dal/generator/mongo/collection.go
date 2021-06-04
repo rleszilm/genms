@@ -117,6 +117,12 @@ type {{ .C.Message.Name }}Collection struct {
 	name string
 	client {{ .P.Mongo }}.Client
 	config *{{ .C.Message.Name }}Config
+	mutators []{{ .P.Collection }}.{{ .C.Message.Name }}Mutator
+}
+
+// WithMutators adds {{ .P.Collection }}.{{ .C.Message.Name }}Mutators to the collection. These will be applied to all values after they are read from mongo.
+func (x *{{ .C.Message.Name }}Collection) WithMutators(muts ...{{ .P.Collection }}.{{ .C.Message.Name }}Mutator) {
+	x.mutators = append(x.mutators, muts...)
 }
 `
 
@@ -200,8 +206,8 @@ func (x *{{ .C.Message.Name }}Collection) String() string {
 }
 
 func (c *Collection) defineDefaultQueries() error {
-	tmplSrc := `// find scans the collection for records matching the filter. 
-func (x *{{ .C.Message.Name }}Collection) find(ctx {{ .P.Context }}.Context, label string, filter interface{}, opts ...*{{ .P.Mongo }}.FindOptions) ([]*{{ .C.Message.QualifiedKind }}, error) {
+	tmplSrc := `// Find scans the collection for records matching the filter. 
+func (x *{{ .C.Message.Name }}Collection) Find(ctx {{ .P.Context }}.Context, label string, filter interface{}, opts ...*{{ .P.Mongo }}.FindOptions) ([]*{{ .C.Message.QualifiedKind }}, error) {
 	ctx, cancel := {{ .P.Context }}.WithTimeout(ctx, x.config.Timeout)
 	defer cancel()
 
@@ -242,6 +248,13 @@ func (x *{{ .C.Message.Name }}Collection) find(ctx {{ .P.Context }}.Context, lab
 			return nil, err
 		}
 
+		for _, m := range x.mutators {
+			val, err = m(val)
+			if err != nil {
+				return nil, err
+			}
+		}
+
 		vals = append(vals, val)
 	}
 
@@ -250,7 +263,7 @@ func (x *{{ .C.Message.Name }}Collection) find(ctx {{ .P.Context }}.Context, lab
 
 // All implements {{ .C.Message.QualifiedDalKind }}Collection.All
 func (x *{{ .C.Message.Name }}Collection) All(ctx {{ .P.Context }}.Context) ([]*{{ .C.Message.QualifiedKind }}, error) {	
-	return x.find(ctx, "all", {{ .P.Bson }}.M{})
+	return x.Find(ctx, "all", {{ .P.Bson }}.M{})
 }
 
 // Filter implements {{ .C.Message.Name }}CollectionReader
@@ -275,7 +288,7 @@ func (x *{{ .C.Message.Name }}Collection) Filter(ctx {{ .P.Context }}.Context, f
 		{{- end }}
 	{{ end -}}
 
-	return x.find(ctx, "filter", filter)
+	return x.Find(ctx, "filter", filter)
 }
 
 // Insert implements {{ .C.Message.Name }}CollectionWriter
@@ -373,7 +386,7 @@ func (c *Collection) defineQueries() error {
 				{{- end }}
 			{{- end }}
 						
-			return x.find(ctx, "{{ ToSnakeCase $q.Name }}", filter)
+			return x.Find(ctx, "{{ ToSnakeCase $q.Name }}", filter)
 		}
 	{{- end -}}
 {{- end }}
