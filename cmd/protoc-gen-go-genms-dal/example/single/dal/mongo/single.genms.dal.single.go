@@ -280,7 +280,7 @@ func (x *SingleCollection) ById(ctx context.Context, bson_string_oid string) ([]
 	if err != nil {
 		return nil, err
 	}
-	filter["_id"] = convBsonStringOid
+	filter["_id"] = bson.M{"$eq": convBsonStringOid}
 
 	return x.find(ctx, "by_id", filter)
 }
@@ -289,7 +289,7 @@ func (x *SingleCollection) ById(ctx context.Context, bson_string_oid string) ([]
 func (x *SingleCollection) OneParam(ctx context.Context, scalar_int32 int32) ([]*single.Single, error) {
 	filter := bson.M{}
 
-	filter["scalar_int32"] = scalar_int32
+	filter["scalar_int32"] = bson.M{"$eq": scalar_int32}
 
 	return x.find(ctx, "one_param", filter)
 }
@@ -298,11 +298,11 @@ func (x *SingleCollection) OneParam(ctx context.Context, scalar_int32 int32) ([]
 func (x *SingleCollection) MultipleParam(ctx context.Context, scalar_int32 int32, scalar_int64 int64, scalar_float32 float32) ([]*single.Single, error) {
 	filter := bson.M{}
 
-	filter["scalar_int32"] = scalar_int32
+	filter["scalar_int32"] = bson.M{"$eq": scalar_int32}
 
-	filter["scalar_int64"] = scalar_int64
+	filter["scalar_int64"] = bson.M{"$eq": scalar_int64}
 
-	filter["scalar_float32"] = scalar_float32
+	filter["scalar_float32"] = bson.M{"$eq": scalar_float32}
 
 	return x.find(ctx, "multiple_param", filter)
 }
@@ -311,7 +311,7 @@ func (x *SingleCollection) MultipleParam(ctx context.Context, scalar_int32 int32
 func (x *SingleCollection) MessageParam(ctx context.Context, obj_message *single.Single_Message) ([]*single.Single, error) {
 	filter := bson.M{}
 
-	filter["obj_message"] = obj_message
+	filter["obj_message"] = bson.M{"$eq": obj_message}
 
 	return x.find(ctx, "message_param", filter)
 }
@@ -320,7 +320,7 @@ func (x *SingleCollection) MessageParam(ctx context.Context, obj_message *single
 func (x *SingleCollection) WithComparator(ctx context.Context, scalar_int32 int32) ([]*single.Single, error) {
 	filter := bson.M{}
 
-	filter["scalar_int32"] = scalar_int32
+	filter["scalar_int32"] = bson.M{"$gt": scalar_int32}
 
 	return x.find(ctx, "with_comparator", filter)
 }
@@ -329,13 +329,13 @@ func (x *SingleCollection) WithComparator(ctx context.Context, scalar_int32 int3
 func (x *SingleCollection) WithRest(ctx context.Context, scalar_int32 int32, scalar_int64 int64, scalar_float32 float32, scalar_float64 float64) ([]*single.Single, error) {
 	filter := bson.M{}
 
-	filter["scalar_int32"] = scalar_int32
+	filter["scalar_int32"] = bson.M{"$eq": scalar_int32}
 
-	filter["scalar_int64"] = scalar_int64
+	filter["scalar_int64"] = bson.M{"$eq": scalar_int64}
 
-	filter["scalar_float32"] = scalar_float32
+	filter["scalar_float32"] = bson.M{"$eq": scalar_float32}
 
-	filter["scalar_float64"] = scalar_float64
+	filter["scalar_float64"] = bson.M{"$eq": scalar_float64}
 
 	return x.find(ctx, "with_rest", filter)
 }
@@ -351,7 +351,7 @@ func (x *SingleCollection) ProviderStubOnly(ctx context.Context) ([]*single.Sing
 func (x *SingleCollection) NonFieldOnly(ctx context.Context, kind string) ([]*single.Single, error) {
 	filter := bson.M{}
 
-	filter["kind"] = kind
+	filter["kind"] = bson.M{"$eq": kind}
 
 	return x.find(ctx, "non_field_only", filter)
 }

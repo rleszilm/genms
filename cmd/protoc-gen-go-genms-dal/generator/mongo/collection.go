@@ -367,9 +367,9 @@ func (c *Collection) defineQueries() error {
 					if err != nil {
 						return nil, err
 					}
-					filter["{{ $arg.QueryName }}"] = conv{{ ToTitleCase $arg.Name }}
+					filter["{{ $arg.QueryName }}"] = {{ $.P.Bson }}.M{ "{{ $arg.Comparison }}": conv{{ ToTitleCase $arg.Name }} }
 				{{- else -}}
-					filter["{{ $arg.QueryName }}"] = {{ ToSnakeCase $arg.Name }}
+					filter["{{ $arg.QueryName }}"] = {{ $.P.Bson }}.M{ "{{ $arg.Comparison }}": {{ ToSnakeCase $arg.Name }} }
 				{{- end }}
 			{{- end }}
 						

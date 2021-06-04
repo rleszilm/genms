@@ -1,6 +1,8 @@
 package mongo
 
 import (
+	"errors"
+
 	"github.com/rleszilm/genms/cmd/protoc-gen-go-genms-dal/annotations"
 	"github.com/rleszilm/genms/cmd/protoc-gen-go-genms-dal/generator"
 )
@@ -57,4 +59,23 @@ func (a *Arg) QueryName() (string, error) {
 	}
 
 	return a.Arg.QueryName()
+}
+
+// Comparison returns the check to perform
+func (a *Arg) Comparison() (string, error) {
+	switch a.raw.GetComparison() {
+	case annotations.Comparator_EQ:
+		return "$eq", nil
+	case annotations.Comparator_NE:
+		return "$ne", nil
+	case annotations.Comparator_GT:
+		return "$gt", nil
+	case annotations.Comparator_LT:
+		return "$lt", nil
+	case annotations.Comparator_GTE:
+		return "$gte", nil
+	case annotations.Comparator_LTE:
+		return "$lte", nil
+	}
+	return "", errors.New("invalid comparison")
 }
