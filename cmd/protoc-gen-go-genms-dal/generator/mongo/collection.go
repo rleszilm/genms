@@ -361,8 +361,52 @@ func (x *{{ .C.Message.Name }}Collection) Upsert(ctx {{ .P.Context }}.Context, o
 }
 
 // Update implements {{ .C.Message.Name }}CollectionWriter
-func (x *{{ .C.Message.Name }}Collection) Update(ctx {{ .P.Context }}.Context, _ *{{ .C.Message.QualifiedKind }}, _ *{{ .P.Collection }}.{{ .C.Message.Name }}FieldValues) (*{{ .C.Message.QualifiedKind }}, error){
-	return nil, nil
+func (x *{{ .C.Message.Name }}Collection) Update(ctx {{ .P.Context }}.Context, obj *{{ .C.Message.QualifiedKind }}, fvs *{{ .P.Collection }}.{{ .C.Message.Name }}FieldValues) (*{{ .C.Message.QualifiedKind }}, error){
+	{{ if not $id -}}
+		return nil, {{ .P.Mongo }}.ErrNoID
+	{{- else -}}
+		upd := {{ .P.Bson }}.M{}
+		{{ range $fn := .C.Fields.Names -}}
+			{{- $f := ($.C.Fields.ByName $fn) -}}
+			{{- if not $f.Ignore -}}
+				{{- $conv := $f.ToMongo -}}
+				if fvs.{{ ToTitleCase $f.Name }} != nil {
+					{{ if eq $conv "ObjectID" -}}
+						conv{{ ToTitleCase $f.Name }}, err := {{ $.P.Bson }}.ToObjectID({{- if not $f.IsRef -}}*{{- end -}}fvs.{{ ToTitleCase $f.Name }})
+						if err != nil {
+							return nil, err
+						}
+						upd["{{ $f.QueryName }}"] = conv{{ ToTitleCase $f.Name }}
+					{{- else -}}
+						upd["{{ $f.QueryName }}"] = {{- if not $f.IsRef -}}*{{- end -}}fvs.{{ ToTitleCase $f.Name }}
+					{{- end }}
+				}
+			{{- end }}
+		{{ end -}}
+
+		filter := bson.M{ "_id": obj.{{ ToTitleCase $id.Name }} }
+
+		_, err := x.client.
+			Database(x.config.Database).
+			Collection(x.config.Collection).
+			UpdateOne(ctx, filter, upd)
+
+		if err != nil {
+			return nil, err
+		}
+
+		{{ range $fn := .C.Fields.Names -}}
+			{{- $f := ($.C.Fields.ByName $fn) -}}
+			{{- if not $f.Ignore -}}
+				if fvs.{{ ToTitleCase $f.Name }} != nil {
+					obj.{{ ToTitleCase $f.Name }} = {{- if not $f.IsRef -}}*{{- end -}}fvs.{{ ToTitleCase $f.Name }}
+				}
+			{{- end }}
+		{{ end -}}
+
+
+		return obj, nil
+	{{- end }}
 }
 
 `
@@ -594,7 +638,6 @@ func To{{ .C.Message.Name }}Mongo(obj *{{ .C.Message.QualifiedKind }}) (*{{ .C.M
 
 	tmpl, err := template.New("defineMongoStructs").
 		Funcs(template.FuncMap{
-			"AsPointer":   protocgenlib.AsPointer,
 			"ToLower":     strings.ToLower,
 			"ToTitleCase": protocgenlib.ToTitleCase,
 		}).

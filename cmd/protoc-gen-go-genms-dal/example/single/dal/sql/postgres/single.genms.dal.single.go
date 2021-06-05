@@ -494,7 +494,7 @@ type SingleFieldValues struct {
 	ScalarFloat32 *float32               `db:"scalar_float32"`
 	ScalarFloat64 *float64               `db:"scalar_float64"`
 	ScalarString  *string                `db:"scalar_string"`
-	ScalarBytes   *[]byte                `db:"scalar_bytes"`
+	ScalarBytes   []byte                 `db:"scalar_bytes"`
 	ScalarBool    *bool                  `db:"scalar_bool"`
 	ScalarEnum    *single.Single_Enum    `db:"scalar_enum"`
 	ObjMessage    *single.Single_Message `db:"obj_message"`
@@ -507,7 +507,7 @@ type SingleFieldValues struct {
 	IgnoredMongo    *string `db:"ignored_mongo"`
 	RenamedMongo    *string `db:"renamed_mongo"`
 	BsonStringOid   *string `db:"bson_string_oid"`
-	BsonBytesOid    *[]byte `db:"bson_bytes_oid"`
+	BsonBytesOid    []byte  `db:"bson_bytes_oid"`
 }
 
 func singleFieldValuesFromGeneric(y *dal.SingleFieldValues) *SingleFieldValues {

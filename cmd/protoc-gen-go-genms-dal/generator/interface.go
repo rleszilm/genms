@@ -204,7 +204,7 @@ type {{ $.I.Message.Name }}FieldValues struct {
 	{{ range $name := $.I.Fields.Names -}}
 		{{- $f := ($.I.Fields.ByName $name) -}}
 		{{- if not $f.Ignore }}
-			{{ ToTitleCase $f.Name }} {{ AsPointer $f.QualifiedKind -}}
+			{{ ToTitleCase $f.Name }} {{- if not $f.IsRef -}}*{{- end -}}{{ $f.QualifiedKind -}}
 		{{ end -}}
 	{{ end -}}
 }
@@ -213,7 +213,6 @@ type {{ $.I.Message.Name }}FieldValues struct {
 
 	tmpl, err := template.New("defineInterfaceFieldValues").
 		Funcs(template.FuncMap{
-			"AsPointer":   protocgenlib.AsPointer,
 			"ToTitleCase": protocgenlib.ToTitleCase,
 		}).
 		Parse(tmplSrc)

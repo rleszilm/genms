@@ -538,7 +538,6 @@ func (x *{{ .C.Message.Name }}Scanner) {{ .C.Message.Name }}() *{{ .C.Message.Qu
 
 	tmpl, err := template.New("defineRestStructs").
 		Funcs(template.FuncMap{
-			"AsPointer":   protocgenlib.AsPointer,
 			"ToTitleCase": protocgenlib.ToTitleCase,
 		}).
 		Parse(tmplSrc)

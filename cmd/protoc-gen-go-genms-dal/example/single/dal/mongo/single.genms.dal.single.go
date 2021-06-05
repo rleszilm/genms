@@ -412,8 +412,134 @@ func (x *SingleCollection) Upsert(ctx context.Context, obj *single.Single) (*sin
 }
 
 // Update implements SingleCollectionWriter
-func (x *SingleCollection) Update(ctx context.Context, _ *single.Single, _ *dal.SingleFieldValues) (*single.Single, error) {
-	return nil, nil
+func (x *SingleCollection) Update(ctx context.Context, obj *single.Single, fvs *dal.SingleFieldValues) (*single.Single, error) {
+	upd := bson.M{}
+	if fvs.ScalarInt32 != nil {
+		upd["scalar_int32"] = *fvs.ScalarInt32
+	}
+	if fvs.ScalarInt64 != nil {
+		upd["scalar_int64"] = *fvs.ScalarInt64
+	}
+	if fvs.ScalarFloat32 != nil {
+		upd["scalar_float32"] = *fvs.ScalarFloat32
+	}
+	if fvs.ScalarFloat64 != nil {
+		upd["scalar_float64"] = *fvs.ScalarFloat64
+	}
+	if fvs.ScalarString != nil {
+		upd["scalar_string"] = *fvs.ScalarString
+	}
+	if fvs.ScalarBytes != nil {
+		upd["scalar_bytes"] = fvs.ScalarBytes
+	}
+	if fvs.ScalarBool != nil {
+		upd["scalar_bool"] = *fvs.ScalarBool
+	}
+	if fvs.ScalarEnum != nil {
+		upd["scalar_enum"] = *fvs.ScalarEnum
+	}
+	if fvs.ObjMessage != nil {
+		upd["obj_message"] = fvs.ObjMessage
+	}
+
+	if fvs.Renamed != nil {
+		upd["aliased"] = *fvs.Renamed
+	}
+	if fvs.IgnoredPostgres != nil {
+		upd["ignored_postgres"] = *fvs.IgnoredPostgres
+	}
+	if fvs.RenamedPostgres != nil {
+		upd["renamed_postgres"] = *fvs.RenamedPostgres
+	}
+	if fvs.IgnoredRest != nil {
+		upd["ignored_rest"] = *fvs.IgnoredRest
+	}
+	if fvs.RenamedRest != nil {
+		upd["renamed_rest"] = *fvs.RenamedRest
+	}
+
+	if fvs.RenamedMongo != nil {
+		upd["aliased_mongo"] = *fvs.RenamedMongo
+	}
+	if fvs.BsonStringOid != nil {
+		convBsonStringOid, err := bson.ToObjectID(*fvs.BsonStringOid)
+		if err != nil {
+			return nil, err
+		}
+		upd["_id"] = convBsonStringOid
+	}
+	if fvs.BsonBytesOid != nil {
+		convBsonBytesOid, err := bson.ToObjectID(fvs.BsonBytesOid)
+		if err != nil {
+			return nil, err
+		}
+		upd["bson_bytes_oid"] = convBsonBytesOid
+	}
+	filter := bson.M{"_id": obj.BsonStringOid}
+
+	_, err := x.client.
+		Database(x.config.Database).
+		Collection(x.config.Collection).
+		UpdateOne(ctx, filter, upd)
+
+	if err != nil {
+		return nil, err
+	}
+
+	if fvs.ScalarInt32 != nil {
+		obj.ScalarInt32 = *fvs.ScalarInt32
+	}
+	if fvs.ScalarInt64 != nil {
+		obj.ScalarInt64 = *fvs.ScalarInt64
+	}
+	if fvs.ScalarFloat32 != nil {
+		obj.ScalarFloat32 = *fvs.ScalarFloat32
+	}
+	if fvs.ScalarFloat64 != nil {
+		obj.ScalarFloat64 = *fvs.ScalarFloat64
+	}
+	if fvs.ScalarString != nil {
+		obj.ScalarString = *fvs.ScalarString
+	}
+	if fvs.ScalarBytes != nil {
+		obj.ScalarBytes = fvs.ScalarBytes
+	}
+	if fvs.ScalarBool != nil {
+		obj.ScalarBool = *fvs.ScalarBool
+	}
+	if fvs.ScalarEnum != nil {
+		obj.ScalarEnum = *fvs.ScalarEnum
+	}
+	if fvs.ObjMessage != nil {
+		obj.ObjMessage = fvs.ObjMessage
+	}
+
+	if fvs.Renamed != nil {
+		obj.Renamed = *fvs.Renamed
+	}
+	if fvs.IgnoredPostgres != nil {
+		obj.IgnoredPostgres = *fvs.IgnoredPostgres
+	}
+	if fvs.RenamedPostgres != nil {
+		obj.RenamedPostgres = *fvs.RenamedPostgres
+	}
+	if fvs.IgnoredRest != nil {
+		obj.IgnoredRest = *fvs.IgnoredRest
+	}
+	if fvs.RenamedRest != nil {
+		obj.RenamedRest = *fvs.RenamedRest
+	}
+
+	if fvs.RenamedMongo != nil {
+		obj.RenamedMongo = *fvs.RenamedMongo
+	}
+	if fvs.BsonStringOid != nil {
+		obj.BsonStringOid = *fvs.BsonStringOid
+	}
+	if fvs.BsonBytesOid != nil {
+		obj.BsonBytesOid = fvs.BsonBytesOid
+	}
+	return obj, nil
 }
 
 // ById implements dal.SingleCollection.ById

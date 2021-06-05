@@ -607,7 +607,7 @@ type {{ .C.Message.Name }}FieldValues struct {
 	{{ range $n := .C.Fields.Names -}}
 		{{- $f := ($.C.Fields.ByName $n) -}}
 		{{- if not $f.Ignore -}}
-			{{ ToTitleCase $f.Name }} {{ AsPointer $f.QualifiedKind }} ` + "`" + `db:"{{ $f.QueryName }}"` + "`" + `
+			{{ ToTitleCase $f.Name }} {{- if not $f.IsRef -}}*{{- end -}}{{ $f.QualifiedKind }} ` + "`" + `db:"{{ $f.QueryName }}"` + "`" + `
 		{{- end }}
 	{{ end -}}
 }
@@ -679,7 +679,6 @@ func {{ ToSnakeCase .C.Message.Name }}WriterFromGeneric(y *{{ .C.Message.Qualifi
 
 	tmpl, err := template.New("definePostgresStructs").
 		Funcs(template.FuncMap{
-			"AsPointer":   protocgenlib.AsPointer,
 			"ToSnakeCase": protocgenlib.ToSnakeCase,
 			"ToTitleCase": protocgenlib.ToTitleCase,
 		}).
