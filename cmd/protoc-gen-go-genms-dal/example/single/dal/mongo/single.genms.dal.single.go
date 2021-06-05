@@ -195,7 +195,7 @@ type SingleCollection struct {
 	dal.UnimplementedSingleCollection
 
 	name          string
-	client        mongo.Client
+	dialer        mongo.Dialer
 	config        *SingleConfig
 	mutators      []dal.SingleMutator
 	defaultFilter bson.M
@@ -235,12 +235,16 @@ func (x *SingleCollection) String() string {
 
 // Find scans the collection for records matching the filter.
 func (x *SingleCollection) Find(ctx context.Context, label string, filter bson.M, opts ...*mongo.FindOptions) ([]*single.Single, error) {
-	for k, v := range x.defaultFilter {
-		filter[k] = v
-	}
-
 	ctx, cancel := context.WithTimeout(ctx, x.config.Timeout)
 	defer cancel()
+
+	client, err := x.dialer.Dial(ctx)
+	if err != nil {
+		mongo.Logs().Error("could not dial:", err)
+		stats.Record(ctx, mongo.MeasureError.M(1))
+		return nil, err
+	}
+	defer client.Close(ctx)
 
 	ctx, _ = tag.New(ctx,
 		tag.Upsert(mongo.TagCollection, "single"),
@@ -255,7 +259,11 @@ func (x *SingleCollection) Find(ctx context.Context, label string, filter bson.M
 		stats.Record(ctx, mongo.MeasureLatency.M(dur), mongo.MeasureInflight.M(-1))
 	}(ctx)
 
-	cur, err := x.client.
+	for k, v := range x.defaultFilter {
+		filter[k] = v
+	}
+
+	cur, err := client.
 		Database(x.config.Database).
 		Collection(x.config.Collection).
 		Find(ctx, filter, singleProjection, opts...)
@@ -276,12 +284,16 @@ func (x *SingleCollection) Find(ctx context.Context, label string, filter bson.M
 
 		val, err := obj.Single()
 		if err != nil {
+			mongo.Logs().Error("could not convert from mongo to internal:", err)
+			stats.Record(ctx, mongo.MeasureError.M(1))
 			return nil, err
 		}
 
 		for _, m := range x.mutators {
 			val, err = m(val)
 			if err != nil {
+				mongo.Logs().Error("could not mutate value:", val, err)
+				stats.Record(ctx, mongo.MeasureError.M(1))
 				return nil, err
 			}
 		}
@@ -351,6 +363,7 @@ func (x *SingleCollection) Filter(ctx context.Context, fvs *dal.SingleFieldValue
 	if fvs.BsonStringOid != nil {
 		convBsonStringOid, err := bson.ToObjectID(*fvs.BsonStringOid)
 		if err != nil {
+			mongo.Logs().Error("could not convert value to ObjectID:", err)
 			return nil, err
 		}
 		filter["_id"] = convBsonStringOid
@@ -358,6 +371,7 @@ func (x *SingleCollection) Filter(ctx context.Context, fvs *dal.SingleFieldValue
 	if fvs.BsonBytesOid != nil {
 		convBsonBytesOid, err := bson.ToObjectID(fvs.BsonBytesOid)
 		if err != nil {
+			mongo.Logs().Error("could not convert value to ObjectID:", err)
 			return nil, err
 		}
 		filter["bson_bytes_oid"] = convBsonBytesOid
@@ -367,11 +381,37 @@ func (x *SingleCollection) Filter(ctx context.Context, fvs *dal.SingleFieldValue
 
 // Insert implements SingleCollectionWriter
 func (x *SingleCollection) Insert(ctx context.Context, obj *single.Single) (*single.Single, error) {
-	res, err := x.client.
+	ctx, cancel := context.WithTimeout(ctx, x.config.Timeout)
+	defer cancel()
+
+	ctx, _ = tag.New(ctx,
+		tag.Upsert(mongo.TagCollection, "single"),
+		tag.Upsert(mongo.TagInstance, x.name),
+		tag.Upsert(mongo.TagMethod, "insert"),
+	)
+	stats.Record(ctx, mongo.MeasureInflight.M(1))
+	start := time.Now()
+	defer func(ctx context.Context) {
+		stop := time.Now()
+		dur := float64(stop.Sub(start).Nanoseconds()) / float64(time.Millisecond)
+		stats.Record(ctx, mongo.MeasureLatency.M(dur), mongo.MeasureInflight.M(-1))
+	}(ctx)
+
+	client, err := x.dialer.Dial(ctx)
+	if err != nil {
+		mongo.Logs().Error("could not dial:", err)
+		stats.Record(ctx, mongo.MeasureError.M(1))
+		return nil, err
+	}
+	defer client.Close(ctx)
+
+	res, err := client.
 		Database(x.config.Database).
 		Collection(x.config.Collection).
 		InsertOne(ctx, obj)
 	if err != nil {
+		mongo.Logs().Error("could not execute insert:", err)
+		stats.Record(ctx, mongo.MeasureError.M(1))
 		return nil, err
 	}
 
@@ -382,8 +422,34 @@ func (x *SingleCollection) Insert(ctx context.Context, obj *single.Single) (*sin
 
 // Upsert implements SingleCollectionWriter
 func (x *SingleCollection) Upsert(ctx context.Context, obj *single.Single) (*single.Single, error) {
+	ctx, cancel := context.WithTimeout(ctx, x.config.Timeout)
+	defer cancel()
+
+	ctx, _ = tag.New(ctx,
+		tag.Upsert(mongo.TagCollection, "single"),
+		tag.Upsert(mongo.TagInstance, x.name),
+		tag.Upsert(mongo.TagMethod, "upsert"),
+	)
+	stats.Record(ctx, mongo.MeasureInflight.M(1))
+	start := time.Now()
+	defer func(ctx context.Context) {
+		stop := time.Now()
+		dur := float64(stop.Sub(start).Nanoseconds()) / float64(time.Millisecond)
+		stats.Record(ctx, mongo.MeasureLatency.M(dur), mongo.MeasureInflight.M(-1))
+	}(ctx)
+
+	client, err := x.dialer.Dial(ctx)
+	if err != nil {
+		mongo.Logs().Error("could not dial:", err)
+		stats.Record(ctx, mongo.MeasureError.M(1))
+		return nil, err
+	}
+	defer client.Close(ctx)
+
 	mObj, err := ToSingleMongo(obj)
 	if err != nil {
+		mongo.Logs().Error("could not convert internal to mongo:", obj, err)
+		stats.Record(ctx, mongo.MeasureError.M(1))
 		return nil, err
 	}
 
@@ -392,17 +458,21 @@ func (x *SingleCollection) Upsert(ctx context.Context, obj *single.Single) (*sin
 
 	filter := bson.M{"_id": obj.BsonStringOid}
 
-	res, err := x.client.
+	res, err := client.
 		Database(x.config.Database).
 		Collection(x.config.Collection).
 		UpdateOne(ctx, filter, mObj, opts)
 
 	if err != nil {
+		mongo.Logs().Error("could not execute upsert:", err)
+		stats.Record(ctx, mongo.MeasureError.M(1))
 		return nil, err
 	}
 
 	oid, ok := res.UpsertedID.(bson.ObjectID)
 	if !ok {
+		mongo.Logs().Error("could not convert returned upsert id:", oid, err)
+		stats.Record(ctx, mongo.MeasureError.M(1))
 		return nil, mongo.ErrBadObjID
 	}
 
@@ -413,6 +483,28 @@ func (x *SingleCollection) Upsert(ctx context.Context, obj *single.Single) (*sin
 
 // Update implements SingleCollectionWriter
 func (x *SingleCollection) Update(ctx context.Context, obj *single.Single, fvs *dal.SingleFieldValues) (*single.Single, error) {
+	ctx, cancel := context.WithTimeout(ctx, x.config.Timeout)
+	defer cancel()
+
+	ctx, _ = tag.New(ctx,
+		tag.Upsert(mongo.TagCollection, "single"),
+		tag.Upsert(mongo.TagInstance, x.name),
+		tag.Upsert(mongo.TagMethod, "update"),
+	)
+	stats.Record(ctx, mongo.MeasureInflight.M(1))
+	start := time.Now()
+	defer func(ctx context.Context) {
+		stop := time.Now()
+		dur := float64(stop.Sub(start).Nanoseconds()) / float64(time.Millisecond)
+		stats.Record(ctx, mongo.MeasureLatency.M(dur), mongo.MeasureInflight.M(-1))
+	}(ctx)
+
+	client, err := x.dialer.Dial(ctx)
+	if err != nil {
+		return nil, err
+	}
+	defer client.Close(ctx)
+
 	upd := bson.M{}
 	if fvs.ScalarInt32 != nil {
 		upd["scalar_int32"] = *fvs.ScalarInt32
@@ -464,6 +556,8 @@ func (x *SingleCollection) Update(ctx context.Context, obj *single.Single, fvs *
 	if fvs.BsonStringOid != nil {
 		convBsonStringOid, err := bson.ToObjectID(*fvs.BsonStringOid)
 		if err != nil {
+			mongo.Logs().Error("could not convert to ObjectID:", *fvs.BsonStringOid, err)
+			stats.Record(ctx, mongo.MeasureError.M(1))
 			return nil, err
 		}
 		upd["_id"] = convBsonStringOid
@@ -471,18 +565,22 @@ func (x *SingleCollection) Update(ctx context.Context, obj *single.Single, fvs *
 	if fvs.BsonBytesOid != nil {
 		convBsonBytesOid, err := bson.ToObjectID(fvs.BsonBytesOid)
 		if err != nil {
+			mongo.Logs().Error("could not convert to ObjectID:", fvs.BsonBytesOid, err)
+			stats.Record(ctx, mongo.MeasureError.M(1))
 			return nil, err
 		}
 		upd["bson_bytes_oid"] = convBsonBytesOid
 	}
 	filter := bson.M{"_id": obj.BsonStringOid}
 
-	_, err := x.client.
+	_, err = client.
 		Database(x.config.Database).
 		Collection(x.config.Collection).
 		UpdateOne(ctx, filter, upd)
 
 	if err != nil {
+		mongo.Logs().Error("could not update:", err)
+		stats.Record(ctx, mongo.MeasureError.M(1))
 		return nil, err
 	}
 
@@ -544,10 +642,18 @@ func (x *SingleCollection) Update(ctx context.Context, obj *single.Single, fvs *
 
 // ById implements dal.SingleCollection.ById
 func (x *SingleCollection) ById(ctx context.Context, bson_string_oid string) ([]*single.Single, error) {
+	ctx, _ = tag.New(ctx,
+		tag.Upsert(mongo.TagCollection, "single"),
+		tag.Upsert(mongo.TagInstance, x.name),
+		tag.Upsert(mongo.TagMethod, "by_id"),
+	)
+
 	filter := bson.M{}
 
 	convBsonStringOid, err := bson.ToObjectID(bson_string_oid)
 	if err != nil {
+		mongo.Logs().Error("could not convert to ObjectID:", bson_string_oid, err)
+		stats.Record(ctx, mongo.MeasureError.M(1))
 		return nil, err
 	}
 	filter["_id"] = bson.M{"$eq": convBsonStringOid}
@@ -557,6 +663,12 @@ func (x *SingleCollection) ById(ctx context.Context, bson_string_oid string) ([]
 
 // OneParam implements dal.SingleCollection.OneParam
 func (x *SingleCollection) OneParam(ctx context.Context, scalar_int32 int32) ([]*single.Single, error) {
+	ctx, _ = tag.New(ctx,
+		tag.Upsert(mongo.TagCollection, "single"),
+		tag.Upsert(mongo.TagInstance, x.name),
+		tag.Upsert(mongo.TagMethod, "one_param"),
+	)
+
 	filter := bson.M{}
 
 	filter["scalar_int32"] = bson.M{"$eq": scalar_int32}
@@ -566,6 +678,12 @@ func (x *SingleCollection) OneParam(ctx context.Context, scalar_int32 int32) ([]
 
 // MultipleParam implements dal.SingleCollection.MultipleParam
 func (x *SingleCollection) MultipleParam(ctx context.Context, scalar_int32 int32, scalar_int64 int64, scalar_float32 float32) ([]*single.Single, error) {
+	ctx, _ = tag.New(ctx,
+		tag.Upsert(mongo.TagCollection, "single"),
+		tag.Upsert(mongo.TagInstance, x.name),
+		tag.Upsert(mongo.TagMethod, "multiple_param"),
+	)
+
 	filter := bson.M{}
 
 	filter["scalar_int32"] = bson.M{"$eq": scalar_int32}
@@ -579,6 +697,12 @@ func (x *SingleCollection) MultipleParam(ctx context.Context, scalar_int32 int32
 
 // MessageParam implements dal.SingleCollection.MessageParam
 func (x *SingleCollection) MessageParam(ctx context.Context, obj_message *single.Single_Message) ([]*single.Single, error) {
+	ctx, _ = tag.New(ctx,
+		tag.Upsert(mongo.TagCollection, "single"),
+		tag.Upsert(mongo.TagInstance, x.name),
+		tag.Upsert(mongo.TagMethod, "message_param"),
+	)
+
 	filter := bson.M{}
 
 	filter["obj_message"] = bson.M{"$eq": obj_message}
@@ -588,6 +712,12 @@ func (x *SingleCollection) MessageParam(ctx context.Context, obj_message *single
 
 // WithComparator implements dal.SingleCollection.WithComparator
 func (x *SingleCollection) WithComparator(ctx context.Context, scalar_int32 int32) ([]*single.Single, error) {
+	ctx, _ = tag.New(ctx,
+		tag.Upsert(mongo.TagCollection, "single"),
+		tag.Upsert(mongo.TagInstance, x.name),
+		tag.Upsert(mongo.TagMethod, "with_comparator"),
+	)
+
 	filter := bson.M{}
 
 	filter["scalar_int32"] = bson.M{"$gt": scalar_int32}
@@ -597,6 +727,12 @@ func (x *SingleCollection) WithComparator(ctx context.Context, scalar_int32 int3
 
 // WithRest implements dal.SingleCollection.WithRest
 func (x *SingleCollection) WithRest(ctx context.Context, scalar_int32 int32, scalar_int64 int64, scalar_float32 float32, scalar_float64 float64) ([]*single.Single, error) {
+	ctx, _ = tag.New(ctx,
+		tag.Upsert(mongo.TagCollection, "single"),
+		tag.Upsert(mongo.TagInstance, x.name),
+		tag.Upsert(mongo.TagMethod, "with_rest"),
+	)
+
 	filter := bson.M{}
 
 	filter["scalar_int32"] = bson.M{"$eq": scalar_int32}
@@ -612,6 +748,12 @@ func (x *SingleCollection) WithRest(ctx context.Context, scalar_int32 int32, sca
 
 // ProviderStubOnly implements dal.SingleCollection.ProviderStubOnly
 func (x *SingleCollection) ProviderStubOnly(ctx context.Context) ([]*single.Single, error) {
+	ctx, _ = tag.New(ctx,
+		tag.Upsert(mongo.TagCollection, "single"),
+		tag.Upsert(mongo.TagInstance, x.name),
+		tag.Upsert(mongo.TagMethod, "provider_stub_only"),
+	)
+
 	filter := bson.M{}
 
 	return x.Find(ctx, "provider_stub_only", filter)
@@ -619,6 +761,12 @@ func (x *SingleCollection) ProviderStubOnly(ctx context.Context) ([]*single.Sing
 
 // NonFieldOnly implements dal.SingleCollection.NonFieldOnly
 func (x *SingleCollection) NonFieldOnly(ctx context.Context, kind string) ([]*single.Single, error) {
+	ctx, _ = tag.New(ctx,
+		tag.Upsert(mongo.TagCollection, "single"),
+		tag.Upsert(mongo.TagInstance, x.name),
+		tag.Upsert(mongo.TagMethod, "non_field_only"),
+	)
+
 	filter := bson.M{}
 
 	filter["kind"] = bson.M{"$eq": kind}
@@ -627,10 +775,10 @@ func (x *SingleCollection) NonFieldOnly(ctx context.Context, kind string) ([]*si
 }
 
 // NewSingleCollection returns a new SingleCollection.
-func NewSingleCollection(instance string, client mongo.Client, config *SingleConfig) (*SingleCollection, error) {
+func NewSingleCollection(instance string, dialer mongo.Dialer, config *SingleConfig) (*SingleCollection, error) {
 	coll := &SingleCollection{
 		name:   instance,
-		client: client,
+		dialer: dialer,
 		config: config,
 	}
 

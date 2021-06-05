@@ -4,6 +4,7 @@ import (
 	"context"
 
 	pkgMongo "github.com/rleszilm/genms/mongo"
+	"github.com/rleszilm/genms/service"
 	"go.mongodb.org/mongo-driver/mongo"
 	"go.mongodb.org/mongo-driver/mongo/options"
 	"go.mongodb.org/mongo-driver/mongo/readpref"
@@ -11,6 +12,8 @@ import (
 
 // Dialer is a structure that can be used to get a mongo connection.
 type Dialer struct {
+	service.Dependencies
+
 	config   *Config
 	client   *mongo.Client
 	options  *options.ClientOptions
@@ -43,6 +46,16 @@ func (d *Dialer) Initialize(ctx context.Context) error {
 // Shutdown implements service.Shutdown
 func (d *Dialer) Shutdown(ctx context.Context) error {
 	return d.client.Disconnect(ctx)
+}
+
+// NameOf implements Server.NameOf()
+func (d *Dialer) NameOf() string {
+	return "mongo-" + d.config.AppName
+}
+
+// String implements Server.String()
+func (d *Dialer) String() string {
+	return "mongo-" + d.config.AppName
 }
 
 // Dial returns a new mongo connection.
