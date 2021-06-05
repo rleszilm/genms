@@ -144,7 +144,7 @@ type {{ .I.Message.Name }}Collection interface {
 type {{ .I.Message.Name }}CollectionWriter interface {
 	// Insert runs the command to generate a new object within the data store.
 	Insert({{ .P.Context }}.Context, *{{ .I.Message.QualifiedKind }}) (*{{ .I.Message.QualifiedKind }}, error)
-	// Upsert runs the command to overwrite the object in the datastore, or write it if it does nto already exist.
+	// Upsert runs the command to overwrite the object in the datastore, or write it if it does not already exist.
 	Upsert({{ .P.Context }}.Context, *{{ .I.Message.QualifiedKind }}) (*{{ .I.Message.QualifiedKind }}, error)
 	// Update runs the command to make changes to the given record.
 	Update({{ .P.Context }}.Context, *{{ .I.Message.QualifiedKind }}, *{{ .I.Message.Name }}FieldValues) (*{{ .I.Message.QualifiedKind }}, error)

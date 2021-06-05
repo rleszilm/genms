@@ -11,11 +11,11 @@ import (
 // Client is the interface for a mongo client.
 type Client interface {
 	// Database returns a reference to the mongo database.
-	Database(string, ...*DatabaseOptions) Database
+	Database(db string, opts ...*DatabaseOptions) Database
 	// Close closes the client connection to mongo.
-	Close(context.Context) error
+	Close(ctx context.Context) error
 	// Ping pings the remote mongo server to ensure connectivity is valid.
-	Ping(context.Context, *readpref.ReadPref) error
+	Ping(ctx context.Context, rp *readpref.ReadPref) error
 }
 
 // Client is a wrapper for mongo.Client

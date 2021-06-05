@@ -29,7 +29,7 @@ type SingleCollection interface {
 type SingleCollectionWriter interface {
 	// Insert runs the command to generate a new object within the data store.
 	Insert(context.Context, *single.Single) (*single.Single, error)
-	// Upsert runs the command to overwrite the object in the datastore, or write it if it does nto already exist.
+	// Upsert runs the command to overwrite the object in the datastore, or write it if it does not already exist.
 	Upsert(context.Context, *single.Single) (*single.Single, error)
 	// Update runs the command to make changes to the given record.
 	Update(context.Context, *single.Single, *SingleFieldValues) (*single.Single, error)

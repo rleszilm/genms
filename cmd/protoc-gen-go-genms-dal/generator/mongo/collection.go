@@ -118,11 +118,17 @@ type {{ .C.Message.Name }}Collection struct {
 	client {{ .P.Mongo }}.Client
 	config *{{ .C.Message.Name }}Config
 	mutators []{{ .P.Collection }}.{{ .C.Message.Name }}Mutator
+	defaultFilter {{ .P.Bson }}.M
 }
 
 // WithMutators adds {{ .P.Collection }}.{{ .C.Message.Name }}Mutators to the collection. These will be applied to all values after they are read from mongo.
 func (x *{{ .C.Message.Name }}Collection) WithMutators(muts ...{{ .P.Collection }}.{{ .C.Message.Name }}Mutator) {
 	x.mutators = append(x.mutators, muts...)
+}
+
+// WithDefaultFilter sets the default the default mongo filter to apply to all find queries. This is applied after any query args.
+func (x *{{ .C.Message.Name }}Collection) WithDefaultFilter(f {{ .P.Bson }}.M) {
+	x.defaultFilter = f
 }
 `
 
@@ -137,6 +143,7 @@ func (x *{{ .C.Message.Name }}Collection) WithMutators(muts ...{{ .P.Collection 
 	}
 
 	p := map[string]string{
+		"Bson":       c.File.QualifiedPackageName("github.com/rleszilm/genms/mongo/bson"),
 		"Collection": c.File.QualifiedPackageName(c.File.DalPackagePath()),
 		"Mongo":      c.File.QualifiedPackageName("github.com/rleszilm/genms/mongo"),
 	}
@@ -188,6 +195,7 @@ func (x *{{ .C.Message.Name }}Collection) String() string {
 	}
 
 	p := map[string]string{
+		"Bson":    c.File.QualifiedPackageName("github.com/rleszilm/genms/mongo/bson"),
 		"Context": c.File.QualifiedPackageName("context"),
 	}
 
@@ -206,8 +214,13 @@ func (x *{{ .C.Message.Name }}Collection) String() string {
 }
 
 func (c *Collection) defineDefaultQueries() error {
-	tmplSrc := `// Find scans the collection for records matching the filter. 
-func (x *{{ .C.Message.Name }}Collection) Find(ctx {{ .P.Context }}.Context, label string, filter interface{}, opts ...*{{ .P.Mongo }}.FindOptions) ([]*{{ .C.Message.QualifiedKind }}, error) {
+	tmplSrc := `{{- $id := .C.Fields.ID -}}	
+// Find scans the collection for records matching the filter. 
+func (x *{{ .C.Message.Name }}Collection) Find(ctx {{ .P.Context }}.Context, label string, filter {{ .P.Bson }}.M, opts ...*{{ .P.Mongo }}.FindOptions) ([]*{{ .C.Message.QualifiedKind }}, error) {
+	for k, v := range x.defaultFilter {
+		filter[k] = v
+	}	
+	
 	ctx, cancel := {{ .P.Context }}.WithTimeout(ctx, x.config.Timeout)
 	defer cancel()
 
@@ -236,7 +249,7 @@ func (x *{{ .C.Message.Name }}Collection) Find(ctx {{ .P.Context }}.Context, lab
 
 	vals := []*{{ .C.Message.QualifiedKind }}{}
 	for cur.Next(ctx) {
-		obj := &{{ .C.Message.Name }}Scanner{}
+		obj := &{{ .C.Message.Name }}Mongo{}
 		if err = cur.Decode(obj); err != nil {
 			{{ .P.Mongo }}.Logs().Errorf("could not parse %s - %v", label, err)
 			{{ .P.Stats }}.Record(ctx, {{ .P.Mongo }}.MeasureError.M(1))
@@ -293,7 +306,6 @@ func (x *{{ .C.Message.Name }}Collection) Filter(ctx {{ .P.Context }}.Context, f
 
 // Insert implements {{ .C.Message.Name }}CollectionWriter
 func (x *{{ .C.Message.Name }}Collection) Insert(ctx {{ .P.Context }}.Context, obj *{{ .C.Message.QualifiedKind }}) (*{{ .C.Message.QualifiedKind }}, error) {
-	{{- $id := .C.Fields.ID -}}	
 	{{ if $id -}}res{{- else -}}_{{- end }}, err := x.client.
 		Database(x.config.Database).
 		Collection(x.config.Collection).
@@ -310,8 +322,42 @@ func (x *{{ .C.Message.Name }}Collection) Insert(ctx {{ .P.Context }}.Context, o
 }
 
 // Upsert implements {{ .C.Message.Name }}CollectionWriter
-func (x *{{ .C.Message.Name }}Collection) Upsert(ctx {{ .P.Context }}.Context, _ *{{ .C.Message.QualifiedKind }}) (*{{ .C.Message.QualifiedKind }}, error) {
-	return nil, nil
+func (x *{{ .C.Message.Name }}Collection) Upsert(ctx {{ .P.Context }}.Context, obj *{{ .C.Message.QualifiedKind }}) (*{{ .C.Message.QualifiedKind }}, error) {
+	{{ if not $id -}}
+		return nil, {{ .P.Mongo }}.ErrNoID
+	{{- else -}}
+		mObj, err := To{{ .C.Message.Name }}Mongo(obj)
+		if err != nil {
+			return nil, err
+		}
+
+		opts := &{{ .P.Mongo }}.UpdateOptions{}
+		opts.SetUpsert(true)
+		
+		filter := bson.M{ "_id": obj.{{ ToTitleCase $id.Name }} }
+
+		res, err := x.client.
+			Database(x.config.Database).
+			Collection(x.config.Collection).
+			UpdateOne(ctx, filter, mObj, opts)
+
+		if err != nil {
+			return nil, err
+		}
+
+		oid, ok := res.UpsertedID.({{ .P.Bson }}.ObjectID)
+		if !ok {
+			return nil, {{ .P.Mongo }}.ErrBadObjID
+		}
+
+		{{ if eq $id.Kind "string" }}
+			obj.{{ ToTitleCase $id.Name }} = oid.Hex()
+		{{ else if eq $id.Kind "[]byte" }}
+			obj.{{ ToTitleCase $id.Name }} = []byte(oid[:])
+		{{ end }}
+
+		return obj, nil
+	{{- end }}
 }
 
 // Update implements {{ .C.Message.Name }}CollectionWriter
@@ -336,9 +382,9 @@ func (x *{{ .C.Message.Name }}Collection) Update(ctx {{ .P.Context }}.Context, _
 	}
 
 	p := map[string]string{
-		"Context":    c.File.QualifiedPackageName("context"),
-		"Collection": c.File.QualifiedPackageName(c.File.DalPackagePath()),
 		"Bson":       c.File.QualifiedPackageName("github.com/rleszilm/genms/mongo/bson"),
+		"Collection": c.File.QualifiedPackageName(c.File.DalPackagePath()),
+		"Context":    c.File.QualifiedPackageName("context"),
 		"Mongo":      c.File.QualifiedPackageName("github.com/rleszilm/genms/mongo"),
 		"Stats":      c.File.QualifiedPackageName("go.opencensus.io/stats"),
 		"Tag":        c.File.QualifiedPackageName("go.opencensus.io/tag"),
@@ -478,38 +524,70 @@ func (c *Collection) defineInternalStructs() error {
 	}
 )
 
-// {{ .C.Message.Name }}Scanner is an autogenerated struct that
+// {{ .C.Message.Name }}Mongo is an autogenerated struct that
 // is used to parse query results.
-type {{ .C.Message.Name }}Scanner struct {
+type {{ .C.Message.Name }}Mongo struct {
 	{{ range $n := .C.Fields.Names -}}
 		{{- $f := ($.C.Fields.ByName $n) -}}
 		{{- if not $f.Ignore -}}
-			{{ ToTitleCase $f.Name }} {{ $f.QualifiedQueryKind }} ` + "`" + `bson:"{{ $f.QueryName }},omitempty"` + "`" + `
+			{{ ToTitleCase $f.Name }} {{ if not $f.IsExtRef -}}*{{- end -}}{{ $f.QualifiedQueryKind }} ` + "`" + `bson:"{{ $f.QueryName }},omitempty"` + "`" + `
 		{{- end }}
 	{{ end -}}
 }
 
 // {{ .C.Message.Name }} returns a new {{ .C.Message.QualifiedKind }} populated with scanned values.
-func (x *{{ .C.Message.Name }}Scanner) {{ .C.Message.Name }}() (*{{ .C.Message.QualifiedKind }}, error) {
+func (x *{{ .C.Message.Name }}Mongo) {{ .C.Message.Name }}() (*{{ .C.Message.QualifiedKind }}, error) {
 	y := &{{ .C.Message.QualifiedKind }}{}
 
 	{{ range $n := .C.Fields.Names -}}
 		{{- $f := ($.C.Fields.ByName $n) -}}
 		{{- if not $f.Ignore -}}
-			{{- $convFrom := $f.ToMongo -}}
-			{{ if eq $convFrom "ObjectID" -}}
-				{{- $convTo := $f.ToGo -}}
-				{{- if eq $convTo "string" -}}
-					y.{{ ToTitleCase $f.Name }} = x.{{ ToTitleCase $f.Name }}.Hex()
-				{{- else if eq $convTo "[]byte" -}}
-					y.{{ ToTitleCase $f.Name }} = x.{{ ToTitleCase $f.Name }}[:]
-				{{- end -}}
-			{{- else -}}
-				y.{{ ToTitleCase $f.Name }} = x.{{ ToTitleCase $f.Name }}
-			{{- end }}
+			if x.{{ ToTitleCase $f.Name }} != nil {
+				{{- $convFrom := $f.ToMongo -}}
+				{{ if eq $convFrom "ObjectID" -}}
+					{{- $convTo := $f.ToGo -}}
+					{{- if eq $convTo "string" -}}
+						y.{{ ToTitleCase $f.Name }} = x.{{ ToTitleCase $f.Name }}.Hex()
+					{{- else if eq $convTo "[]byte" -}}
+						y.{{ ToTitleCase $f.Name }} = (*x.{{ ToTitleCase $f.Name }})[:]
+					{{- end -}}
+				{{- else -}}
+					y.{{ ToTitleCase $f.Name }} = {{- if not $f.IsExtRef -}}*{{- end -}}x.{{ ToTitleCase $f.Name }}
+				{{- end }}
+			}
 		{{- end }}
 	{{ end -}}
 	return y, nil
+}
+
+// To{{ .C.Message.Name }}Mongo converts the given {{ .C.Message.Name }} into the internal mongo equivalent.
+func To{{ .C.Message.Name }}Mongo(obj *{{ .C.Message.QualifiedKind }}) (*{{ .C.Message.Name }}Mongo, error) {
+	nilObj := {{ .C.Message.QualifiedKind }}{}
+	mObj := &{{ .C.Message.Name }}Mongo{}
+
+	{{ range $fn := .C.Fields.Names -}}
+		{{- $f := ($.C.Fields.ByName $fn) -}}
+		{{- if not $f.Ignore -}}
+			{{- $conv := $f.ToMongo -}}
+			{{ if eq $conv "ObjectID" -}}
+				conv{{ ToTitleCase $f.Name }}, err := {{ $.P.Bson }}.ToObjectID(obj.{{ ToTitleCase $f.Name }})
+				if err != nil {
+					return nil, err
+				}
+				mObj.{{ ToTitleCase $f.Name }} = &conv{{ ToTitleCase $f.Name }}
+			{{- else -}}
+				{{- if $f.IsRef -}}
+					mObj.{{ ToTitleCase $f.Name }} = obj.{{ ToTitleCase $f.Name }}
+				{{- else -}}
+					if obj.{{ ToTitleCase $f.Name }} != nilObj.{{ ToTitleCase $f.Name }} {
+						mObj.{{ ToTitleCase $f.Name }} = {{ $f.ToRef }}obj.{{ ToTitleCase $f.Name }}
+					}
+				{{- end -}}
+			{{- end }}
+		{{- end }}
+	{{ end -}}
+
+	return mObj, nil
 }
 
 `

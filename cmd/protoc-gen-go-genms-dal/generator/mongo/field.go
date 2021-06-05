@@ -100,3 +100,27 @@ func (f *Field) ToGo() (string, error) {
 	}
 	return f.Kind(), nil
 }
+
+// IsExtRef returns whether the external type is a reference.
+func (f *Field) IsExtRef() bool {
+	return f.IsExtMessage() || f.IsExtSlice()
+}
+
+// IsExtMessage returns whether the field is a reference.
+func (f *Field) IsExtMessage() bool {
+	return f.IsMessage()
+}
+
+// IsExtSlice returns whether the field is a slice of values.
+func (f *Field) IsExtSlice() bool {
+	qKind, err := f.QualifiedQueryKind()
+	if err != nil {
+		return false
+	}
+
+	if len(qKind) < 2 {
+		return false
+	}
+
+	return qKind[:2] == "[]"
+}
