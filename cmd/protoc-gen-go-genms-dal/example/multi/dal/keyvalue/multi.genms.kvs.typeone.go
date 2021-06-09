@@ -25,7 +25,7 @@ type TypeOneReadAller interface {
 // TypeOneWriter is defines the interface for setting values in a KV store.
 //go:generate go run github.com/maxbrunsfeld/counterfeiter/v6 . TypeOneWriter
 type TypeOneWriter interface {
-	SetByKey(context.Context, TypeOneKey, *multi.TypeOne) error
+	SetByKey(context.Context, TypeOneKey, *multi.TypeOne) (*multi.TypeOne, error)
 }
 
 // TypeOneReadWriter is defines the interface for setting values in a KV store.

@@ -101,7 +101,7 @@ func (x *TypeOneMap) GetByKey(ctx context.Context, key keyvalue.TypeOneKey) (*mu
 }
 
 // SetByKey implements keyvalue.TypeOneWriter.
-func (x *TypeOneMap) SetByKey(ctx context.Context, key keyvalue.TypeOneKey, val *multi.TypeOne) error {
+func (x *TypeOneMap) SetByKey(ctx context.Context, key keyvalue.TypeOneKey, val *multi.TypeOne) (*multi.TypeOne, error) {
 	start := time.Now()
 	ctx, _ = tag.New(ctx,
 		tag.Upsert(cache.TagCollection, "type_one"),
@@ -117,10 +117,12 @@ func (x *TypeOneMap) SetByKey(ctx context.Context, key keyvalue.TypeOneKey, val 
 	}()
 
 	if x.writer != nil {
-		if err := x.writer.SetByKey(ctx, key, val); err != nil {
+		upd, err := x.writer.SetByKey(ctx, key, val)
+		if err != nil {
 			stats.Record(ctx, cache.MeasureError.M(1))
-			return fmt.Errorf("map: TypeOne.SetByKey - %w", err)
+			return nil, fmt.Errorf("map: TypeOne.SetByKey - %w", err)
 		}
+		val = upd
 	}
 
 	x.cache[key] = val
@@ -131,7 +133,7 @@ func (x *TypeOneMap) SetByKey(ctx context.Context, key keyvalue.TypeOneKey, val 
 	}
 	x.all = all
 
-	return nil
+	return val, nil
 }
 
 // WithReader tells the TypeOneMap where to source values from if they don't exist in cache.

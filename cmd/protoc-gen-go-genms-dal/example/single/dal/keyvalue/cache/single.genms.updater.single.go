@@ -70,7 +70,7 @@ func (x *SingleUpdater) update(ctx context.Context) {
 
 			for _, val := range vals {
 				cache.Logs().Trace("updater Single storing value:", x.key(val), val)
-				if err = x.writer.SetByKey(ctx, x.key(val), val); err != nil {
+				if _, err = x.writer.SetByKey(ctx, x.key(val), val); err != nil {
 					cache.Logs().Error("updater Single could not store value:", x.key(val), val, err)
 					break
 				}

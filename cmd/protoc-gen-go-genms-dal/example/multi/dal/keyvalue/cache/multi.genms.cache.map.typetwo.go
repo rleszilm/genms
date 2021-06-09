@@ -101,7 +101,7 @@ func (x *TypeTwoMap) GetByKey(ctx context.Context, key keyvalue.TypeTwoKey) (*mu
 }
 
 // SetByKey implements keyvalue.TypeTwoWriter.
-func (x *TypeTwoMap) SetByKey(ctx context.Context, key keyvalue.TypeTwoKey, val *multi.TypeTwo) error {
+func (x *TypeTwoMap) SetByKey(ctx context.Context, key keyvalue.TypeTwoKey, val *multi.TypeTwo) (*multi.TypeTwo, error) {
 	start := time.Now()
 	ctx, _ = tag.New(ctx,
 		tag.Upsert(cache.TagCollection, "type_two"),
@@ -117,10 +117,12 @@ func (x *TypeTwoMap) SetByKey(ctx context.Context, key keyvalue.TypeTwoKey, val 
 	}()
 
 	if x.writer != nil {
-		if err := x.writer.SetByKey(ctx, key, val); err != nil {
+		upd, err := x.writer.SetByKey(ctx, key, val)
+		if err != nil {
 			stats.Record(ctx, cache.MeasureError.M(1))
-			return fmt.Errorf("map: TypeTwo.SetByKey - %w", err)
+			return nil, fmt.Errorf("map: TypeTwo.SetByKey - %w", err)
 		}
+		val = upd
 	}
 
 	x.cache[key] = val
@@ -131,7 +133,7 @@ func (x *TypeTwoMap) SetByKey(ctx context.Context, key keyvalue.TypeTwoKey, val 
 	}
 	x.all = all
 
-	return nil
+	return val, nil
 }
 
 // WithReader tells the TypeTwoMap where to source values from if they don't exist in cache.

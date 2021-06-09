@@ -201,7 +201,7 @@ func (x *{{ .C.Message.Name }}Map) GetByKey(ctx {{ .P.Context }}.Context, key {{
 }
 
 // SetByKey implements {{ .P.KeyValue }}.{{ .C.Message.Name }}Writer.
-func (x *{{ .C.Message.Name }}Map) SetByKey(ctx {{ .P.Context }}.Context, key {{ .P.KeyValue }}.{{ .C.Message.Name }}Key, val *{{ .C.Message.QualifiedKind }}) error {
+func (x *{{ .C.Message.Name }}Map) SetByKey(ctx {{ .P.Context }}.Context, key {{ .P.KeyValue }}.{{ .C.Message.Name }}Key, val *{{ .C.Message.QualifiedKind }}) (*{{ .C.Message.QualifiedKind }}, error) {
 	start := {{ .P.Time }}.Now()
 	ctx, _ = {{ .P.Tag }}.New(ctx,
 		{{ .P.Tag }}.Upsert({{ .P.Cache }}.TagCollection, "{{ ToSnakeCase .C.Message.Name }}"),
@@ -217,10 +217,12 @@ func (x *{{ .C.Message.Name }}Map) SetByKey(ctx {{ .P.Context }}.Context, key {{
 	}()
 	
 	if x.writer != nil {
-		if err := x.writer.SetByKey(ctx, key, val); err != nil {
+		upd, err := x.writer.SetByKey(ctx, key, val)
+		if err != nil {
 			{{ .P.Stats }}.Record(ctx, {{ .P.Cache }}.MeasureError.M(1))
-			return {{ .P.Fmt }}.Errorf("map: {{ .C.Message.Name }}.SetByKey - %w", err)
+			return nil, {{ .P.Fmt }}.Errorf("map: {{ .C.Message.Name }}.SetByKey - %w", err)
 		}
+		val = upd
 	}
 
 	x.cache[key] = val
@@ -231,7 +233,7 @@ func (x *{{ .C.Message.Name }}Map) SetByKey(ctx {{ .P.Context }}.Context, key {{
 	}
 	x.all = all
 
-	return nil
+	return val, nil
 }
 
 // WithReader tells the {{ .C.Message.Name }}Map where to source values from if they don't exist in cache.

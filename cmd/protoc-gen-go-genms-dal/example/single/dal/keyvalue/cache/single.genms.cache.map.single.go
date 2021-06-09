@@ -101,7 +101,7 @@ func (x *SingleMap) GetByKey(ctx context.Context, key keyvalue.SingleKey) (*sing
 }
 
 // SetByKey implements keyvalue.SingleWriter.
-func (x *SingleMap) SetByKey(ctx context.Context, key keyvalue.SingleKey, val *single.Single) error {
+func (x *SingleMap) SetByKey(ctx context.Context, key keyvalue.SingleKey, val *single.Single) (*single.Single, error) {
 	start := time.Now()
 	ctx, _ = tag.New(ctx,
 		tag.Upsert(cache.TagCollection, "single"),
@@ -117,10 +117,12 @@ func (x *SingleMap) SetByKey(ctx context.Context, key keyvalue.SingleKey, val *s
 	}()
 
 	if x.writer != nil {
-		if err := x.writer.SetByKey(ctx, key, val); err != nil {
+		upd, err := x.writer.SetByKey(ctx, key, val)
+		if err != nil {
 			stats.Record(ctx, cache.MeasureError.M(1))
-			return fmt.Errorf("map: Single.SetByKey - %w", err)
+			return nil, fmt.Errorf("map: Single.SetByKey - %w", err)
 		}
+		val = upd
 	}
 
 	x.cache[key] = val
@@ -131,7 +133,7 @@ func (x *SingleMap) SetByKey(ctx context.Context, key keyvalue.SingleKey, val *s
 	}
 	x.all = all
 
-	return nil
+	return val, nil
 }
 
 // WithReader tells the SingleMap where to source values from if they don't exist in cache.

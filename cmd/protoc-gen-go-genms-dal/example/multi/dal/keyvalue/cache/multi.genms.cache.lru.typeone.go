@@ -104,7 +104,7 @@ func (x *TypeOneLRU) GetByKey(ctx context.Context, key keyvalue.TypeOneKey) (*mu
 }
 
 // SetByKey implements keyvalue.TypeOneWriter.
-func (x *TypeOneLRU) SetByKey(ctx context.Context, key keyvalue.TypeOneKey, val *multi.TypeOne) error {
+func (x *TypeOneLRU) SetByKey(ctx context.Context, key keyvalue.TypeOneKey, val *multi.TypeOne) (*multi.TypeOne, error) {
 	start := time.Now()
 	ctx, _ = tag.New(ctx,
 		tag.Upsert(cache.TagCollection, "type_one"),
@@ -120,10 +120,12 @@ func (x *TypeOneLRU) SetByKey(ctx context.Context, key keyvalue.TypeOneKey, val 
 	}()
 
 	if x.writer != nil {
-		if err := x.writer.SetByKey(ctx, key, val); err != nil {
+		upd, err := x.writer.SetByKey(ctx, key, val)
+		if err != nil {
 			stats.Record(ctx, cache.MeasureError.M(1))
-			return fmt.Errorf("lru: TypeOne.SetBykey - %w", err)
+			return nil, fmt.Errorf("lru: TypeOne.SetBykey - %w", err)
 		}
+		val = upd
 	}
 
 	x.lru.Add(key, val)
@@ -135,7 +137,7 @@ func (x *TypeOneLRU) SetByKey(ctx context.Context, key keyvalue.TypeOneKey, val 
 	}
 	x.all = all
 
-	return nil
+	return val, nil
 }
 
 // WithReader tells the TypeOneLRU where to source values from if they don't exist in cache.
