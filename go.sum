@@ -53,6 +53,8 @@ github.com/armon/go-metrics v0.0.0-20180917152333-f0300d1749da/go.mod h1:Q73ZrmV
 github.com/armon/go-radix v0.0.0-20180808171621-7fddfc383310/go.mod h1:ufUuZ+zHj4x4TnLV4JWEpy2hxWSpsRywHrMgIH9cCH8=
 github.com/awalterschulze/goderive v0.0.0-20210526105448-af7153e6cfef h1:1PxaRfG6892dilz8Krxicd0llbcNOD6SfSQ5RMwWJQs=
 github.com/awalterschulze/goderive v0.0.0-20210526105448-af7153e6cfef/go.mod h1:Xt6OqsOUHexSIsyLd/BrKm1gqRG8T4IctTqAKOu64Ms=
+github.com/awalterschulze/goderive v0.0.0-20210609120255-8806b893db0a h1:k3JABRrmjYrsyCn0h28Sn8J+rezgwrxvagysGk0wO2M=
+github.com/awalterschulze/goderive v0.0.0-20210609120255-8806b893db0a/go.mod h1:Xt6OqsOUHexSIsyLd/BrKm1gqRG8T4IctTqAKOu64Ms=
 github.com/aws/aws-sdk-go v1.34.28 h1:sscPpn/Ns3i0F4HPEWAVcwdIRaZZCuL7llJ2/60yPIk=
 github.com/aws/aws-sdk-go v1.34.28/go.mod h1:H7NKnBqNVzoTJpGfLrQkkD+ytBA93eiDYi/+8rV9s48=
 github.com/beorn7/perks v0.0.0-20180321164747-3a771d992973/go.mod h1:Dwedo/Wpr24TaqPxmxbtue+5NUziq4I4S80YR8gNf3Q=

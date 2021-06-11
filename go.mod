@@ -5,7 +5,7 @@ go 1.16
 require (
 	contrib.go.opencensus.io/exporter/prometheus v0.2.0
 	github.com/Shopify/sarama v1.27.2
-	github.com/awalterschulze/goderive v0.0.0-20210526105448-af7153e6cfef
+	github.com/awalterschulze/goderive v0.0.0-20210609120255-8806b893db0a
 	github.com/envoyproxy/protoc-gen-validate v0.6.1 // indirect
 	github.com/go-redis/redis/v8 v8.4.11
 	github.com/go-test/deep v1.0.7

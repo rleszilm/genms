@@ -6,10 +6,8 @@ import (
 
 // Dialer is the interface used to obtain a new mongo client.
 type Dialer interface {
-	// Initialize starts up the underlying mongo driver and ensures connectivity.
-	Initialize(context.Context) error
-	// Shutdown shuts down the underlying mongo driver.
-	Shutdown(context.Context) error
+	service.Service
+
 	// Dial creates a client connected to mongo.
 	Dial(context.Context) (Client, error)
 }

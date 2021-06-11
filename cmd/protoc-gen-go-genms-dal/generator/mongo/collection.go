@@ -717,13 +717,30 @@ func To{{ $.C.Message.Name }}Mongo(obj *{{ $.C.Message.QualifiedKind }}) (*{{ $.
 	{{ range $fn := $.C.Fields.Names -}}
 		{{- $f := ($.C.Fields.ByName $fn) -}}
 		{{- if not $f.Ignore -}}
-			{{- $conv := $f.ToMongo -}}
-			{{ if eq $conv "ObjectID" -}}
-				conv{{ ToTitleCase $f.Name }}, err := {{ $.P.Bson }}.ToObjectID(obj.{{ ToTitleCase $f.Name }})
-				if err != nil {
-					return nil, err
-				}
-				mObj.{{ ToTitleCase $f.Name }} = &conv{{ ToTitleCase $f.Name }}
+			{{- $convTo := $f.ToMongo -}}
+			{{- $convFrom := $f.ToGo -}}
+			{{ if eq $convTo "ObjectID" -}}
+				{{ if eq $convFrom "string" }}
+					if obj.{{ ToTitleCase $f.Name }} != "" {
+						conv{{ ToTitleCase $f.Name }}, err := {{ $.P.Bson }}.ToObjectID(obj.{{ ToTitleCase $f.Name }})
+						if err != nil {
+							return nil, err
+						}
+						mObj.{{ ToTitleCase $f.Name }} = &conv{{ ToTitleCase $f.Name }}
+					} else {
+						mObj.{{ ToTitleCase $f.Name }} = nil
+					}
+				{{ else if eq $convFrom "[]byte" }}
+					if len(obj.{{ ToTitleCase $f.Name }}) != 0 {
+						conv{{ ToTitleCase $f.Name }}, err := {{ $.P.Bson }}.ToObjectID(obj.{{ ToTitleCase $f.Name }})
+						if err != nil {
+							return nil, err
+						}
+						mObj.{{ ToTitleCase $f.Name }} = &conv{{ ToTitleCase $f.Name }}
+					} else {
+						mObj.{{ ToTitleCase $f.Name }} = nil
+					}
+				{{ end }}				
 			{{- else -}}
 				{{- if $f.IsRef -}}
 					mObj.{{ ToTitleCase $f.Name }} = obj.{{ ToTitleCase $f.Name }}

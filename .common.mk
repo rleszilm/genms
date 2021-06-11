@@ -6,10 +6,10 @@ BUILD_FLAGS ?= -a -ldflags "-s"
 TEST_MODE ?= unit
 TESTS_OPTS ?= -race
 TEST_EXCLUDE = tools
-TEST_REQUIRES_INTEGRATION = mongo
+TEST_INTEGRATION = mongo
 
 ifeq ($(TEST_MODE),integration)
-	TESTS ?= `go list ./... | egrep -v $(TEST_EXCLUDE) | egrep $(TEST_REQUIRES_INTEGRATION)`
+	TESTS ?= `go list ./... | egrep -v $(TEST_EXCLUDE) | egrep $(TEST_INTEGRATION)`
 else
-	TESTS ?= `go list ./... | egrep -v $(TEST_EXCLUDE) | egrep -v $(TEST_REQUIRES_INTEGRATION)`
+	TESTS ?= `go list ./... | egrep -v $(TEST_EXCLUDE) | egrep -v $(TEST_INTEGRATION)`
 endif
