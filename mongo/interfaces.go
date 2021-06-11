@@ -2,6 +2,8 @@ package mongo
 
 import (
 	"context"
+
+	"github.com/rleszilm/genms/service"
 )
 
 // Dialer is the interface used to obtain a new mongo client.
