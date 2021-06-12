@@ -679,7 +679,7 @@ type {{ $.C.Message.Name }}Mongo struct {
 	{{ range $n := $.C.Fields.Names -}}
 		{{- $f := ($.C.Fields.ByName $n) -}}
 		{{- if not $f.Ignore -}}
-			{{ ToTitleCase $f.Name }} {{ if not $f.IsExtRef -}}*{{- end -}}{{ $f.QualifiedQueryKind }} ` + "`" + `bson:"{{ $f.QueryName }},omitempty"` + "`" + `
+			{{ ToTitleCase $f.Name }} {{ $f.QualifiedQueryKind }} ` + "`" + `bson:"{{ $f.QueryName }},omitempty"` + "`" + `
 		{{- end }}
 	{{ end -}}
 }
@@ -711,7 +711,6 @@ func (x *{{ $.C.Message.Name }}Mongo) {{ $.C.Message.Name }}() (*{{ $.C.Message.
 
 // To{{ $.C.Message.Name }}Mongo converts the given {{ $.C.Message.Name }} into the internal mongo equivalent.
 func To{{ $.C.Message.Name }}Mongo(obj *{{ $.C.Message.QualifiedKind }}) (*{{ $.C.Message.Name }}Mongo, error) {
-	nilObj := {{ $.C.Message.QualifiedKind }}{}
 	mObj := &{{ $.C.Message.Name }}Mongo{}
 
 	{{ range $fn := $.C.Fields.Names -}}
@@ -726,7 +725,7 @@ func To{{ $.C.Message.Name }}Mongo(obj *{{ $.C.Message.QualifiedKind }}) (*{{ $.
 						if err != nil {
 							return nil, err
 						}
-						mObj.{{ ToTitleCase $f.Name }} = &conv{{ ToTitleCase $f.Name }}
+						mObj.{{ ToTitleCase $f.Name }} = conv{{ ToTitleCase $f.Name }}
 					} else {
 						mObj.{{ ToTitleCase $f.Name }} = nil
 					}
@@ -742,13 +741,7 @@ func To{{ $.C.Message.Name }}Mongo(obj *{{ $.C.Message.QualifiedKind }}) (*{{ $.
 					}
 				{{ end }}				
 			{{- else -}}
-				{{- if $f.IsRef -}}
-					mObj.{{ ToTitleCase $f.Name }} = obj.{{ ToTitleCase $f.Name }}
-				{{- else -}}
-					if obj.{{ ToTitleCase $f.Name }} != nilObj.{{ ToTitleCase $f.Name }} {
-						mObj.{{ ToTitleCase $f.Name }} = {{ $f.ToRef }}obj.{{ ToTitleCase $f.Name }}
-					}
-				{{- end -}}
+				mObj.{{ ToTitleCase $f.Name }} = obj.{{ ToTitleCase $f.Name }}
 			{{- end }}
 		{{- end }}
 	{{ end -}}
