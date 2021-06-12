@@ -1,5 +1,9 @@
 package updater
 
+import (
+	"time"
+)
+
 type Config struct {
 	Database   string        `envconfig:"database" required:"true"`
 	Collection string        `envconfig:"collection" required:"true"`
