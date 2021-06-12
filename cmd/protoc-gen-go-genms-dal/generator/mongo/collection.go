@@ -691,19 +691,17 @@ func (x *{{ $.C.Message.Name }}Mongo) {{ $.C.Message.Name }}() (*{{ $.C.Message.
 	{{ range $n := $.C.Fields.Names -}}
 		{{- $f := ($.C.Fields.ByName $n) -}}
 		{{- if not $f.Ignore -}}
-			if x.{{ ToTitleCase $f.Name }} != nil {
-				{{- $convFrom := $f.ToMongo -}}
-				{{ if eq $convFrom "ObjectID" -}}
-					{{- $convTo := $f.ToGo -}}
-					{{- if eq $convTo "string" -}}
-						y.{{ ToTitleCase $f.Name }} = x.{{ ToTitleCase $f.Name }}.Hex()
-					{{- else if eq $convTo "[]byte" -}}
-						y.{{ ToTitleCase $f.Name }} = (*x.{{ ToTitleCase $f.Name }})[:]
-					{{- end -}}
-				{{- else -}}
-					y.{{ ToTitleCase $f.Name }} = {{- if not $f.IsExtRef -}}*{{- end -}}x.{{ ToTitleCase $f.Name }}
-				{{- end }}
-			}
+			{{- $convFrom := $f.ToMongo -}}
+			{{ if eq $convFrom "ObjectID" -}}
+				{{- $convTo := $f.ToGo -}}
+				{{- if eq $convTo "string" -}}
+					y.{{ ToTitleCase $f.Name }} = x.{{ ToTitleCase $f.Name }}.Hex()
+				{{- else if eq $convTo "[]byte" -}}
+					y.{{ ToTitleCase $f.Name }} = (x.{{ ToTitleCase $f.Name }})[:]
+				{{- end -}}
+			{{- else -}}
+				y.{{ ToTitleCase $f.Name }} = x.{{ ToTitleCase $f.Name }}
+			{{- end }}
 		{{- end }}
 	{{ end -}}
 	return y, nil
@@ -726,8 +724,6 @@ func To{{ $.C.Message.Name }}Mongo(obj *{{ $.C.Message.QualifiedKind }}) (*{{ $.
 							return nil, err
 						}
 						mObj.{{ ToTitleCase $f.Name }} = conv{{ ToTitleCase $f.Name }}
-					} else {
-						mObj.{{ ToTitleCase $f.Name }} = nil
 					}
 				{{ else if eq $convFrom "[]byte" }}
 					if len(obj.{{ ToTitleCase $f.Name }}) != 0 {
@@ -735,9 +731,7 @@ func To{{ $.C.Message.Name }}Mongo(obj *{{ $.C.Message.QualifiedKind }}) (*{{ $.
 						if err != nil {
 							return nil, err
 						}
-						mObj.{{ ToTitleCase $f.Name }} = &conv{{ ToTitleCase $f.Name }}
-					} else {
-						mObj.{{ ToTitleCase $f.Name }} = nil
+						mObj.{{ ToTitleCase $f.Name }} = conv{{ ToTitleCase $f.Name }}
 					}
 				{{ end }}				
 			{{- else -}}

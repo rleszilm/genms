@@ -73,59 +73,25 @@ type SingleMongo struct {
 func (x *SingleMongo) Single() (*single.Single, error) {
 	y := &single.Single{}
 
-	if x.ScalarInt32 != nil {
-		y.ScalarInt32 = *x.ScalarInt32
-	}
-	if x.ScalarInt64 != nil {
-		y.ScalarInt64 = *x.ScalarInt64
-	}
-	if x.ScalarFloat32 != nil {
-		y.ScalarFloat32 = *x.ScalarFloat32
-	}
-	if x.ScalarFloat64 != nil {
-		y.ScalarFloat64 = *x.ScalarFloat64
-	}
-	if x.ScalarString != nil {
-		y.ScalarString = *x.ScalarString
-	}
-	if x.ScalarBytes != nil {
-		y.ScalarBytes = x.ScalarBytes
-	}
-	if x.ScalarBool != nil {
-		y.ScalarBool = *x.ScalarBool
-	}
-	if x.ScalarEnum != nil {
-		y.ScalarEnum = *x.ScalarEnum
-	}
-	if x.ObjMessage != nil {
-		y.ObjMessage = x.ObjMessage
-	}
+	y.ScalarInt32 = x.ScalarInt32
+	y.ScalarInt64 = x.ScalarInt64
+	y.ScalarFloat32 = x.ScalarFloat32
+	y.ScalarFloat64 = x.ScalarFloat64
+	y.ScalarString = x.ScalarString
+	y.ScalarBytes = x.ScalarBytes
+	y.ScalarBool = x.ScalarBool
+	y.ScalarEnum = x.ScalarEnum
+	y.ObjMessage = x.ObjMessage
 
-	if x.Renamed != nil {
-		y.Renamed = *x.Renamed
-	}
-	if x.IgnoredPostgres != nil {
-		y.IgnoredPostgres = *x.IgnoredPostgres
-	}
-	if x.RenamedPostgres != nil {
-		y.RenamedPostgres = *x.RenamedPostgres
-	}
-	if x.IgnoredRest != nil {
-		y.IgnoredRest = *x.IgnoredRest
-	}
-	if x.RenamedRest != nil {
-		y.RenamedRest = *x.RenamedRest
-	}
+	y.Renamed = x.Renamed
+	y.IgnoredPostgres = x.IgnoredPostgres
+	y.RenamedPostgres = x.RenamedPostgres
+	y.IgnoredRest = x.IgnoredRest
+	y.RenamedRest = x.RenamedRest
 
-	if x.RenamedMongo != nil {
-		y.RenamedMongo = *x.RenamedMongo
-	}
-	if x.BsonStringOid != nil {
-		y.BsonStringOid = x.BsonStringOid.Hex()
-	}
-	if x.BsonBytesOid != nil {
-		y.BsonBytesOid = (*x.BsonBytesOid)[:]
-	}
+	y.RenamedMongo = x.RenamedMongo
+	y.BsonStringOid = x.BsonStringOid.Hex()
+	y.BsonBytesOid = (x.BsonBytesOid)[:]
 	return y, nil
 }
 
