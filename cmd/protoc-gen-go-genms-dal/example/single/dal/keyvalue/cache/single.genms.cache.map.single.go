@@ -38,14 +38,17 @@ func (x *SingleMap) Shutdown(_ context.Context) error {
 	return nil
 }
 
-// NameOf returns the name of the map.
-func (x *SingleMap) NameOf() string {
-	return x.name
-}
-
 // String returns the name of the map.
 func (x *SingleMap) String() string {
-	return x.name
+	if x.name != "" {
+		return "cache-dal-single-single-lru-" + x.name
+	}
+	return "cache-dal-single-single-lru"
+}
+
+// NameOf returns the name of the LRU.
+func (x *SingleLRU) NameOf() string {
+	return x.String()
 }
 
 // All implements implements keyvalue.SingleReadAller.

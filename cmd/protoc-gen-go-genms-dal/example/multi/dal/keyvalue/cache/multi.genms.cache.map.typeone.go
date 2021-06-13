@@ -38,14 +38,17 @@ func (x *TypeOneMap) Shutdown(_ context.Context) error {
 	return nil
 }
 
-// NameOf returns the name of the map.
-func (x *TypeOneMap) NameOf() string {
-	return x.name
-}
-
 // String returns the name of the map.
 func (x *TypeOneMap) String() string {
-	return x.name
+	if x.name != "" {
+		return "cache-dal-multi-type-one-lru-" + x.name
+	}
+	return "cache-dal-multi-type-one-lru"
+}
+
+// NameOf returns the name of the LRU.
+func (x *TypeOneLRU) NameOf() string {
+	return x.String()
 }
 
 // All implements implements keyvalue.TypeOneReadAller.

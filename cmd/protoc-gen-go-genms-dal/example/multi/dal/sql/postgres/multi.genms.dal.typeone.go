@@ -52,15 +52,17 @@ func (x *TypeOneCollection) Shutdown(_ context.Context) error {
 	return nil
 }
 
-// NameOf returns the name of a service. This must be unique if there are multiple instances of the same
-// service.
-func (x *TypeOneCollection) NameOf() string {
-	return "postgres_dal_multi_" + x.config.TableName
+// String returns the name of the Collection.
+func (x *TypeOneCollection) String() string {
+	if x.name != "" {
+		return "postgres-dal-multi-type-one-" + x.name
+	}
+	return "postgres-dal-multi-type-one"
 }
 
-// String returns a string identifier for the service.
-func (x *TypeOneCollection) String() string {
-	return x.NameOf()
+// NameOf returns the name of the Collection.
+func (x *TypeOneCollection) NameOf() string {
+	return x.String()
 }
 
 // DoInsert provides the base logic for dal.TypeOneCollection.Insert.

@@ -111,10 +111,7 @@ package {{ .File.CachePackageName }}
 }
 
 func (c *LRU) defineCollection() error {
-	tmplSrc := `{{- $C := .C -}}
-{{- $P := .P -}}
-
-// {{ .C.Message.Name }}LRU defines a LRU cache implementing {{ .P.KeyValue }}.{{ .C.Message.Name }}ReadWriter.
+	tmplSrc := `// {{ .C.Message.Name }}LRU defines a LRU cache implementing {{ .P.KeyValue }}.{{ .C.Message.Name }}ReadWriter.
 // If a key is queries that does not exist an attempt to read and store it is made.
 type {{ .C.Message.Name }}LRU struct {
 	{{ .P.Service }}.Dependencies
@@ -138,14 +135,18 @@ func (x *{{ .C.Message.Name }}LRU) Shutdown(_ {{ .P.Context }}.Context) error {
 	return nil
 }
 
-// NameOf returns the name of the LRU.
-func (x *{{ .C.Message.Name }}LRU) NameOf() string {
-	return x.name
-}
-
 // String returns the name of the LRU.
 func (x *{{ .C.Message.Name }}LRU) String() string {
-	return x.name
+	{{- $pkg := .C.File.CachePackageName -}}
+	if x.name != "" {
+		return "{{ ToDashCase $pkg }}-{{ ToDashCase .C.Message.Name }}-lru-" + x.name
+	}
+	return "{{ ToDashCase $pkg }}-{{ ToDashCase .C.Message.Name }}-lru"
+}
+
+// NameOf returns the name of the LRU.
+func (x *{{ .C.Message.Name }}LRU) NameOf() string {
+	return x.String()
 }
 
 // All implements implements {{ .P.KeyValue }}.{{ .C.Message.Name }}ReadAller.
@@ -265,6 +266,7 @@ func New{{ .C.Message.Name }}LRU(name string, i int) (*{{ .C.Message.Name }}LRU,
 
 	tmpl, err := template.New("defineLRU").
 		Funcs(template.FuncMap{
+			"ToDashCase":  protocgenlib.ToDashCase,
 			"ToSnakeCase": protocgenlib.ToSnakeCase,
 		}).
 		Parse(tmplSrc)

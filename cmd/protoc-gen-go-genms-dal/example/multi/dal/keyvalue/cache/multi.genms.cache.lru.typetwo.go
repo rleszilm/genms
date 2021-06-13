@@ -39,14 +39,17 @@ func (x *TypeTwoLRU) Shutdown(_ context.Context) error {
 	return nil
 }
 
-// NameOf returns the name of the LRU.
-func (x *TypeTwoLRU) NameOf() string {
-	return x.name
-}
-
 // String returns the name of the LRU.
 func (x *TypeTwoLRU) String() string {
-	return x.name
+	if x.name != "" {
+		return "cache-dal-multi-type-two-lru-" + x.name
+	}
+	return "cache-dal-multi-type-two-lru"
+}
+
+// NameOf returns the name of the LRU.
+func (x *TypeTwoLRU) NameOf() string {
+	return x.String()
 }
 
 // All implements implements keyvalue.TypeTwoReadAller.

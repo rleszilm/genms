@@ -36,14 +36,17 @@ func (x *TypeOneUpdater) Shutdown(_ context.Context) error {
 	return nil
 }
 
-// NameOf returns the name of the updater.
-func (x *TypeOneUpdater) NameOf() string {
-	return x.name
-}
-
 // String returns the name of the updater.
 func (x *TypeOneUpdater) String() string {
-	return x.name
+	if x.name != "" {
+		return "cache-dal-multi-type-one-updater-" + x.name
+	}
+	return "cache-dal-multi-type-one-updater"
+}
+
+// NameOf returns the name of the updater.
+func (x *TypeOneUpdater) NameOf() string {
+	return x.String()
 }
 
 func (x *TypeOneUpdater) update(ctx context.Context) {

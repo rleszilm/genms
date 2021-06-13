@@ -123,8 +123,6 @@ func ToSingleMongo(obj *single.Single) (*SingleMongo, error) {
 			return nil, err
 		}
 		mObj.BsonStringOid = convBsonStringOid
-	} else {
-		mObj.BsonStringOid = nil
 	}
 
 	if len(obj.BsonBytesOid) != 0 {
@@ -132,9 +130,7 @@ func ToSingleMongo(obj *single.Single) (*SingleMongo, error) {
 		if err != nil {
 			return nil, err
 		}
-		mObj.BsonBytesOid = &convBsonBytesOid
-	} else {
-		mObj.BsonBytesOid = nil
+		mObj.BsonBytesOid = convBsonBytesOid
 	}
 
 	return mObj, nil
@@ -172,15 +168,18 @@ func (x *SingleCollection) Shutdown(_ context.Context) error {
 	return nil
 }
 
+// String returns a string identifier for the service.
+func (x *SingleCollection) String() string {
+	if x.name != "" {
+		return "mongo-dal-single-single-" + x.name
+	}
+	return "mongo-dal-single-single"
+}
+
 // NameOf returns the name of a service. This must be unique if there are multiple instances of the same
 // service.
 func (x *SingleCollection) NameOf() string {
-	return "mongo_dal_single_" + x.config.Name
-}
-
-// String returns a string identifier for the service.
-func (x *SingleCollection) String() string {
-	return x.NameOf()
+	return x.String()
 }
 
 // Find scans the collection for records matching the filter.

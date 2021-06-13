@@ -174,20 +174,26 @@ func (x *{{ $.C.Message.Name }}Collection) Shutdown(_ {{ $.P.Context }}.Context)
 	return nil
 }
 
+// String returns a string identifier for the service.
+func (x *{{ $.C.Message.Name }}Collection) String() string {
+	{{- $pkg := $.C.File.MongoPackageName -}}
+	if x.name != "" {
+		return "{{ ToDashCase $pkg }}-{{ ToDashCase .C.Message.Name }}-" + x.name
+	}
+	return "{{ ToDashCase $pkg }}-{{ ToDashCase .C.Message.Name }}"
+}
+
 // NameOf returns the name of a service. This must be unique if there are multiple instances of the same
 // service.
 func (x *{{ $.C.Message.Name }}Collection) NameOf() string {
-	return "{{ $.C.File.MongoPackageName }}_" + x.config.Name
-}
-
-// String returns a string identifier for the service.
-func (x *{{ $.C.Message.Name }}Collection) String() string {
-	return x.NameOf()
+	return x.String()
 }
 `
 
 	tmpl, err := template.New("defineMongoService").
-		Funcs(template.FuncMap{}).
+		Funcs(template.FuncMap{
+			"ToDashCase": protocgenlib.ToDashCase,
+		}).
 		Parse(tmplSrc)
 
 	if err != nil {

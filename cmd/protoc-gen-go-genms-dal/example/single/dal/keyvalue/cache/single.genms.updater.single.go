@@ -36,14 +36,17 @@ func (x *SingleUpdater) Shutdown(_ context.Context) error {
 	return nil
 }
 
-// NameOf returns the name of the updater.
-func (x *SingleUpdater) NameOf() string {
-	return x.name
-}
-
 // String returns the name of the updater.
 func (x *SingleUpdater) String() string {
-	return x.name
+	if x.name != "" {
+		return "cache-dal-single-single-updater-" + x.name
+	}
+	return "cache-dal-single-single-updater"
+}
+
+// NameOf returns the name of the updater.
+func (x *SingleUpdater) NameOf() string {
+	return x.String()
 }
 
 func (x *SingleUpdater) update(ctx context.Context) {

@@ -174,20 +174,25 @@ func (x *{{ .C.Message.Name }}Collection) Shutdown(_ {{ .P.Context }}.Context) e
 	return nil
 }
 
-// NameOf returns the name of a service. This must be unique if there are multiple instances of the same
-// service.
-func (x *{{ .C.Message.Name }}Collection) NameOf() string {
-	return "rest_{{ .C.File.DalPackageName }}_" + x.config.Name
+// String returns the name of the Collection.
+func (x *{{ .C.Message.Name }}Collection) String() string {
+	{{- $pkg := .C.File.RestPackageName -}}
+	if x.name != "" {
+		return "{{ ToDashCase $pkg }}-{{ ToDashCase .C.Message.Name }}-" + x.name
+	}
+	return "{{ ToDashCase $pkg }}-{{ ToDashCase .C.Message.Name }}"
 }
 
-// String returns a string identifier for the service.
-func (x *{{ .C.Message.Name }}Collection) String() string {
-	return x.NameOf()
+// NameOf returns the name of the Collection.
+func (x *{{ .C.Message.Name }}Collection) NameOf() string {
+	return x.String()
 }
 `
 
 	tmpl, err := template.New("defineRestService").
-		Funcs(template.FuncMap{}).
+		Funcs(template.FuncMap{
+			"ToDashCase": protocgenlib.ToDashCase,
+		}).
 		Parse(tmplSrc)
 
 	if err != nil {

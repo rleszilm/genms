@@ -138,16 +138,19 @@ func (x *{{ .C.Message.Name }}Updater) Shutdown(_ {{ .P.Context }}.Context) erro
 	return nil
 }
 
-// NameOf returns the name of the updater.
-func (x *{{ .C.Message.Name }}Updater) NameOf() string {
-	return x.name
-}
-
 // String returns the name of the updater.
 func (x *{{ .C.Message.Name }}Updater) String() string {
-	return x.name
+	{{- $pkg := .C.File.CachePackageName -}}
+	if x.name != "" {
+		return "{{ ToDashCase $pkg }}-{{ ToDashCase .C.Message.Name }}-updater-" + x.name
+	}
+	return "{{ ToDashCase $pkg }}-{{ ToDashCase .C.Message.Name }}-updater"
 }
 
+// NameOf returns the name of the updater.
+func (x *{{ .C.Message.Name }}Updater) NameOf() string {
+	return x.String()
+}
 
 func (x *{{ .C.Message.Name }}Updater) update(ctx {{ .P.Context }}.Context) {
 	ctx, _ = {{ .P.Tag }}.New(ctx,
@@ -223,6 +226,7 @@ func New{{ .C.Message.Name }}Updater(name string, k {{ .P.KeyValue }}.{{ .C.Mess
 	tmpl, err := template.New("defineUpdater").
 		Funcs(template.FuncMap{
 			"ToCamelCase": protocgenlib.ToCamelCase,
+			"ToDashCase":  protocgenlib.ToDashCase,
 			"ToSnakeCase": protocgenlib.ToSnakeCase,
 		}).
 		Parse(tmplSrc)

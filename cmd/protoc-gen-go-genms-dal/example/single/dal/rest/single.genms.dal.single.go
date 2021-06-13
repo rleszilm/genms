@@ -54,15 +54,17 @@ func (x *SingleCollection) Shutdown(_ context.Context) error {
 	return nil
 }
 
-// NameOf returns the name of a service. This must be unique if there are multiple instances of the same
-// service.
-func (x *SingleCollection) NameOf() string {
-	return "rest_dal_single_" + x.config.Name
+// String returns the name of the Collection.
+func (x *SingleCollection) String() string {
+	if x.name != "" {
+		return "rest-dal-single-single-" + x.name
+	}
+	return "rest-dal-single-single"
 }
 
-// String returns a string identifier for the service.
-func (x *SingleCollection) String() string {
-	return x.NameOf()
+// NameOf returns the name of the Collection.
+func (x *SingleCollection) NameOf() string {
+	return x.String()
 }
 
 // DoReq executes the given http request.
