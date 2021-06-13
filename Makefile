@@ -34,7 +34,18 @@ proto-annotations:
 
 ## Test runs all project unit tests.
 test:
-	go test -coverprofile=cover.out $(TEST_OPTS) $(TESTS)
+	go test $(TESTS_OPTS) $(TESTS)
+
+test-all: test test-integration
+
+test-integration: test-env
+	docker compose up make
+
+test-env:
+	docker compose up -d make
+
+test-clean:
+	docker compose down --remove-orphans
 
 tool-chain:
 	go get \

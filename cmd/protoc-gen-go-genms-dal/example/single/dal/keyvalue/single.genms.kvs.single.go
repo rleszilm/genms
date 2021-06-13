@@ -25,7 +25,7 @@ type SingleReadAller interface {
 // SingleWriter is defines the interface for setting values in a KV store.
 //go:generate go run github.com/maxbrunsfeld/counterfeiter/v6 . SingleWriter
 type SingleWriter interface {
-	SetByKey(context.Context, SingleKey, *single.Single) error
+	SetByKey(context.Context, SingleKey, *single.Single) (*single.Single, error)
 }
 
 // SingleReadWriter is defines the interface for setting values in a KV store.

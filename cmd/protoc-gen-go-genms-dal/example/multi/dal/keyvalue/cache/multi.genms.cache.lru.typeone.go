@@ -93,18 +93,18 @@ func (x *TypeOneLRU) GetByKey(ctx context.Context, key keyvalue.TypeOneKey) (*mu
 	if x.reader != nil {
 		val, err := x.reader.GetByKey(ctx, key)
 		if err != nil {
-			return nil, fmt.Errorf("lru: <no value>.GetByKey - %w", err)
+			return nil, fmt.Errorf("lru: TypeOne.GetByKey - %w", err)
 		}
 		x.lru.Add(key, val)
 		return val, nil
 	}
 
 	stats.Record(ctx, cache.MeasureError.M(1))
-	return nil, fmt.Errorf("lru: <no value>.GetByKey - %w", cache.ErrGetValue)
+	return nil, fmt.Errorf("lru: TypeOne.GetByKey - %w", cache.ErrGetValue)
 }
 
 // SetByKey implements keyvalue.TypeOneWriter.
-func (x *TypeOneLRU) SetByKey(ctx context.Context, key keyvalue.TypeOneKey, val *multi.TypeOne) error {
+func (x *TypeOneLRU) SetByKey(ctx context.Context, key keyvalue.TypeOneKey, val *multi.TypeOne) (*multi.TypeOne, error) {
 	start := time.Now()
 	ctx, _ = tag.New(ctx,
 		tag.Upsert(cache.TagCollection, "type_one"),
@@ -120,10 +120,12 @@ func (x *TypeOneLRU) SetByKey(ctx context.Context, key keyvalue.TypeOneKey, val 
 	}()
 
 	if x.writer != nil {
-		if err := x.writer.SetByKey(ctx, key, val); err != nil {
+		upd, err := x.writer.SetByKey(ctx, key, val)
+		if err != nil {
 			stats.Record(ctx, cache.MeasureError.M(1))
-			return fmt.Errorf("lru: <no value>.SetBykey - %w", err)
+			return nil, fmt.Errorf("lru: TypeOne.SetBykey - %w", err)
 		}
+		val = upd
 	}
 
 	x.lru.Add(key, val)
@@ -135,7 +137,7 @@ func (x *TypeOneLRU) SetByKey(ctx context.Context, key keyvalue.TypeOneKey, val 
 	}
 	x.all = all
 
-	return nil
+	return val, nil
 }
 
 // WithReader tells the TypeOneLRU where to source values from if they don't exist in cache.

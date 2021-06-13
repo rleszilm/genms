@@ -31,7 +31,7 @@ func AsField(f *protocgenlib.Field) *Field {
 func (f *Field) QueryName() string {
 	opts := f.Options()
 	if opts != nil && opts.GetPostgres() != nil {
-		if name := opts.GetPostgres().GetField(); name != "" {
+		if name := opts.GetPostgres().GetName(); name != "" {
 			return name
 		}
 	}

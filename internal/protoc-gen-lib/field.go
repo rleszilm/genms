@@ -73,10 +73,25 @@ func (f *Field) ToRef() string {
 	return "&"
 }
 
-// IsRef returns whether the field is a reference.
+// IsRef returns whether the internal type is a reference.
 func (f *Field) IsRef() bool {
+	return f.IsMessage() || f.IsSlice()
+}
+
+// IsMessage returns whether the field is a reference.
+func (f *Field) IsMessage() bool {
 	if f.field.Message != nil {
 		return true
 	}
 	return false
+}
+
+// IsSlice returns whether the field is a slice of values.
+func (f *Field) IsSlice() bool {
+	qKind := f.QualifiedKind()
+	if len(qKind) < 2 {
+		return false
+	}
+
+	return qKind[:2] == "[]"
 }

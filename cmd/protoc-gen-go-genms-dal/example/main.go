@@ -9,7 +9,7 @@ import (
 )
 
 func main() {
-	hash, err := cache_dal_single.NewSingleMap("map", 5)
+	hash, err := cache_dal_single.NewSingleMap("map")
 	if err != nil {
 		log.Fatal(err)
 	}

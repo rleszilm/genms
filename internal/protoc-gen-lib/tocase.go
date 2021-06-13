@@ -10,13 +10,6 @@ var (
 	tokenRegex = regexp.MustCompile("[\\s_-]")
 )
 
-func AsPointer(s string) string {
-	if s[0] == '*' {
-		return s
-	}
-	return "*" + s
-}
-
 func ToTitleCase(s string) string {
 	tokens := tokenize(s)
 	for i, tok := range tokens {

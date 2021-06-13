@@ -31,12 +31,6 @@ func (f *File) RestPackageName() string {
 	return "rest_" + f.File.DalPackageName()
 }
 
-// RestDalPackagePath returns the path of the package.
-func (f *File) RestDalPackagePath() string {
-	toks := append([]string{strings.ReplaceAll(f.Proto().GoImportPath.String(), "\"", "")}, "dal")
-	return path.Join(toks...)
-}
-
 // RestPackagePath returns the path of the package.
 func (f *File) RestPackagePath() string {
 	toks := append([]string{strings.ReplaceAll(f.Proto().GoImportPath.String(), "\"", "")}, "dal", "rest")

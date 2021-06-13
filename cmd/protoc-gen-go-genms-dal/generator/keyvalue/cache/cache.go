@@ -129,8 +129,8 @@ func (x *Nil{{ .C.Message.Name }}Cache) GetByKey(_ {{ .P.Context }}.Context, _ {
 }
 
 // SetByKey implements {{ .P.KeyValue }}.{{ .C.Message.Name }}Writer.
-func (x *Nil{{ .C.Message.Name }}Cache) SetByKey(_ {{ .P.Context }}.Context, _ {{ .P.KeyValue }}.{{ .C.Message.Name }}Key, _ *{{ .C.Message.QualifiedKind }}) error {
-	return nil
+func (x *Nil{{ .C.Message.Name }}Cache) SetByKey(_ {{ .P.Context }}.Context, _ {{ .P.KeyValue }}.{{ .C.Message.Name }}Key, _ *{{ .C.Message.QualifiedKind }}) (*{{ .C.Message.QualifiedKind }}, error) {
+	return nil, nil
 }
 
 `

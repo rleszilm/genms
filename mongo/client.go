@@ -3,64 +3,46 @@ package mongo
 import (
 	"context"
 
-	"github.com/rleszilm/genms/service"
 	"go.mongodb.org/mongo-driver/mongo"
 	"go.mongodb.org/mongo-driver/mongo/options"
 	"go.mongodb.org/mongo-driver/mongo/readpref"
 )
 
-// Client is a wrapper for a mongo.Client that allows it to be managed as a service.
-type Client struct {
-	service.Dependencies
-	*mongo.Client
-
-	config *Config
+// Client is the interface for a mongo client.
+type Client interface {
+	// Database returns a reference to the mongo database.
+	Database(db string, opts ...*DatabaseOptions) Database
+	// Close closes the client connection to mongo.
+	Close(ctx context.Context) error
+	// Ping pings the remote mongo server to ensure connectivity is valid.
+	Ping(ctx context.Context, rp *readpref.ReadPref) error
 }
 
-// Initialize implements the service.Initialize interface for Service.
-func (c *Client) Initialize(ctx context.Context) error {
-	ctx, cancel := context.WithTimeout(ctx, c.config.Timeout)
-	defer cancel()
+// Client is a wrapper for mongo.Client
+type SimpleClient struct {
+	session mongo.Session
+}
 
-	// ensure mongo is available
-	rp, err := readpref.New(readpref.PrimaryPreferredMode)
-	if err != nil {
-		return err
+// Database implements mongo.Client.Database
+func (c *SimpleClient) Database(db string, opts ...*DatabaseOptions) Database {
+	dOpts := []*options.DatabaseOptions{}
+	for _, opt := range opts {
+		dOpts = append(dOpts, &opt.DatabaseOptions)
 	}
-	return c.Client.Ping(ctx, rp)
+	return &SimpleDatabase{Database: c.session.Client().Database(db, dOpts...)}
 }
 
-// Shutdown implements the service.Shutdown interface for Service.
-func (c *Client) Shutdown(ctx context.Context) error {
-	return c.Client.Disconnect(ctx)
+// Close implements mongo.Client.Close
+func (c *SimpleClient) Close(ctx context.Context) error {
+	c.session.EndSession(ctx)
+	return nil
 }
 
-// NameOf implements service.NameOf
-func (c *Client) NameOf() string {
-	return "mongo"
+// Ping implements mongo.Client.Ping
+func (c *SimpleClient) Ping(ctx context.Context, rp *readpref.ReadPref) error {
+	return c.session.Client().Ping(ctx, rp)
 }
 
-// String implements service.String
-func (c *Client) String() string {
-	return c.NameOf()
-}
-
-// NewClient returns a new Client
-func NewClient(config *Config) (*Client, error) {
-	opts := options.Client()
-	opts.SetAppName(config.AppName)
-	opts.SetMaxPoolSize(config.MaxPoolSize)
-	opts.SetMaxConnIdleTime(config.MaxConnIdleTime)
-	opts.ApplyURI(config.URI)
-
-	ctx := context.Background()
-	client, err := mongo.Connect(ctx, opts)
-	if err != nil {
-		return nil, err
-	}
-
-	return &Client{
-		Client: client,
-		config: config,
-	}, nil
+func NewSimpleClient(s mongo.Session) *SimpleClient {
+	return &SimpleClient{session: s}
 }

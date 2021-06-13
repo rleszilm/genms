@@ -27,13 +27,13 @@ message TypeOne {
     Message obj_message = 8;
     
     string ignored = 9 [(genms.dal.field_options).ignore = true];
-    string renamed = 10 [(genms.dal.field_options).field = "aliased"];
+    string renamed = 10 [(genms.dal.field_options).name = "aliased"];
 
     string ignored_postgres = 11 [(genms.dal.field_options).postgres.ignore = true];
-    string renamed_postgres = 12 [(genms.dal.field_options).postgres.field = "aliased_postgres"];
+    string renamed_postgres = 12 [(genms.dal.field_options).postgres.name = "aliased_postgres"];
     
     string ignored_rest = 13 [(genms.dal.field_options).rest.ignore = true];
-    string renamed_rest = 14 [(genms.dal.field_options).rest.field = "aliased_rest"];
+    string renamed_rest = 14 [(genms.dal.field_options).rest.name = "aliased_rest"];
 
     option (genms.dal.message_options) = {
         queries: [
@@ -117,13 +117,13 @@ message TypeTwo {
     Message obj_message = 8;
     
     string ignored = 9 [(genms.dal.field_options).ignore = true];
-    string renamed = 10 [(genms.dal.field_options).field = "aliased"];
+    string renamed = 10 [(genms.dal.field_options).name = "aliased"];
 
     string ignored_postgres = 11 [(genms.dal.field_options).postgres.ignore = true];
-    string renamed_postgres = 12 [(genms.dal.field_options).postgres.field = "aliased_postgres"];
+    string renamed_postgres = 12 [(genms.dal.field_options).postgres.name = "aliased_postgres"];
     
     string ignored_rest = 13 [(genms.dal.field_options).rest.ignore = true];
-    string renamed_rest = 14 [(genms.dal.field_options).rest.field = "aliased_rest"];
+    string renamed_rest = 14 [(genms.dal.field_options).rest.name = "aliased_rest"];
 
     option (genms.dal.message_options) = {
         queries: [

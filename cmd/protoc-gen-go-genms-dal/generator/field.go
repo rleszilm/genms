@@ -49,7 +49,7 @@ func (f *Field) Options() *annotations.DalFieldOptions {
 // QueryName returns the name of the field as it should appear in database queries.
 func (f *Field) QueryName() string {
 	if f.options != nil {
-		if name := f.options.GetField(); name != "" {
+		if name := f.options.GetName(); name != "" {
 			return name
 		}
 	}
