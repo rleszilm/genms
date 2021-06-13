@@ -48,14 +48,17 @@ func (d *Dialer) Shutdown(ctx context.Context) error {
 	return d.client.Disconnect(ctx)
 }
 
-// NameOf implements Server.NameOf()
-func (d *Dialer) NameOf() string {
-	return "mongo-" + d.config.AppName
-}
-
 // String implements Server.String()
 func (d *Dialer) String() string {
-	return "mongo-" + d.config.AppName
+	if d.config.AppName != "" {
+		return "mongo-dialer-pool-" + d.config.AppName
+	}
+	return "mongo-dialer-pool"
+}
+
+// NameOf implements Server.NameOf()
+func (d *Dialer) NameOf() string {
+	return d.String()
 }
 
 // Dial returns a new mongo connection.
