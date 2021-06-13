@@ -131,7 +131,7 @@ type {{ .C.Message.Name }}ReadAller interface {
 // {{ .C.Message.Name }}Writer is defines the interface for setting values in a KV store.
 //{{ $Generate }} {{ .C.Message.Name }}Writer
 type {{ .C.Message.Name }}Writer interface {
-	SetByKey({{ .P.Context }}.Context, {{ .C.Message.Name }}Key, *{{ .C.Message.QualifiedKind }}) (error)
+	SetByKey({{ .P.Context }}.Context, {{ .C.Message.Name }}Key, *{{ .C.Message.QualifiedKind }}) (*{{ .C.Message.QualifiedKind }}, error)
 }
 
 // {{ .C.Message.Name }}ReadWriter is defines the interface for setting values in a KV store.

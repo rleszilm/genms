@@ -29,7 +29,7 @@ func AsField(f *protocgenlib.Field) *Field {
 func (f *Field) QueryName() string {
 	opts := f.Options()
 	if opts != nil && opts.GetRest() != nil {
-		if name := opts.GetRest().GetField(); name != "" {
+		if name := opts.GetRest().GetName(); name != "" {
 			return name
 		}
 	}

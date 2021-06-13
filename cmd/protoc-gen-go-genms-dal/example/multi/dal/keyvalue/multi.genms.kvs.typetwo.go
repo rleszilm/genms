@@ -25,7 +25,7 @@ type TypeTwoReadAller interface {
 // TypeTwoWriter is defines the interface for setting values in a KV store.
 //go:generate go run github.com/maxbrunsfeld/counterfeiter/v6 . TypeTwoWriter
 type TypeTwoWriter interface {
-	SetByKey(context.Context, TypeTwoKey, *multi.TypeTwo) error
+	SetByKey(context.Context, TypeTwoKey, *multi.TypeTwo) (*multi.TypeTwo, error)
 }
 
 // TypeTwoReadWriter is defines the interface for setting values in a KV store.

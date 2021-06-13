@@ -23,6 +23,6 @@ func (x *NilSingleCache) GetByKey(_ context.Context, _ keyvalue.SingleKey) (*sin
 }
 
 // SetByKey implements keyvalue.SingleWriter.
-func (x *NilSingleCache) SetByKey(_ context.Context, _ keyvalue.SingleKey, _ *single.Single) error {
-	return nil
+func (x *NilSingleCache) SetByKey(_ context.Context, _ keyvalue.SingleKey, _ *single.Single) (*single.Single, error) {
+	return nil, nil
 }

@@ -28,6 +28,10 @@ func (f *Fields) Generator() *Fields {
 
 // ByName returns the specified field.
 func (f *Fields) ByName(n string) *Field {
+	if f == nil {
+		return nil
+	}
+
 	field := f.Fields.ByName(n)
 	if field == nil {
 		return nil

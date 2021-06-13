@@ -11,31 +11,56 @@ import (
 type Arg struct {
 	*generator.Arg
 
-	raw *annotations.DalOptions_Query_Arg
+	field *Field
+	raw   *annotations.Arg
 }
 
 // NewArg returns a new Arg
-func NewArg(file *File, fields *Fields, arg *annotations.DalOptions_Query_Arg) *Arg {
+func NewArg(file *File, fields *Fields, arg *annotations.Arg) *Arg {
+	field := fields.ByName(arg.GetName())
+
 	return &Arg{
-		Arg: generator.NewArg(file.Generator(), fields.Generator(), arg),
-		raw: arg,
+		Arg:   generator.NewArg(file.Generator(), fields.Generator(), arg),
+		field: field,
+		raw:   arg,
 	}
+}
+
+// QueryName returns the name of the field in the remote system.
+func (a *Arg) QueryName() (string, error) {
+	if a.field != nil {
+		fopts := a.field.Options()
+
+		if f := fopts.GetPostgres().GetName(); f != "" {
+			return f, nil
+		}
+
+		if f := fopts.GetName(); f != "" {
+			return f, nil
+		}
+	}
+
+	if a.raw.GetPostgres().GetName() != "" {
+		return a.raw.GetPostgres().GetName(), nil
+	}
+
+	return a.Arg.QueryName()
 }
 
 // Comparison returns the check to perform
 func (a *Arg) Comparison() (string, error) {
 	switch a.raw.GetComparison() {
-	case annotations.DalOptions_Query_Arg_EQ:
+	case annotations.Comparator_EQ:
 		return "=", nil
-	case annotations.DalOptions_Query_Arg_NE:
+	case annotations.Comparator_NE:
 		return "!=", nil
-	case annotations.DalOptions_Query_Arg_GT:
+	case annotations.Comparator_GT:
 		return ">", nil
-	case annotations.DalOptions_Query_Arg_LT:
+	case annotations.Comparator_LT:
 		return "<", nil
-	case annotations.DalOptions_Query_Arg_GTE:
+	case annotations.Comparator_GTE:
 		return ">=", nil
-	case annotations.DalOptions_Query_Arg_LTE:
+	case annotations.Comparator_LTE:
 		return "<=", nil
 	}
 	return "", errors.New("invalid comparison")

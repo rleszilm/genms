@@ -23,6 +23,6 @@ func (x *NilTypeTwoCache) GetByKey(_ context.Context, _ keyvalue.TypeTwoKey) (*m
 }
 
 // SetByKey implements keyvalue.TypeTwoWriter.
-func (x *NilTypeTwoCache) SetByKey(_ context.Context, _ keyvalue.TypeTwoKey, _ *multi.TypeTwo) error {
-	return nil
+func (x *NilTypeTwoCache) SetByKey(_ context.Context, _ keyvalue.TypeTwoKey, _ *multi.TypeTwo) (*multi.TypeTwo, error) {
+	return nil, nil
 }

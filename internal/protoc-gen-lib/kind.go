@@ -16,6 +16,8 @@ func ToGoKind(k protoreflect.Kind) string {
 		return "int64"
 	case "string":
 		return "string"
+	case "bytes":
+		return "[]byte"
 	default:
 		return k.GoString()
 	}

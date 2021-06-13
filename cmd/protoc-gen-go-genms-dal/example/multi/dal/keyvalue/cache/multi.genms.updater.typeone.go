@@ -60,18 +60,22 @@ func (x *TypeOneUpdater) update(ctx context.Context) {
 		case <-ctx.Done():
 			return
 		case <-ticker.C:
+			cache.Logs().Infof("starting update for %s", x.name)
 			start := time.Now()
 			stats.Record(ctx, cache.MeasureInflight.M(1))
 
 			vals, err := x.reader.All(ctx)
-			if err == nil {
-				for _, val := range vals {
-					if err = x.writer.SetByKey(ctx, x.key(val), val); err != nil {
-						cache.Logs().Error("updater TypeOne could not store value:", x.key(val), val, err)
-						break
-					}
+			if err != nil {
+			}
+
+			for _, val := range vals {
+				cache.Logs().Trace("updater TypeOne storing value:", x.key(val), val)
+				if _, err = x.writer.SetByKey(ctx, x.key(val), val); err != nil {
+					cache.Logs().Error("updater TypeOne could not store value:", x.key(val), val, err)
+					break
 				}
 			}
+
 			stats.Record(ctx, cache.MeasureInflight.M(-1))
 
 			if err != nil {
@@ -83,8 +87,10 @@ func (x *TypeOneUpdater) update(ctx context.Context) {
 			stats.Record(ctx, cache.MeasureLatency.M(dur))
 
 			if x.interval == 0 {
+				cache.Logs().Infof("updater %s is terminating", x.name)
 				return
 			}
+			cache.Logs().Infof("scheduling next update for %v", x.interval)
 			ticker.Reset(x.interval)
 		}
 	}

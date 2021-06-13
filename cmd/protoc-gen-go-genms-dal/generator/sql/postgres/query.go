@@ -11,7 +11,7 @@ type Query struct {
 }
 
 // NewQuery returns a new Query
-func NewQuery(file *File, fields *Fields, q *annotations.DalOptions_Query) *Query {
+func NewQuery(file *File, fields *Fields, q *annotations.Query) *Query {
 	return AsQuery(generator.NewQuery(file.Generator(), fields.Generator(), q))
 }
 

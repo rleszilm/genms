@@ -32,12 +32,15 @@ type SingleCollection struct {
 
 	url                     *url.URL
 	urlAll                  string
+	urlTmplById             *template.Template
 	urlTmplOneParam         *template.Template
 	urlTmplMultipleParam    *template.Template
 	urlTmplMessageParam     *template.Template
 	urlTmplWithComparator   *template.Template
 	urlTmplWithRest         *template.Template
 	urlTmplProviderStubOnly *template.Template
+
+	urlTmplNonFieldOnly *template.Template
 }
 
 // Initialize initializes and starts the service. Initialize should panic in case of
@@ -135,6 +138,36 @@ func (x *SingleCollection) All(ctx context.Context) ([]*single.Single, error) {
 	}
 
 	return x.DoReq(ctx, "all", req)
+}
+
+// ById implements dal.SingleCollection.ById
+func (x *SingleCollection) ById(ctx context.Context, bson_string_oid string) ([]*single.Single, error) {
+	u := &url.URL{}
+	copier.Copy(u, x.url)
+
+	req := &http.Request{
+		Method: "GET",
+		Header: http.Header{},
+		URL:    u,
+	}
+
+	queryValues := url.Values{}
+	queryValues.Add("bson_string_oid", fmt.Sprintf("%v", bson_string_oid))
+
+	req.URL.RawQuery = queryValues.Encode()
+
+	pathValues := map[string]interface{}{}
+	pathBuf := &bytes.Buffer{}
+	if err := x.urlTmplById.Execute(pathBuf, pathValues); err != nil {
+		return nil, err
+	}
+	req.URL.Path = pathBuf.String()
+
+	for k, v := range x.config.Headers {
+		req.Header.Add(k, v)
+	}
+
+	return x.DoReq(ctx, "by_id", req)
 }
 
 // OneParam implements dal.SingleCollection.OneParam
@@ -328,6 +361,35 @@ func (x *SingleCollection) ProviderStubOnly(ctx context.Context) ([]*single.Sing
 	return x.DoReq(ctx, "provider_stub_only", req)
 }
 
+// NonFieldOnly implements dal.SingleCollection.NonFieldOnly
+func (x *SingleCollection) NonFieldOnly(ctx context.Context, kind string) ([]*single.Single, error) {
+	u := &url.URL{}
+	copier.Copy(u, x.url)
+
+	req := &http.Request{
+		Method: "GET",
+		Header: http.Header{},
+		URL:    u,
+	}
+
+	queryValues := url.Values{}
+
+	req.URL.RawQuery = queryValues.Encode()
+
+	pathValues := map[string]interface{}{"kind": kind}
+	pathBuf := &bytes.Buffer{}
+	if err := x.urlTmplNonFieldOnly.Execute(pathBuf, pathValues); err != nil {
+		return nil, err
+	}
+	req.URL.Path = pathBuf.String()
+
+	for k, v := range x.config.Headers {
+		req.Header.Add(k, v)
+	}
+
+	return x.DoReq(ctx, "non_field_only", req)
+}
+
 // NewSingleCollection returns a new SingleCollection.
 func NewSingleCollection(instance string, client *http.Client, urls SingleUrlTemplateProvider, config *SingleConfig) (*SingleCollection, error) {
 	coll := &SingleCollection{
@@ -343,6 +405,16 @@ func NewSingleCollection(instance string, client *http.Client, urls SingleUrlTem
 	coll.url = u
 
 	coll.urlAll = urls.All()
+	if urls.ById() != "" {
+		urlTmplById, err := template.New("urlTmplById").
+			Funcs(template.FuncMap{}).
+			Parse(urls.ById())
+		if err != nil {
+			return nil, err
+		}
+		coll.urlTmplById = urlTmplById
+	}
+
 	if urls.OneParam() != "" {
 		urlTmplOneParam, err := template.New("urlTmplOneParam").
 			Funcs(template.FuncMap{}).
@@ -403,6 +475,16 @@ func NewSingleCollection(instance string, client *http.Client, urls SingleUrlTem
 		coll.urlTmplProviderStubOnly = urlTmplProviderStubOnly
 	}
 
+	if urls.NonFieldOnly() != "" {
+		urlTmplNonFieldOnly, err := template.New("urlTmplNonFieldOnly").
+			Funcs(template.FuncMap{}).
+			Parse(urls.NonFieldOnly())
+		if err != nil {
+			return nil, err
+		}
+		coll.urlTmplNonFieldOnly = urlTmplNonFieldOnly
+	}
+
 	return coll, nil
 }
 
@@ -414,6 +496,7 @@ type SingleScanner struct {
 	ScalarFloat32 float32                `json:"scalar_float32"`
 	ScalarFloat64 float64                `json:"scalar_float64"`
 	ScalarString  string                 `json:"scalar_string"`
+	ScalarBytes   []byte                 `json:"scalar_bytes"`
 	ScalarBool    bool                   `json:"scalar_bool"`
 	ScalarEnum    single.Single_Enum     `json:"scalar_enum"`
 	ObjMessage    *single.Single_Message `json:"obj_message"`
@@ -422,7 +505,11 @@ type SingleScanner struct {
 	IgnoredPostgres string `json:"ignored_postgres"`
 	RenamedPostgres string `json:"renamed_postgres"`
 
-	RenamedRest string `json:"aliased_rest"`
+	RenamedRest   string `json:"aliased_rest"`
+	IgnoredMongo  string `json:"ignored_mongo"`
+	RenamedMongo  string `json:"renamed_mongo"`
+	BsonStringOid string `json:"bson_string_oid"`
+	BsonBytesOid  []byte `json:"bson_bytes_oid"`
 }
 
 // Single returns a new single.Single populated with scanned values.
@@ -434,6 +521,7 @@ func (x *SingleScanner) Single() *single.Single {
 	y.ScalarFloat32 = x.ScalarFloat32
 	y.ScalarFloat64 = x.ScalarFloat64
 	y.ScalarString = x.ScalarString
+	y.ScalarBytes = x.ScalarBytes
 	y.ScalarBool = x.ScalarBool
 	y.ScalarEnum = x.ScalarEnum
 	y.ObjMessage = x.ObjMessage
@@ -443,6 +531,10 @@ func (x *SingleScanner) Single() *single.Single {
 	y.RenamedPostgres = x.RenamedPostgres
 
 	y.RenamedRest = x.RenamedRest
+	y.IgnoredMongo = x.IgnoredMongo
+	y.RenamedMongo = x.RenamedMongo
+	y.BsonStringOid = x.BsonStringOid
+	y.BsonBytesOid = x.BsonBytesOid
 	return y
 }
 
@@ -459,10 +551,12 @@ type SingleConfig struct {
 //go:generate go run github.com/maxbrunsfeld/counterfeiter/v6 . SingleUrlTemplateProvider
 type SingleUrlTemplateProvider interface {
 	All() string
+	ById() string
 	OneParam() string
 	MultipleParam() string
 	MessageParam() string
 	WithComparator() string
 	WithRest() string
 	ProviderStubOnly() string
+	NonFieldOnly() string
 }

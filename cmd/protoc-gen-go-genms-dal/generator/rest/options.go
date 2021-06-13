@@ -6,5 +6,5 @@ import (
 
 // Options is a wrapper for the rest annotations
 type Options struct {
-	annotations.DalOptions_Query_Rest
+	annotations.DalOptions
 }

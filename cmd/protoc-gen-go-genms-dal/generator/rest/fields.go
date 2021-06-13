@@ -24,5 +24,10 @@ func AsFields(fields *protocgenlib.Fields) *Fields {
 
 // ByName returns the specified field.
 func (f *Fields) ByName(n string) *Field {
-	return AsField(f.Fields.ByName(n).ProtocGenLib())
+	field := f.Fields.ByName(n)
+	if field == nil {
+		return nil
+	}
+
+	return AsField(field.ProtocGenLib())
 }
