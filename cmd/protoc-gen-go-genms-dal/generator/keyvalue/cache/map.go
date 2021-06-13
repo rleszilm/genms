@@ -139,13 +139,13 @@ func (x *{{ .C.Message.Name }}Map) Shutdown(_ {{ .P.Context }}.Context) error {
 func (x *{{ .C.Message.Name }}Map) String() string {
 	{{- $pkg := .C.File.CachePackageName -}}
 	if x.name != "" {
-		return "{{ ToDashCase $pkg }}-{{ ToDashCase .C.Message.Name }}-lru-" + x.name
+		return "{{ ToDashCase $pkg }}-{{ ToDashCase .C.Message.Name }}-map-" + x.name
 	}
-	return "{{ ToDashCase $pkg }}-{{ ToDashCase .C.Message.Name }}-lru"
+	return "{{ ToDashCase $pkg }}-{{ ToDashCase .C.Message.Name }}-map"
 }
 
-// NameOf returns the name of the LRU.
-func (x *{{ .C.Message.Name }}LRU) NameOf() string {
+// NameOf returns the name of the map.
+func (x *{{ .C.Message.Name }}Map) NameOf() string {
 	return x.String()
 }
 
