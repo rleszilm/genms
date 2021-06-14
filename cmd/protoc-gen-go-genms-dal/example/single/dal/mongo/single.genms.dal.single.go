@@ -410,7 +410,7 @@ func (x *SingleCollection) Upsert(ctx context.Context, obj *single.Single) (*sin
 	res, err := client.
 		Database(x.config.Database).
 		Collection(x.config.Collection).
-		UpdateOne(ctx, filter, mObj, opts)
+		UpdateOne(ctx, filter, bson.M{"$set": mObj}, opts)
 
 	if err != nil {
 		mongo.Logs().Error("could not execute upsert:", err)
@@ -525,7 +525,7 @@ func (x *SingleCollection) Update(ctx context.Context, obj *single.Single, fvs *
 	_, err = client.
 		Database(x.config.Database).
 		Collection(x.config.Collection).
-		UpdateOne(ctx, filter, upd)
+		UpdateOne(ctx, filter, bson.M{"$set": upd})
 
 	if err != nil {
 		mongo.Logs().Error("could not update:", err)

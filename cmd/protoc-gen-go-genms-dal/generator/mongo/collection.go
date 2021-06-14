@@ -349,19 +349,38 @@ func (x *{{ $.C.Message.Name }}Collection) Insert(ctx {{ $.P.Context }}.Context,
 	}
 	defer client.Close(ctx)
 	
+	mObj, err := To{{ $.C.Message.Name }}Mongo(obj)
+	if err != nil {
+		{{ $.P.Mongo }}.Logs().Error("could not convert internal to mongo:", obj, err)
+		{{ $.P.Stats }}.Record(ctx, {{ $.P.Mongo }}.MeasureError.M(1))
+		return nil, err
+	}
+
 	{{ if $id -}}res{{- else -}}_{{- end }}, err := client.
 		Database(x.config.Database).
 		Collection(x.config.Collection).
-		InsertOne(ctx, obj)
+		InsertOne(ctx, mObj)
+
 	if err != nil {
 		{{ $.P.Mongo }}.Logs().Error("could not execute insert:", err)
 		{{ $.P.Stats }}.Record(ctx, {{ $.P.Mongo }}.MeasureError.M(1))
 		return nil, err
 	}
 
-	{{ if $id -}}
-		obj.{{ ToTitleCase $id.Name }} = res.InsertedID.({{ $id.QualifiedKind }})
-	{{- end }}
+	{{ if $id }}
+		oid, ok := res.InsertedID.({{ $.P.Bson }}.ObjectID)
+		if !ok {
+			{{ $.P.Mongo }}.Logs().Error("could not convert returned upsert id:", oid, err)
+			{{ $.P.Stats }}.Record(ctx, {{ $.P.Mongo }}.MeasureError.M(1))
+			return nil, {{ $.P.Mongo }}.ErrBadObjID
+		}
+
+		{{ if eq $id.Kind "string" }}
+			obj.{{ ToTitleCase $id.Name }} = oid.Hex()
+		{{ else if eq $id.Kind "[]byte" }}
+			obj.{{ ToTitleCase $id.Name }} = []byte(oid[:])
+		{{ end }}
+	{{ end }}
 
 	return obj, nil
 }
@@ -405,12 +424,12 @@ func (x *{{ $.C.Message.Name }}Collection) Upsert(ctx {{ $.P.Context }}.Context,
 		opts := &{{ $.P.Mongo }}.UpdateOptions{}
 		opts.SetUpsert(true)
 		
-		filter := bson.M{ "_id": obj.{{ ToTitleCase $id.Name }} }
+		filter := {{ $.P.Bson }}.M{"{{ $id.QueryName }}": mObj.{{ ToTitleCase $id.Name }} }
 
 		res, err := client.
 			Database(x.config.Database).
 			Collection(x.config.Collection).
-			UpdateOne(ctx, filter, mObj, opts)
+			UpdateOne(ctx, filter, {{ $.P.Bson }}.M{"$set": mObj}, opts)
 
 		if err != nil {
 			{{ $.P.Mongo }}.Logs().Error("could not execute upsert:", err)
@@ -462,6 +481,13 @@ func (x *{{ $.C.Message.Name }}Collection) Update(ctx {{ $.P.Context }}.Context,
 		}
 		defer client.Close(ctx)
 
+		objID, err := {{ $.P.Bson }}.ToObjectID(obj.{{ ToTitleCase $id.Name }})
+		if err != nil {
+			{{ $.P.Mongo }}.Logs().Error("could not convert to ObjectID:", obj.{{ ToTitleCase $id.Name }}, err)
+			{{ $.P.Stats }}.Record(ctx, {{ $.P.Mongo }}.MeasureError.M(1))
+			return nil, err
+		}
+		
 		upd := {{ $.P.Bson }}.M{}
 		{{ range $fn := $.C.Fields.Names -}}
 			{{- $f := ($.C.Fields.ByName $fn) -}}
@@ -483,12 +509,12 @@ func (x *{{ $.C.Message.Name }}Collection) Update(ctx {{ $.P.Context }}.Context,
 			{{- end }}
 		{{ end -}}
 
-		filter := bson.M{ "_id": obj.{{ ToTitleCase $id.Name }} }
+		filter := {{ $.P.Bson }}.M{"{{ $id.QueryName }}": objID}
 
 		_, err = client.
 			Database(x.config.Database).
 			Collection(x.config.Collection).
-			UpdateOne(ctx, filter, upd)
+			UpdateOne(ctx, filter, {{ $.P.Bson }}.M{"$set": upd})
 
 		if err != nil {
 			{{ $.P.Mongo }}.Logs().Error("could not update:", err)

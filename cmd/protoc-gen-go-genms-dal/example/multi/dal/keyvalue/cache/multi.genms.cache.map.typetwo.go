@@ -41,13 +41,13 @@ func (x *TypeTwoMap) Shutdown(_ context.Context) error {
 // String returns the name of the map.
 func (x *TypeTwoMap) String() string {
 	if x.name != "" {
-		return "cache-dal-multi-type-two-lru-" + x.name
+		return "cache-dal-multi-type-two-map-" + x.name
 	}
-	return "cache-dal-multi-type-two-lru"
+	return "cache-dal-multi-type-two-map"
 }
 
-// NameOf returns the name of the LRU.
-func (x *TypeTwoLRU) NameOf() string {
+// NameOf returns the name of the map.
+func (x *TypeTwoMap) NameOf() string {
 	return x.String()
 }
 

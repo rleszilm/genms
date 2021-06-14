@@ -41,13 +41,13 @@ func (x *SingleMap) Shutdown(_ context.Context) error {
 // String returns the name of the map.
 func (x *SingleMap) String() string {
 	if x.name != "" {
-		return "cache-dal-single-single-lru-" + x.name
+		return "cache-dal-single-single-map-" + x.name
 	}
-	return "cache-dal-single-single-lru"
+	return "cache-dal-single-single-map"
 }
 
-// NameOf returns the name of the LRU.
-func (x *SingleLRU) NameOf() string {
+// NameOf returns the name of the map.
+func (x *SingleMap) NameOf() string {
 	return x.String()
 }
 
