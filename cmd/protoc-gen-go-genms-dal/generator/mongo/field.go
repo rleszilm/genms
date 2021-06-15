@@ -42,10 +42,6 @@ func (f *Field) QueryName() string {
 
 // QueryKind returns the fields go type.
 func (f *Field) QueryKind() (string, error) {
-	if f.Options().GetMongo().GetBson() == annotations.BSONPrimitive_NoBSONPrimitive {
-		return f.Kind(), nil
-	}
-
 	switch f.Options().GetMongo().GetBson() {
 	case annotations.BSONPrimitive_NoBSONPrimitive:
 		return f.Kind(), nil

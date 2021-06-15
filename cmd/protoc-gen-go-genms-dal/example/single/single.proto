@@ -15,35 +15,37 @@ message Single {
     string scalar_string = 5;
     bytes scalar_bytes = 6;
     bool scalar_bool = 7;
+    repeated bool many_scalar_bool = 8;
     
     enum Enum {
         EnumOne = 0;
         EnumTwo = 1;
     }
-    Enum scalar_enum = 8;
+    Enum scalar_enum = 9;
 
     message Message {
         int32 id = 1;
     }
-    Message obj_message = 9;
+    Message obj_message = 10;
+    repeated Message many_obj_message = 11;
     
-    string ignored = 10 [(genms.dal.field_options).ignore = true];
-    string renamed = 11 [(genms.dal.field_options).name = "aliased"];
+    string ignored = 12 [(genms.dal.field_options).ignore = true];
+    string renamed = 13 [(genms.dal.field_options).name = "aliased"];
 
-    string ignored_postgres = 12 [(genms.dal.field_options).postgres.ignore = true];
-    string renamed_postgres = 13 [(genms.dal.field_options).postgres.name = "aliased_postgres"];
+    string ignored_postgres = 14 [(genms.dal.field_options).postgres.ignore = true];
+    string renamed_postgres = 15 [(genms.dal.field_options).postgres.name = "aliased_postgres"];
     
-    string ignored_rest = 14 [(genms.dal.field_options).rest.ignore = true];
-    string renamed_rest = 15 [(genms.dal.field_options).rest.name = "aliased_rest"];
+    string ignored_rest = 16 [(genms.dal.field_options).rest.ignore = true];
+    string renamed_rest = 17 [(genms.dal.field_options).rest.name = "aliased_rest"];
 
-    string ignored_mongo = 16 [(genms.dal.field_options).mongo.ignore = true];
-    string renamed_mongo = 17 [(genms.dal.field_options).mongo.name = "aliased_mongo"];
+    string ignored_mongo = 18 [(genms.dal.field_options).mongo.ignore = true];
+    string renamed_mongo = 19 [(genms.dal.field_options).mongo.name = "aliased_mongo"];
 
-    string bson_string_oid = 18 [
+    string bson_string_oid = 20 [
         (genms.dal.field_options).mongo.name = "_id",
         (genms.dal.field_options).mongo.bson = ObjectID
     ];
-    bytes bson_bytes_oid = 19 [
+    bytes bson_bytes_oid = 21 [
         (genms.dal.field_options).mongo.bson = ObjectID
     ];
 

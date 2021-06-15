@@ -61,8 +61,10 @@ type SingleFieldValues struct {
 	ScalarString    *string
 	ScalarBytes     []byte
 	ScalarBool      *bool
+	ManyScalarBool  []bool
 	ScalarEnum      *single.Single_Enum
 	ObjMessage      *single.Single_Message
+	ManyObjMessage  []*single.Single_Message
 	Renamed         *string
 	IgnoredPostgres *string
 	RenamedPostgres *string

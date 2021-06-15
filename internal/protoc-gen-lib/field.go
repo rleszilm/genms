@@ -45,24 +45,34 @@ func (f *Field) Name() string {
 
 // Kind returns the fields go type.
 func (f *Field) Kind() string {
+	slice := ""
+	if f.IsSlice() {
+		slice += "[]"
+	}
+
 	if f.field.Message != nil {
-		return "*" + f.field.Message.GoIdent.GoName
+		return slice + "*" + f.field.Message.GoIdent.GoName
 	}
 	if f.field.Enum != nil {
-		return f.field.Enum.GoIdent.GoName
+		return slice + f.field.Enum.GoIdent.GoName
 	}
-	return ToGoKind(f.field.Desc.Kind())
+	return slice + ToGoKind(f.field.Desc.Kind())
 }
 
 // QualifiedKind returns the fully qualified kind.
 func (f *Field) QualifiedKind() string {
+	list := ""
+	if f.field.Desc.IsList() {
+		list = "[]"
+	}
+
 	if f.field.Message != nil {
-		return "*" + f.message.File().QualifiedKind(f.field.Message.GoIdent)
+		return list + "*" + f.message.File().QualifiedKind(f.field.Message.GoIdent)
 	}
 	if f.field.Enum != nil {
-		return f.message.File().QualifiedKind(f.field.Enum.GoIdent)
+		return list + f.message.File().QualifiedKind(f.field.Enum.GoIdent)
 	}
-	return ToGoKind(f.field.Desc.Kind())
+	return list + ToGoKind(f.field.Desc.Kind())
 }
 
 // ToRef returns the string needed to make a reference of the field.
