@@ -26,10 +26,12 @@ const (
 	// LvlDisable is for when all logging on the channel should be disabled. This does not impact
 	// logging on the fatal or panic levels.
 	LvlDisable
+	// LvlPrint is always printed.
+	LvlPrint
 	// LvlFatal is for a problem that is non-recoverable. This also terminates the app.
 	LvlFatal
 	// LvlPanic is for a problem that can be recovered from at the apps discretion. This
-	// causes a pannic that may result in app termination.
+	// causes a panic that may result in app termination.
 	LvlPanic
 )
 
@@ -175,11 +177,17 @@ func (c *Channel) Panicf(msg string, args ...interface{}) {
 
 // Print logs messages as long as the channel is not explicitly disabled.
 func (c *Channel) Print(args ...interface{}) {
-	c.log.Println(append([]interface{}{c.namePanic}, args...)...)
+	if c.skipLog(LvlPrint) {
+		return
+	}
+	c.log.Println(append([]interface{}{c.namePrint}, args...)...)
 }
 
 // Printf logs messages as long as the channel is not explicitly disabled.
 func (c *Channel) Printf(msg string, args ...interface{}) {
+	if c.skipLog(LvlPrint) {
+		return
+	}
 	c.Print(fmt.Sprintf(msg, args...))
 }
 
@@ -204,12 +212,11 @@ func (c *Channel) WithLevel(l Level) {
 }
 
 func (c *Channel) skipLog(msg Level) bool {
-	// always print fatal and panic messages
-	if msg == LvlFatal || msg == LvlPanic {
+	switch msg {
+	case LvlFatal, LvlPanic:
 		return false
 	}
 
-	// if the channel or the global system is disabled do not log
 	if c.level == LvlDisable || globalLevel == LvlDisable {
 		return true
 	}
