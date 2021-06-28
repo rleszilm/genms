@@ -31,7 +31,7 @@ type Updater struct {
 func NewUpdater(plugin *protogen.Plugin, file *protogen.File, msg *protogen.Message, opts *annotations.DalOptions) *Updater {
 	base := path.Base(file.GeneratedFilenamePrefix)
 	dir := path.Dir(file.GeneratedFilenamePrefix)
-	filename := path.Join(dir, fmt.Sprintf("dal/keyvalue/cache/%s.genms.updater.%s.go", base, strings.ToLower(msg.GoIdent.GoName)))
+	filename := path.Join(dir, fmt.Sprintf("dal/cache/%s.genms.updater.%s.go", base, strings.ToLower(msg.GoIdent.GoName)))
 	outfile := plugin.NewGeneratedFile(filename, ".")
 
 	cfile := NewFile(outfile, file)
@@ -119,9 +119,9 @@ type {{ .C.Message.Name }}Updater struct {
 	{{ .P.Service }}.Dependencies
 
 	name string
-	reader {{ .P.KeyValue }}.{{ .C.Message.Name }}ReadAller
-	writer {{ .P.KeyValue }}.{{ .C.Message.Name }}Writer
-	key {{ .P.KeyValue }}.{{ .C.Message.Name }}KeyFunc
+	reader {{ .C.Message.Name }}ReadAller
+	writer {{ .C.Message.Name }}Writer
+	key {{ .C.Message.Name }}KeyFunc
 	interval {{ .P.Time }}.Duration
 	done chan struct{}
 }
@@ -142,7 +142,7 @@ func (x *{{ .C.Message.Name }}Updater) Shutdown(_ {{ .P.Context }}.Context) erro
 func (x *{{ .C.Message.Name }}Updater) String() string {
 	{{- $pkg := .C.File.CachePackageName -}}
 	if x.name != "" {
-		return "{{ ToDashCase $pkg }}-{{ ToDashCase .C.Message.Name }}-updater-" + x.name
+		return x.name
 	}
 	return "{{ ToDashCase $pkg }}-{{ ToDashCase .C.Message.Name }}-updater"
 }
@@ -166,7 +166,7 @@ func (x *{{ .C.Message.Name }}Updater) update(ctx {{ .P.Context }}.Context) {
 		case <- ctx.Done():
 			return
 		case <- ticker.C:
-			{{ .P.Cache }}.Logs().Infof("starting update for %s", x.name)
+			logs.Infof("starting update for %s", x.name)
 			start := {{ .P.Time }}.Now()
 			{{ .P.Stats }}.Record(ctx, {{ .P.Cache }}.MeasureInflight.M(1))
 			
@@ -175,9 +175,9 @@ func (x *{{ .C.Message.Name }}Updater) update(ctx {{ .P.Context }}.Context) {
 			}
 
 			for _, val := range vals {
-				{{ .P.Cache }}.Logs().Trace("updater {{ .C.Message.Name }} storing value:", x.key(val), val)
-				if _, err = x.writer.SetByKey(ctx, x.key(val), val); err != nil {
-					{{ .P.Cache }}.Logs().Error("updater {{ .C.Message.Name }} could not store value:", x.key(val), val, err)
+				logs.Trace("updater {{ .C.Message.Name }} storing value:", x.key(val), val)
+				if _, err = x.writer.Set(ctx, x.key(val), val); err != nil {
+					logs.Error("updater {{ .C.Message.Name }} could not store value:", x.key(val), val, err)
 					break
 				}
 			}
@@ -193,27 +193,27 @@ func (x *{{ .C.Message.Name }}Updater) update(ctx {{ .P.Context }}.Context) {
 			{{ .P.Stats }}.Record(ctx, {{ .P.Cache }}.MeasureLatency.M(dur))
 
 			if x.interval == 0 {
-				{{ .P.Cache }}.Logs().Infof("updater %s is terminating", x.name)
+				logs.Infof("updater %s is terminating", x.name)
 				return
 			}
-			{{ .P.Cache }}.Logs().Infof("scheduling next update for %v", x.interval)
+			logs.Infof("scheduling next update for %v", x.interval)
 			ticker.Reset(x.interval)
 		}
 	}
 }
 
 // WithReadAller tells the {{ .C.Message.Name }}Map where to source values from if they don't exist in cache.
-func (x *{{ .C.Message.Name }}Updater) WithReadAller(r {{ .P.KeyValue }}.{{ .C.Message.Name }}ReadAller) {
+func (x *{{ .C.Message.Name }}Updater) WithReadAller(r {{ .C.Message.Name }}ReadAller) {
 	x.reader = r
 }
 
 // WithWriter tells the {{ .C.Message.Name }}Map where to source values from if they don't exist in cache.
-func (x *{{ .C.Message.Name }}Updater) WithWriter(w {{ .P.KeyValue }}.{{ .C.Message.Name }}Writer) {
+func (x *{{ .C.Message.Name }}Updater) WithWriter(w {{ .C.Message.Name }}Writer) {
 	x.writer = w
 }
 
 // New{{ .C.Message.Name }}Updater returns a new {{ .C.Message.Name }}Updater.
-func New{{ .C.Message.Name }}Updater(name string, k {{ .P.KeyValue }}.{{ .C.Message.Name }}KeyFunc, i {{ .P.Time }}.Duration) *{{ .C.Message.Name }}Updater {
+func New{{ .C.Message.Name }}Updater(name string, k {{ .C.Message.Name }}KeyFunc, i {{ .P.Time }}.Duration) *{{ .C.Message.Name }}Updater {
 	return &{{ .C.Message.Name }}Updater{
 		name: name,
 		key: k,
@@ -236,14 +236,13 @@ func New{{ .C.Message.Name }}Updater(name string, k {{ .P.KeyValue }}.{{ .C.Mess
 	}
 
 	p := map[string]string{
-		"Cache":    c.File.QualifiedPackageName("github.com/rleszilm/genms/cache"),
-		"Context":  c.File.QualifiedPackageName("context"),
-		"KeyValue": c.File.QualifiedPackageName(path.Join(c.File.DalPackagePath(), "keyvalue")),
-		"Service":  c.File.QualifiedPackageName("github.com/rleszilm/genms/service"),
-		"Stats":    c.File.QualifiedPackageName("go.opencensus.io/stats"),
-		"Sync":     c.File.QualifiedPackageName("sync"),
-		"Tag":      c.File.QualifiedPackageName("go.opencensus.io/tag"),
-		"Time":     c.File.QualifiedPackageName("time"),
+		"Cache":   c.File.QualifiedPackageName("github.com/rleszilm/genms/cache"),
+		"Context": c.File.QualifiedPackageName("context"),
+		"Service": c.File.QualifiedPackageName("github.com/rleszilm/genms/service"),
+		"Stats":   c.File.QualifiedPackageName("go.opencensus.io/stats"),
+		"Sync":    c.File.QualifiedPackageName("sync"),
+		"Tag":     c.File.QualifiedPackageName("go.opencensus.io/tag"),
+		"Time":    c.File.QualifiedPackageName("time"),
 	}
 
 	buf := &bytes.Buffer{}

@@ -9,21 +9,20 @@ import (
 	golang_lru "github.com/hashicorp/golang-lru"
 	cache "github.com/rleszilm/genms/cache"
 	multi "github.com/rleszilm/genms/cmd/protoc-gen-go-genms-dal/example/multi"
-	keyvalue "github.com/rleszilm/genms/cmd/protoc-gen-go-genms-dal/example/multi/dal/keyvalue"
 	service "github.com/rleszilm/genms/service"
 	stats "go.opencensus.io/stats"
 	tag "go.opencensus.io/tag"
 )
 
-// TypeOneLRU defines a LRU cache implementing keyvalue.TypeOneReadWriter.
+// TypeOneLRU defines a LRU cache implementing TypeOneReadWriter.
 // If a key is queries that does not exist an attempt to read and store it is made.
 type TypeOneLRU struct {
 	service.Dependencies
-	NilTypeOneCache
+	UnimplementedTypeOneCache
 
 	name   string
-	reader keyvalue.TypeOneReader
-	writer keyvalue.TypeOneWriter
+	reader TypeOneReader
+	writer TypeOneWriter
 	lru    *golang_lru.ARCCache
 	all    []*multi.TypeOne
 }
@@ -42,7 +41,7 @@ func (x *TypeOneLRU) Shutdown(_ context.Context) error {
 // String returns the name of the LRU.
 func (x *TypeOneLRU) String() string {
 	if x.name != "" {
-		return "cache-dal-multi-type-one-lru-" + x.name
+		return x.name
 	}
 	return "cache-dal-multi-type-one-lru"
 }
@@ -52,7 +51,7 @@ func (x *TypeOneLRU) NameOf() string {
 	return x.String()
 }
 
-// All implements implements keyvalue.TypeOneReadAller.
+// All implements implements TypeOneReadAller.
 func (x *TypeOneLRU) All(ctx context.Context) ([]*multi.TypeOne, error) {
 	start := time.Now()
 	ctx, _ = tag.New(ctx,
@@ -71,8 +70,8 @@ func (x *TypeOneLRU) All(ctx context.Context) ([]*multi.TypeOne, error) {
 	return x.all, nil
 }
 
-// GetByKey implements keyvalue.TypeOneReader.
-func (x *TypeOneLRU) GetByKey(ctx context.Context, key keyvalue.TypeOneKey) (*multi.TypeOne, error) {
+// Get implements TypeOneReader.
+func (x *TypeOneLRU) Get(ctx context.Context, key TypeOneKey) (*multi.TypeOne, error) {
 	start := time.Now()
 	ctx, _ = tag.New(ctx,
 		tag.Upsert(cache.TagCollection, "type_one"),
@@ -94,20 +93,20 @@ func (x *TypeOneLRU) GetByKey(ctx context.Context, key keyvalue.TypeOneKey) (*mu
 	stats.Record(ctx, cache.MeasureMiss.M(1))
 
 	if x.reader != nil {
-		val, err := x.reader.GetByKey(ctx, key)
+		val, err := x.reader.Get(ctx, key)
 		if err != nil {
-			return nil, fmt.Errorf("lru: TypeOne.GetByKey - %w", err)
+			return nil, fmt.Errorf("lru: TypeOne.Get - %w", err)
 		}
 		x.lru.Add(key, val)
 		return val, nil
 	}
 
 	stats.Record(ctx, cache.MeasureError.M(1))
-	return nil, fmt.Errorf("lru: TypeOne.GetByKey - %w", cache.ErrGetValue)
+	return nil, fmt.Errorf("lru: TypeOne.Get - %w", cache.ErrNoValue)
 }
 
-// SetByKey implements keyvalue.TypeOneWriter.
-func (x *TypeOneLRU) SetByKey(ctx context.Context, key keyvalue.TypeOneKey, val *multi.TypeOne) (*multi.TypeOne, error) {
+// Set implements TypeOneWriter.
+func (x *TypeOneLRU) Set(ctx context.Context, key TypeOneKey, val *multi.TypeOne) (*multi.TypeOne, error) {
 	start := time.Now()
 	ctx, _ = tag.New(ctx,
 		tag.Upsert(cache.TagCollection, "type_one"),
@@ -123,10 +122,10 @@ func (x *TypeOneLRU) SetByKey(ctx context.Context, key keyvalue.TypeOneKey, val 
 	}()
 
 	if x.writer != nil {
-		upd, err := x.writer.SetByKey(ctx, key, val)
+		upd, err := x.writer.Set(ctx, key, val)
 		if err != nil {
 			stats.Record(ctx, cache.MeasureError.M(1))
-			return nil, fmt.Errorf("lru: TypeOne.SetBykey - %w", err)
+			return nil, fmt.Errorf("lru: TypeOne.Set - %w", err)
 		}
 		val = upd
 	}
@@ -144,12 +143,12 @@ func (x *TypeOneLRU) SetByKey(ctx context.Context, key keyvalue.TypeOneKey, val 
 }
 
 // WithReader tells the TypeOneLRU where to source values from if they don't exist in cache.
-func (x *TypeOneLRU) WithReader(r keyvalue.TypeOneReader) {
+func (x *TypeOneLRU) WithReader(r TypeOneReader) {
 	x.reader = r
 }
 
 // WithWriter tells the TypeOneLRU where to source values from if they don't exist in cache.
-func (x *TypeOneLRU) WithWriter(w keyvalue.TypeOneWriter) {
+func (x *TypeOneLRU) WithWriter(w TypeOneWriter) {
 	x.writer = w
 }
 

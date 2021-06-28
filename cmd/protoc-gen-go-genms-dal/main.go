@@ -7,8 +7,7 @@ import (
 
 	"github.com/rleszilm/genms/cmd/protoc-gen-go-genms-dal/annotations"
 	"github.com/rleszilm/genms/cmd/protoc-gen-go-genms-dal/generator"
-	"github.com/rleszilm/genms/cmd/protoc-gen-go-genms-dal/generator/keyvalue"
-	"github.com/rleszilm/genms/cmd/protoc-gen-go-genms-dal/generator/keyvalue/cache"
+	"github.com/rleszilm/genms/cmd/protoc-gen-go-genms-dal/generator/cache"
 	"github.com/rleszilm/genms/cmd/protoc-gen-go-genms-dal/generator/mongo"
 	"github.com/rleszilm/genms/cmd/protoc-gen-go-genms-dal/generator/rest"
 	"github.com/rleszilm/genms/cmd/protoc-gen-go-genms-dal/generator/sql/postgres"
@@ -84,11 +83,6 @@ func generate(plugin *protogen.Plugin, file *protogen.File, msg *protogen.Messag
 
 	// write cache
 	if err := cache.GenerateCache(plugin, file, msg, dalOpts); err != nil {
-		return err
-	}
-
-	// write keyvalue
-	if err := keyvalue.GenerateKeyValue(plugin, file, msg, dalOpts); err != nil {
 		return err
 	}
 

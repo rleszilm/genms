@@ -6,7 +6,6 @@ import (
 	time "time"
 
 	cache "github.com/rleszilm/genms/cache"
-	keyvalue "github.com/rleszilm/genms/cmd/protoc-gen-go-genms-dal/example/multi/dal/keyvalue"
 	service "github.com/rleszilm/genms/service"
 	stats "go.opencensus.io/stats"
 	tag "go.opencensus.io/tag"
@@ -17,9 +16,9 @@ type TypeTwoUpdater struct {
 	service.Dependencies
 
 	name     string
-	reader   keyvalue.TypeTwoReadAller
-	writer   keyvalue.TypeTwoWriter
-	key      keyvalue.TypeTwoKeyFunc
+	reader   TypeTwoReadAller
+	writer   TypeTwoWriter
+	key      TypeTwoKeyFunc
 	interval time.Duration
 	done     chan struct{}
 }
@@ -39,7 +38,7 @@ func (x *TypeTwoUpdater) Shutdown(_ context.Context) error {
 // String returns the name of the updater.
 func (x *TypeTwoUpdater) String() string {
 	if x.name != "" {
-		return "cache-dal-multi-type-two-updater-" + x.name
+		return x.name
 	}
 	return "cache-dal-multi-type-two-updater"
 }
@@ -63,7 +62,7 @@ func (x *TypeTwoUpdater) update(ctx context.Context) {
 		case <-ctx.Done():
 			return
 		case <-ticker.C:
-			cache.Logs().Infof("starting update for %s", x.name)
+			logs.Infof("starting update for %s", x.name)
 			start := time.Now()
 			stats.Record(ctx, cache.MeasureInflight.M(1))
 
@@ -72,9 +71,9 @@ func (x *TypeTwoUpdater) update(ctx context.Context) {
 			}
 
 			for _, val := range vals {
-				cache.Logs().Trace("updater TypeTwo storing value:", x.key(val), val)
-				if _, err = x.writer.SetByKey(ctx, x.key(val), val); err != nil {
-					cache.Logs().Error("updater TypeTwo could not store value:", x.key(val), val, err)
+				logs.Trace("updater TypeTwo storing value:", x.key(val), val)
+				if _, err = x.writer.Set(ctx, x.key(val), val); err != nil {
+					logs.Error("updater TypeTwo could not store value:", x.key(val), val, err)
 					break
 				}
 			}
@@ -90,27 +89,27 @@ func (x *TypeTwoUpdater) update(ctx context.Context) {
 			stats.Record(ctx, cache.MeasureLatency.M(dur))
 
 			if x.interval == 0 {
-				cache.Logs().Infof("updater %s is terminating", x.name)
+				logs.Infof("updater %s is terminating", x.name)
 				return
 			}
-			cache.Logs().Infof("scheduling next update for %v", x.interval)
+			logs.Infof("scheduling next update for %v", x.interval)
 			ticker.Reset(x.interval)
 		}
 	}
 }
 
 // WithReadAller tells the TypeTwoMap where to source values from if they don't exist in cache.
-func (x *TypeTwoUpdater) WithReadAller(r keyvalue.TypeTwoReadAller) {
+func (x *TypeTwoUpdater) WithReadAller(r TypeTwoReadAller) {
 	x.reader = r
 }
 
 // WithWriter tells the TypeTwoMap where to source values from if they don't exist in cache.
-func (x *TypeTwoUpdater) WithWriter(w keyvalue.TypeTwoWriter) {
+func (x *TypeTwoUpdater) WithWriter(w TypeTwoWriter) {
 	x.writer = w
 }
 
 // NewTypeTwoUpdater returns a new TypeTwoUpdater.
-func NewTypeTwoUpdater(name string, k keyvalue.TypeTwoKeyFunc, i time.Duration) *TypeTwoUpdater {
+func NewTypeTwoUpdater(name string, k TypeTwoKeyFunc, i time.Duration) *TypeTwoUpdater {
 	return &TypeTwoUpdater{
 		name:     name,
 		key:      k,

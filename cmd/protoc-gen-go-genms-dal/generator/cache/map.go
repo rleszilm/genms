@@ -31,7 +31,7 @@ type Map struct {
 func NewMap(plugin *protogen.Plugin, file *protogen.File, msg *protogen.Message, opts *annotations.DalOptions) *Map {
 	base := path.Base(file.GeneratedFilenamePrefix)
 	dir := path.Dir(file.GeneratedFilenamePrefix)
-	filename := path.Join(dir, fmt.Sprintf("dal/keyvalue/cache/%s.genms.cache.map.%s.go", base, strings.ToLower(msg.GoIdent.GoName)))
+	filename := path.Join(dir, fmt.Sprintf("dal/cache/%s.genms.cache.map.%s.go", base, strings.ToLower(msg.GoIdent.GoName)))
 	outfile := plugin.NewGeneratedFile(filename, ".")
 
 	cfile := NewFile(outfile, file)
@@ -111,16 +111,16 @@ package {{ .File.CachePackageName }}
 }
 
 func (c *Map) defineCollection() error {
-	tmplSrc := `// {{ .C.Message.Name }}Map defines a Map base cache implementing {{ .P.KeyValue }}.{{ .C.Message.Name }}ReadWriter.
+	tmplSrc := `// {{ .C.Message.Name }}Map defines a Map base cache implementing {{ .C.Message.Name }}ReadWriter.
 // If a key is queries that does not exist an attempt to read and store it is made.
 type {{ .C.Message.Name }}Map struct {
 	{{ .P.Service }}.Dependencies
-	Nil{{ .C.Message.Name }}Cache
+	Unimplemented{{ .C.Message.Name }}Cache
 
 	name string
-	reader {{ .P.KeyValue }}.{{ .C.Message.Name }}Reader
-	writer {{ .P.KeyValue }}.{{ .C.Message.Name }}Writer
-	cache map[{{ .P.KeyValue }}.{{ .C.Message.Name }}Key]*{{ .C.Message.QualifiedKind }}
+	reader {{ .C.Message.Name }}Reader
+	writer {{ .C.Message.Name }}Writer
+	cache map[{{ .C.Message.Name }}Key]*{{ .C.Message.QualifiedKind }}
 	all []*{{ .C.Message.QualifiedKind }}
 }
 
@@ -139,7 +139,7 @@ func (x *{{ .C.Message.Name }}Map) Shutdown(_ {{ .P.Context }}.Context) error {
 func (x *{{ .C.Message.Name }}Map) String() string {
 	{{- $pkg := .C.File.CachePackageName -}}
 	if x.name != "" {
-		return "{{ ToDashCase $pkg }}-{{ ToDashCase .C.Message.Name }}-map-" + x.name
+		return x.name
 	}
 	return "{{ ToDashCase $pkg }}-{{ ToDashCase .C.Message.Name }}-map"
 }
@@ -149,7 +149,7 @@ func (x *{{ .C.Message.Name }}Map) NameOf() string {
 	return x.String()
 }
 
-// All implements implements {{ .P.KeyValue }}.{{ .C.Message.Name }}ReadAller.
+// All implements implements {{ .C.Message.Name }}ReadAller.
 func (x *{{ .C.Message.Name }}Map) All(ctx {{ .P.Context }}.Context) ([]*{{ .C.Message.QualifiedKind }}, error) {
 	start := {{ .P.Time }}.Now()
 	ctx, _ = {{ .P.Tag }}.New(ctx,
@@ -168,8 +168,8 @@ func (x *{{ .C.Message.Name }}Map) All(ctx {{ .P.Context }}.Context) ([]*{{ .C.M
 	return x.all, nil
 }
 
-// GetByKey implements {{ .P.KeyValue }}.{{ .C.Message.Name }}Reader.
-func (x *{{ .C.Message.Name }}Map) GetByKey(ctx {{ .P.Context }}.Context, key {{ .P.KeyValue }}.{{ .C.Message.Name }}Key) (*{{ .C.Message.QualifiedKind }}, error) {
+// Get implements {{ .C.Message.Name }}Reader.
+func (x *{{ .C.Message.Name }}Map) Get(ctx {{ .P.Context }}.Context, key {{ .C.Message.Name }}Key) (*{{ .C.Message.QualifiedKind }}, error) {
 	start := {{ .P.Time }}.Now()
 	ctx, _ = {{ .P.Tag }}.New(ctx,
 		{{ .P.Tag }}.Upsert({{ .P.Cache }}.TagCollection, "{{ ToSnakeCase .C.Message.Name }}"),
@@ -189,20 +189,20 @@ func (x *{{ .C.Message.Name }}Map) GetByKey(ctx {{ .P.Context }}.Context, key {{
 	}
 
 	if x.reader != nil {
-		val, err := x.reader.GetByKey(ctx, key)
+		val, err := x.reader.Get(ctx, key)
 		if err != nil {
-			return nil, {{ .P.Fmt }}.Errorf("map: {{ .C.Message.Name }}.GetByKey - %w", err)
+			return nil, {{ .P.Fmt }}.Errorf("map: {{ .C.Message.Name }}.Get - %w", err)
 		}
 		x.cache[key] = val
 		return val, nil
 	}
 
 	{{ .P.Stats }}.Record(ctx, {{ .P.Cache }}.MeasureError.M(1))
-	return nil, {{ .P.Fmt }}.Errorf("map: {{ .C.Message.Name }}.GetByKey - %w", {{ .P.Cache }}.ErrGetValue)
+	return nil, {{ .P.Fmt }}.Errorf("map: {{ .C.Message.Name }}.Get - %w", {{ .P.Cache }}.ErrNoValue)
 }
 
-// SetByKey implements {{ .P.KeyValue }}.{{ .C.Message.Name }}Writer.
-func (x *{{ .C.Message.Name }}Map) SetByKey(ctx {{ .P.Context }}.Context, key {{ .P.KeyValue }}.{{ .C.Message.Name }}Key, val *{{ .C.Message.QualifiedKind }}) (*{{ .C.Message.QualifiedKind }}, error) {
+// Set implements {{ .C.Message.Name }}Writer.
+func (x *{{ .C.Message.Name }}Map) Set(ctx {{ .P.Context }}.Context, key {{ .C.Message.Name }}Key, val *{{ .C.Message.QualifiedKind }}) (*{{ .C.Message.QualifiedKind }}, error) {
 	start := {{ .P.Time }}.Now()
 	ctx, _ = {{ .P.Tag }}.New(ctx,
 		{{ .P.Tag }}.Upsert({{ .P.Cache }}.TagCollection, "{{ ToSnakeCase .C.Message.Name }}"),
@@ -218,10 +218,10 @@ func (x *{{ .C.Message.Name }}Map) SetByKey(ctx {{ .P.Context }}.Context, key {{
 	}()
 	
 	if x.writer != nil {
-		upd, err := x.writer.SetByKey(ctx, key, val)
+		upd, err := x.writer.Set(ctx, key, val)
 		if err != nil {
 			{{ .P.Stats }}.Record(ctx, {{ .P.Cache }}.MeasureError.M(1))
-			return nil, {{ .P.Fmt }}.Errorf("map: {{ .C.Message.Name }}.SetByKey - %w", err)
+			return nil, {{ .P.Fmt }}.Errorf("map: {{ .C.Message.Name }}.Set - %w", err)
 		}
 		val = upd
 	}
@@ -238,12 +238,12 @@ func (x *{{ .C.Message.Name }}Map) SetByKey(ctx {{ .P.Context }}.Context, key {{
 }
 
 // WithReader tells the {{ .C.Message.Name }}Map where to source values from if they don't exist in cache.
-func (x *{{ .C.Message.Name }}Map) WithReader(r {{ .P.KeyValue }}.{{ .C.Message.Name }}Reader) {
+func (x *{{ .C.Message.Name }}Map) WithReader(r {{ .C.Message.Name }}Reader) {
 	x.reader = r
 }
 
 // WithWriter tells the {{ .C.Message.Name }}Map where to source values from if they don't exist in cache.
-func (x *{{ .C.Message.Name }}Map) WithWriter(w {{ .P.KeyValue }}.{{ .C.Message.Name }}Writer) {
+func (x *{{ .C.Message.Name }}Map) WithWriter(w {{ .C.Message.Name }}Writer) {
 	x.writer = w
 }
 
@@ -251,7 +251,7 @@ func (x *{{ .C.Message.Name }}Map) WithWriter(w {{ .P.KeyValue }}.{{ .C.Message.
 func New{{ .C.Message.Name }}Map(name string) (*{{ .C.Message.Name }}Map, error) {
 	return &{{ .C.Message.Name }}Map{
 		name: name,
-		cache: map[{{ .P.KeyValue }}.{{ .C.Message.Name }}Key]*{{ .C.Message.QualifiedKind }}{},
+		cache: map[{{ .C.Message.Name }}Key]*{{ .C.Message.QualifiedKind }}{},
 	}, nil
 }
 `
@@ -268,15 +268,14 @@ func New{{ .C.Message.Name }}Map(name string) (*{{ .C.Message.Name }}Map, error)
 	}
 
 	p := map[string]string{
-		"Cache":    c.File.QualifiedPackageName("github.com/rleszilm/genms/cache"),
-		"Context":  c.File.QualifiedPackageName("context"),
-		"Fmt":      c.File.QualifiedPackageName("fmt"),
-		"KeyValue": c.File.QualifiedPackageName(path.Join(c.File.DalPackagePath(), "keyvalue")),
-		"Log":      c.File.QualifiedPackageName("github.com/rleszilm/genms/log"),
-		"Service":  c.File.QualifiedPackageName("github.com/rleszilm/genms/service"),
-		"Stats":    c.File.QualifiedPackageName("go.opencensus.io/stats"),
-		"Tag":      c.File.QualifiedPackageName("go.opencensus.io/tag"),
-		"Time":     c.File.QualifiedPackageName("time"),
+		"Cache":   c.File.QualifiedPackageName("github.com/rleszilm/genms/cache"),
+		"Context": c.File.QualifiedPackageName("context"),
+		"Fmt":     c.File.QualifiedPackageName("fmt"),
+		"Log":     c.File.QualifiedPackageName("github.com/rleszilm/genms/log"),
+		"Service": c.File.QualifiedPackageName("github.com/rleszilm/genms/service"),
+		"Stats":   c.File.QualifiedPackageName("go.opencensus.io/stats"),
+		"Tag":     c.File.QualifiedPackageName("go.opencensus.io/tag"),
+		"Time":    c.File.QualifiedPackageName("time"),
 	}
 
 	buf := &bytes.Buffer{}

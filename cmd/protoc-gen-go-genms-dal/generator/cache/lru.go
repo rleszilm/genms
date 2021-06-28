@@ -31,7 +31,7 @@ type LRU struct {
 func NewLRU(plugin *protogen.Plugin, file *protogen.File, msg *protogen.Message, opts *annotations.DalOptions) *LRU {
 	base := path.Base(file.GeneratedFilenamePrefix)
 	dir := path.Dir(file.GeneratedFilenamePrefix)
-	filename := path.Join(dir, fmt.Sprintf("dal/keyvalue/cache/%s.genms.cache.lru.%s.go", base, strings.ToLower(msg.GoIdent.GoName)))
+	filename := path.Join(dir, fmt.Sprintf("dal/cache/%s.genms.cache.lru.%s.go", base, strings.ToLower(msg.GoIdent.GoName)))
 	outfile := plugin.NewGeneratedFile(filename, ".")
 
 	cfile := NewFile(outfile, file)
@@ -111,15 +111,15 @@ package {{ .File.CachePackageName }}
 }
 
 func (c *LRU) defineCollection() error {
-	tmplSrc := `// {{ .C.Message.Name }}LRU defines a LRU cache implementing {{ .P.KeyValue }}.{{ .C.Message.Name }}ReadWriter.
+	tmplSrc := `// {{ .C.Message.Name }}LRU defines a LRU cache implementing {{ .C.Message.Name }}ReadWriter.
 // If a key is queries that does not exist an attempt to read and store it is made.
 type {{ .C.Message.Name }}LRU struct {
 	{{ .P.Service }}.Dependencies
-	Nil{{ .C.Message.Name }}Cache
+	Unimplemented{{ .C.Message.Name }}Cache
 
 	name string
-	reader {{ .P.KeyValue }}.{{ .C.Message.Name }}Reader
-	writer {{ .P.KeyValue }}.{{ .C.Message.Name }}Writer
+	reader {{ .C.Message.Name }}Reader
+	writer {{ .C.Message.Name }}Writer
 	lru *{{ .P.LRU }}.ARCCache
 	all []*{{ .C.Message.QualifiedKind }}
 }
@@ -139,7 +139,7 @@ func (x *{{ .C.Message.Name }}LRU) Shutdown(_ {{ .P.Context }}.Context) error {
 func (x *{{ .C.Message.Name }}LRU) String() string {
 	{{- $pkg := .C.File.CachePackageName -}}
 	if x.name != "" {
-		return "{{ ToDashCase $pkg }}-{{ ToDashCase .C.Message.Name }}-lru-" + x.name
+		return x.name
 	}
 	return "{{ ToDashCase $pkg }}-{{ ToDashCase .C.Message.Name }}-lru"
 }
@@ -149,7 +149,7 @@ func (x *{{ .C.Message.Name }}LRU) NameOf() string {
 	return x.String()
 }
 
-// All implements implements {{ .P.KeyValue }}.{{ .C.Message.Name }}ReadAller.
+// All implements implements {{ .C.Message.Name }}ReadAller.
 func (x *{{ .C.Message.Name }}LRU) All(ctx {{ .P.Context }}.Context) ([]*{{ .C.Message.QualifiedKind }}, error) {
 	start := {{ .P.Time }}.Now()
 	ctx, _ = {{ .P.Tag }}.New(ctx,
@@ -168,8 +168,8 @@ func (x *{{ .C.Message.Name }}LRU) All(ctx {{ .P.Context }}.Context) ([]*{{ .C.M
 	return x.all, nil
 }
 
-// GetByKey implements {{ .P.KeyValue }}.{{ .C.Message.Name }}Reader.
-func (x *{{ .C.Message.Name }}LRU) GetByKey(ctx {{ .P.Context }}.Context, key {{ .P.KeyValue }}.{{ .C.Message.Name }}Key) (*{{ .C.Message.QualifiedKind }}, error) {
+// Get implements {{ .C.Message.Name }}Reader.
+func (x *{{ .C.Message.Name }}LRU) Get(ctx {{ .P.Context }}.Context, key {{ .C.Message.Name }}Key) (*{{ .C.Message.QualifiedKind }}, error) {
 	start := {{ .P.Time }}.Now()
 	ctx, _ = {{ .P.Tag }}.New(ctx,
 		{{ .P.Tag }}.Upsert({{ .P.Cache }}.TagCollection, "{{ ToSnakeCase .C.Message.Name }}"),
@@ -191,20 +191,20 @@ func (x *{{ .C.Message.Name }}LRU) GetByKey(ctx {{ .P.Context }}.Context, key {{
 	{{ .P.Stats }}.Record(ctx, {{ .P.Cache }}.MeasureMiss.M(1))
 
 	if x.reader != nil {
-		val, err := x.reader.GetByKey(ctx, key)
+		val, err := x.reader.Get(ctx, key)
 		if err != nil {
-			return nil, {{ .P.Fmt }}.Errorf("lru: {{ .C.Message.Name }}.GetByKey - %w", err)
+			return nil, {{ .P.Fmt }}.Errorf("lru: {{ .C.Message.Name }}.Get - %w", err)
 		}
 		x.lru.Add(key, val)
 		return val, nil
 	}
 
 	{{ .P.Stats }}.Record(ctx, {{ .P.Cache }}.MeasureError.M(1))
-	return nil, {{ .P.Fmt }}.Errorf("lru: {{ .C.Message.Name }}.GetByKey - %w", {{ .P.Cache }}.ErrGetValue)
+	return nil, {{ .P.Fmt }}.Errorf("lru: {{ .C.Message.Name }}.Get - %w", {{ .P.Cache }}.ErrNoValue)
 }
 
-// SetByKey implements {{ .P.KeyValue }}.{{ .C.Message.Name }}Writer.
-func (x *{{ .C.Message.Name }}LRU) SetByKey(ctx {{ .P.Context }}.Context, key {{ .P.KeyValue }}.{{ .C.Message.Name }}Key, val *{{ .C.Message.QualifiedKind }}) (*{{ .C.Message.QualifiedKind }}, error) {
+// Set implements {{ .C.Message.Name }}Writer.
+func (x *{{ .C.Message.Name }}LRU) Set(ctx {{ .P.Context }}.Context, key {{ .C.Message.Name }}Key, val *{{ .C.Message.QualifiedKind }}) (*{{ .C.Message.QualifiedKind }}, error) {
 	start := {{ .P.Time }}.Now()
 	ctx, _ = {{ .P.Tag }}.New(ctx,
 		{{ .P.Tag }}.Upsert({{ .P.Cache }}.TagCollection, "{{ ToSnakeCase .C.Message.Name }}"),
@@ -220,10 +220,10 @@ func (x *{{ .C.Message.Name }}LRU) SetByKey(ctx {{ .P.Context }}.Context, key {{
 	}()
 
 	if x.writer != nil {
-		upd, err := x.writer.SetByKey(ctx, key, val)
+		upd, err := x.writer.Set(ctx, key, val)
 		if err != nil {
 			{{ .P.Stats }}.Record(ctx, {{ .P.Cache }}.MeasureError.M(1))
-			return nil, {{ .P.Fmt }}.Errorf("lru: {{ .C.Message.Name }}.SetBykey - %w", err)
+			return nil, {{ .P.Fmt }}.Errorf("lru: {{ .C.Message.Name }}.Set - %w", err)
 		}
 		val = upd
 	}
@@ -241,12 +241,12 @@ func (x *{{ .C.Message.Name }}LRU) SetByKey(ctx {{ .P.Context }}.Context, key {{
 }
 
 // WithReader tells the {{ .C.Message.Name }}LRU where to source values from if they don't exist in cache.
-func (x *{{ .C.Message.Name }}LRU) WithReader(r {{ .P.KeyValue }}.{{ .C.Message.Name }}Reader) {
+func (x *{{ .C.Message.Name }}LRU) WithReader(r {{ .C.Message.Name }}Reader) {
 	x.reader = r
 }
 
 // WithWriter tells the {{ .C.Message.Name }}LRU where to source values from if they don't exist in cache.
-func (x *{{ .C.Message.Name }}LRU) WithWriter(w {{ .P.KeyValue }}.{{ .C.Message.Name }}Writer) {
+func (x *{{ .C.Message.Name }}LRU) WithWriter(w {{ .C.Message.Name }}Writer) {
 	x.writer = w
 }
 
@@ -276,16 +276,15 @@ func New{{ .C.Message.Name }}LRU(name string, i int) (*{{ .C.Message.Name }}LRU,
 	}
 
 	p := map[string]string{
-		"Cache":    c.File.QualifiedPackageName("github.com/rleszilm/genms/cache"),
-		"Context":  c.File.QualifiedPackageName("context"),
-		"Fmt":      c.File.QualifiedPackageName("fmt"),
-		"KeyValue": c.File.QualifiedPackageName(path.Join(c.File.DalPackagePath(), "keyvalue")),
-		"LRU":      c.File.QualifiedPackageName("github.com/hashicorp/golang-lru"),
-		"Log":      c.File.QualifiedPackageName("github.com/rleszilm/genms/log"),
-		"Service":  c.File.QualifiedPackageName("github.com/rleszilm/genms/service"),
-		"Stats":    c.File.QualifiedPackageName("go.opencensus.io/stats"),
-		"Tag":      c.File.QualifiedPackageName("go.opencensus.io/tag"),
-		"Time":     c.File.QualifiedPackageName("time"),
+		"Cache":   c.File.QualifiedPackageName("github.com/rleszilm/genms/cache"),
+		"Context": c.File.QualifiedPackageName("context"),
+		"Fmt":     c.File.QualifiedPackageName("fmt"),
+		"LRU":     c.File.QualifiedPackageName("github.com/hashicorp/golang-lru"),
+		"Log":     c.File.QualifiedPackageName("github.com/rleszilm/genms/log"),
+		"Service": c.File.QualifiedPackageName("github.com/rleszilm/genms/service"),
+		"Stats":   c.File.QualifiedPackageName("go.opencensus.io/stats"),
+		"Tag":     c.File.QualifiedPackageName("go.opencensus.io/tag"),
+		"Time":    c.File.QualifiedPackageName("time"),
 	}
 
 	buf := &bytes.Buffer{}

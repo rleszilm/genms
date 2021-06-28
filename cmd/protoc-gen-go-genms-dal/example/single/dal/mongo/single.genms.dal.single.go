@@ -189,7 +189,7 @@ func (x *SingleCollection) Find(ctx context.Context, label string, filter bson.M
 
 	client, err := x.dialer.Dial(ctx)
 	if err != nil {
-		mongo.Logs().Error("could not dial:", err)
+		logs.Error("could not dial:", err)
 		stats.Record(ctx, mongo.MeasureError.M(1))
 		return nil, err
 	}
@@ -217,7 +217,7 @@ func (x *SingleCollection) Find(ctx context.Context, label string, filter bson.M
 		Collection(x.config.Collection).
 		Find(ctx, filter, singleProjection, opts...)
 	if err != nil {
-		mongo.Logs().Error("could not execute rest request:", err)
+		logs.Error("could not execute rest request:", err)
 		stats.Record(ctx, mongo.MeasureError.M(1))
 		return nil, err
 	}
@@ -226,14 +226,14 @@ func (x *SingleCollection) Find(ctx context.Context, label string, filter bson.M
 	for cur.Next(ctx) {
 		obj := &SingleMongo{}
 		if err = cur.Decode(obj); err != nil {
-			mongo.Logs().Errorf("could not parse %s - %v", label, err)
+			logs.Errorf("could not parse %s - %v", label, err)
 			stats.Record(ctx, mongo.MeasureError.M(1))
 			return nil, err
 		}
 
 		val, err := obj.Single()
 		if err != nil {
-			mongo.Logs().Error("could not convert from mongo to internal:", err)
+			logs.Error("could not convert from mongo to internal:", err)
 			stats.Record(ctx, mongo.MeasureError.M(1))
 			return nil, err
 		}
@@ -241,7 +241,7 @@ func (x *SingleCollection) Find(ctx context.Context, label string, filter bson.M
 		for _, m := range x.mutators {
 			val, err = m(val)
 			if err != nil {
-				mongo.Logs().Error("could not mutate value:", val, err)
+				logs.Error("could not mutate value:", val, err)
 				stats.Record(ctx, mongo.MeasureError.M(1))
 				return nil, err
 			}
@@ -318,7 +318,7 @@ func (x *SingleCollection) Filter(ctx context.Context, fvs *dal.SingleFieldValue
 	if fvs.BsonStringOid != nil {
 		convBsonStringOid, err := bson.ToObjectID(*fvs.BsonStringOid)
 		if err != nil {
-			mongo.Logs().Error("could not convert value to ObjectID:", err)
+			logs.Error("could not convert value to ObjectID:", err)
 			return nil, err
 		}
 		filter["_id"] = convBsonStringOid
@@ -326,7 +326,7 @@ func (x *SingleCollection) Filter(ctx context.Context, fvs *dal.SingleFieldValue
 	if fvs.BsonBytesOid != nil {
 		convBsonBytesOid, err := bson.ToObjectID(fvs.BsonBytesOid)
 		if err != nil {
-			mongo.Logs().Error("could not convert value to ObjectID:", err)
+			logs.Error("could not convert value to ObjectID:", err)
 			return nil, err
 		}
 		filter["bson_bytes_oid"] = convBsonBytesOid
@@ -354,7 +354,7 @@ func (x *SingleCollection) Insert(ctx context.Context, obj *single.Single) (*sin
 
 	client, err := x.dialer.Dial(ctx)
 	if err != nil {
-		mongo.Logs().Error("could not dial:", err)
+		logs.Error("could not dial:", err)
 		stats.Record(ctx, mongo.MeasureError.M(1))
 		return nil, err
 	}
@@ -362,7 +362,7 @@ func (x *SingleCollection) Insert(ctx context.Context, obj *single.Single) (*sin
 
 	mObj, err := ToSingleMongo(obj)
 	if err != nil {
-		mongo.Logs().Error("could not convert internal to mongo:", obj, err)
+		logs.Error("could not convert internal to mongo:", obj, err)
 		stats.Record(ctx, mongo.MeasureError.M(1))
 		return nil, err
 	}
@@ -373,14 +373,14 @@ func (x *SingleCollection) Insert(ctx context.Context, obj *single.Single) (*sin
 		InsertOne(ctx, mObj)
 
 	if err != nil {
-		mongo.Logs().Error("could not execute insert:", err)
+		logs.Error("could not execute insert:", err)
 		stats.Record(ctx, mongo.MeasureError.M(1))
 		return nil, err
 	}
 
 	oid, ok := res.InsertedID.(bson.ObjectID)
 	if !ok {
-		mongo.Logs().Error("could not convert returned upsert id:", oid, err)
+		logs.Error("could not convert returned upsert id:", oid, err)
 		stats.Record(ctx, mongo.MeasureError.M(1))
 		return nil, mongo.ErrBadObjID
 	}
@@ -410,7 +410,7 @@ func (x *SingleCollection) Upsert(ctx context.Context, obj *single.Single) (*sin
 
 	client, err := x.dialer.Dial(ctx)
 	if err != nil {
-		mongo.Logs().Error("could not dial:", err)
+		logs.Error("could not dial:", err)
 		stats.Record(ctx, mongo.MeasureError.M(1))
 		return nil, err
 	}
@@ -418,7 +418,7 @@ func (x *SingleCollection) Upsert(ctx context.Context, obj *single.Single) (*sin
 
 	mObj, err := ToSingleMongo(obj)
 	if err != nil {
-		mongo.Logs().Error("could not convert internal to mongo:", obj, err)
+		logs.Error("could not convert internal to mongo:", obj, err)
 		stats.Record(ctx, mongo.MeasureError.M(1))
 		return nil, err
 	}
@@ -434,14 +434,14 @@ func (x *SingleCollection) Upsert(ctx context.Context, obj *single.Single) (*sin
 		UpdateOne(ctx, filter, bson.M{"$set": mObj}, opts)
 
 	if err != nil {
-		mongo.Logs().Error("could not execute upsert:", err)
+		logs.Error("could not execute upsert:", err)
 		stats.Record(ctx, mongo.MeasureError.M(1))
 		return nil, err
 	}
 
 	oid, ok := res.UpsertedID.(bson.ObjectID)
 	if !ok {
-		mongo.Logs().Error("could not convert returned upsert id:", oid, err)
+		logs.Error("could not convert returned upsert id:", oid, err)
 		stats.Record(ctx, mongo.MeasureError.M(1))
 		return nil, mongo.ErrBadObjID
 	}
@@ -477,7 +477,7 @@ func (x *SingleCollection) Update(ctx context.Context, obj *single.Single, fvs *
 
 	objID, err := bson.ToObjectID(obj.BsonStringOid)
 	if err != nil {
-		mongo.Logs().Error("could not convert to ObjectID:", obj.BsonStringOid, err)
+		logs.Error("could not convert to ObjectID:", obj.BsonStringOid, err)
 		stats.Record(ctx, mongo.MeasureError.M(1))
 		return nil, err
 	}
@@ -539,7 +539,7 @@ func (x *SingleCollection) Update(ctx context.Context, obj *single.Single, fvs *
 	if fvs.BsonStringOid != nil {
 		convBsonStringOid, err := bson.ToObjectID(*fvs.BsonStringOid)
 		if err != nil {
-			mongo.Logs().Error("could not convert to ObjectID:", *fvs.BsonStringOid, err)
+			logs.Error("could not convert to ObjectID:", *fvs.BsonStringOid, err)
 			stats.Record(ctx, mongo.MeasureError.M(1))
 			return nil, err
 		}
@@ -548,7 +548,7 @@ func (x *SingleCollection) Update(ctx context.Context, obj *single.Single, fvs *
 	if fvs.BsonBytesOid != nil {
 		convBsonBytesOid, err := bson.ToObjectID(fvs.BsonBytesOid)
 		if err != nil {
-			mongo.Logs().Error("could not convert to ObjectID:", fvs.BsonBytesOid, err)
+			logs.Error("could not convert to ObjectID:", fvs.BsonBytesOid, err)
 			stats.Record(ctx, mongo.MeasureError.M(1))
 			return nil, err
 		}
@@ -562,7 +562,7 @@ func (x *SingleCollection) Update(ctx context.Context, obj *single.Single, fvs *
 		UpdateOne(ctx, filter, bson.M{"$set": upd})
 
 	if err != nil {
-		mongo.Logs().Error("could not update:", err)
+		logs.Error("could not update:", err)
 		stats.Record(ctx, mongo.MeasureError.M(1))
 		return nil, err
 	}
@@ -641,7 +641,7 @@ func (x *SingleCollection) ById(ctx context.Context, bson_string_oid string) ([]
 
 	convBsonStringOid, err := bson.ToObjectID(bson_string_oid)
 	if err != nil {
-		mongo.Logs().Error("could not convert to ObjectID:", bson_string_oid, err)
+		logs.Error("could not convert to ObjectID:", bson_string_oid, err)
 		stats.Record(ctx, mongo.MeasureError.M(1))
 		return nil, err
 	}

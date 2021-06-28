@@ -8,54 +8,53 @@ import (
 
 	cache "github.com/rleszilm/genms/cache"
 	multi "github.com/rleszilm/genms/cmd/protoc-gen-go-genms-dal/example/multi"
-	keyvalue "github.com/rleszilm/genms/cmd/protoc-gen-go-genms-dal/example/multi/dal/keyvalue"
 	service "github.com/rleszilm/genms/service"
 	stats "go.opencensus.io/stats"
 	tag "go.opencensus.io/tag"
 )
 
-// TypeOneMap defines a Map base cache implementing keyvalue.TypeOneReadWriter.
+// TypeTwoMap defines a Map base cache implementing TypeTwoReadWriter.
 // If a key is queries that does not exist an attempt to read and store it is made.
-type TypeOneMap struct {
+type TypeTwoMap struct {
 	service.Dependencies
-	NilTypeOneCache
+	UnimplementedTypeTwoCache
 
 	name   string
-	reader keyvalue.TypeOneReader
-	writer keyvalue.TypeOneWriter
-	cache  map[keyvalue.TypeOneKey]*multi.TypeOne
-	all    []*multi.TypeOne
+	reader TypeTwoReader
+	writer TypeTwoWriter
+	cache  map[TypeTwoKey]*multi.TypeTwo
+	all    []*multi.TypeTwo
 }
 
 // Initialize initializes and starts the service. Initialize should panic in case of
 // any errors. It is intended that Initialize be called only once during the service life-cycle.
-func (x *TypeOneMap) Initialize(ctx context.Context) error {
+func (x *TypeTwoMap) Initialize(ctx context.Context) error {
 	return nil
 }
 
 // Shutdown closes the long-running instance, or service.
-func (x *TypeOneMap) Shutdown(_ context.Context) error {
+func (x *TypeTwoMap) Shutdown(_ context.Context) error {
 	return nil
 }
 
 // String returns the name of the map.
-func (x *TypeOneMap) String() string {
+func (x *TypeTwoMap) String() string {
 	if x.name != "" {
-		return "cache-dal-multi-type-one-map-" + x.name
+		return x.name
 	}
-	return "cache-dal-multi-type-one-map"
+	return "cache-dal-multi-type-two-map"
 }
 
 // NameOf returns the name of the map.
-func (x *TypeOneMap) NameOf() string {
+func (x *TypeTwoMap) NameOf() string {
 	return x.String()
 }
 
-// All implements implements keyvalue.TypeOneReadAller.
-func (x *TypeOneMap) All(ctx context.Context) ([]*multi.TypeOne, error) {
+// All implements implements TypeTwoReadAller.
+func (x *TypeTwoMap) All(ctx context.Context) ([]*multi.TypeTwo, error) {
 	start := time.Now()
 	ctx, _ = tag.New(ctx,
-		tag.Upsert(cache.TagCollection, "type_one"),
+		tag.Upsert(cache.TagCollection, "type_two"),
 		tag.Upsert(cache.TagInstance, x.name),
 		tag.Upsert(cache.TagMethod, "all"),
 		tag.Upsert(cache.TagType, "map"),
@@ -70,11 +69,11 @@ func (x *TypeOneMap) All(ctx context.Context) ([]*multi.TypeOne, error) {
 	return x.all, nil
 }
 
-// GetByKey implements keyvalue.TypeOneReader.
-func (x *TypeOneMap) GetByKey(ctx context.Context, key keyvalue.TypeOneKey) (*multi.TypeOne, error) {
+// Get implements TypeTwoReader.
+func (x *TypeTwoMap) Get(ctx context.Context, key TypeTwoKey) (*multi.TypeTwo, error) {
 	start := time.Now()
 	ctx, _ = tag.New(ctx,
-		tag.Upsert(cache.TagCollection, "type_one"),
+		tag.Upsert(cache.TagCollection, "type_two"),
 		tag.Upsert(cache.TagInstance, x.name),
 		tag.Upsert(cache.TagMethod, "get"),
 		tag.Upsert(cache.TagType, "map"),
@@ -91,23 +90,23 @@ func (x *TypeOneMap) GetByKey(ctx context.Context, key keyvalue.TypeOneKey) (*mu
 	}
 
 	if x.reader != nil {
-		val, err := x.reader.GetByKey(ctx, key)
+		val, err := x.reader.Get(ctx, key)
 		if err != nil {
-			return nil, fmt.Errorf("map: TypeOne.GetByKey - %w", err)
+			return nil, fmt.Errorf("map: TypeTwo.Get - %w", err)
 		}
 		x.cache[key] = val
 		return val, nil
 	}
 
 	stats.Record(ctx, cache.MeasureError.M(1))
-	return nil, fmt.Errorf("map: TypeOne.GetByKey - %w", cache.ErrGetValue)
+	return nil, fmt.Errorf("map: TypeTwo.Get - %w", cache.ErrNoValue)
 }
 
-// SetByKey implements keyvalue.TypeOneWriter.
-func (x *TypeOneMap) SetByKey(ctx context.Context, key keyvalue.TypeOneKey, val *multi.TypeOne) (*multi.TypeOne, error) {
+// Set implements TypeTwoWriter.
+func (x *TypeTwoMap) Set(ctx context.Context, key TypeTwoKey, val *multi.TypeTwo) (*multi.TypeTwo, error) {
 	start := time.Now()
 	ctx, _ = tag.New(ctx,
-		tag.Upsert(cache.TagCollection, "type_one"),
+		tag.Upsert(cache.TagCollection, "type_two"),
 		tag.Upsert(cache.TagInstance, x.name),
 		tag.Upsert(cache.TagMethod, "get"),
 		tag.Upsert(cache.TagType, "map"),
@@ -120,17 +119,17 @@ func (x *TypeOneMap) SetByKey(ctx context.Context, key keyvalue.TypeOneKey, val 
 	}()
 
 	if x.writer != nil {
-		upd, err := x.writer.SetByKey(ctx, key, val)
+		upd, err := x.writer.Set(ctx, key, val)
 		if err != nil {
 			stats.Record(ctx, cache.MeasureError.M(1))
-			return nil, fmt.Errorf("map: TypeOne.SetByKey - %w", err)
+			return nil, fmt.Errorf("map: TypeTwo.Set - %w", err)
 		}
 		val = upd
 	}
 
 	x.cache[key] = val
 
-	all := []*multi.TypeOne{}
+	all := []*multi.TypeTwo{}
 	for _, v := range x.cache {
 		all = append(all, v)
 	}
@@ -139,20 +138,20 @@ func (x *TypeOneMap) SetByKey(ctx context.Context, key keyvalue.TypeOneKey, val 
 	return val, nil
 }
 
-// WithReader tells the TypeOneMap where to source values from if they don't exist in cache.
-func (x *TypeOneMap) WithReader(r keyvalue.TypeOneReader) {
+// WithReader tells the TypeTwoMap where to source values from if they don't exist in cache.
+func (x *TypeTwoMap) WithReader(r TypeTwoReader) {
 	x.reader = r
 }
 
-// WithWriter tells the TypeOneMap where to source values from if they don't exist in cache.
-func (x *TypeOneMap) WithWriter(w keyvalue.TypeOneWriter) {
+// WithWriter tells the TypeTwoMap where to source values from if they don't exist in cache.
+func (x *TypeTwoMap) WithWriter(w TypeTwoWriter) {
 	x.writer = w
 }
 
-// NewTypeOneMap returns a new TypeOneMap cache.
-func NewTypeOneMap(name string) (*TypeOneMap, error) {
-	return &TypeOneMap{
+// NewTypeTwoMap returns a new TypeTwoMap cache.
+func NewTypeTwoMap(name string) (*TypeTwoMap, error) {
+	return &TypeTwoMap{
 		name:  name,
-		cache: map[keyvalue.TypeOneKey]*multi.TypeOne{},
+		cache: map[TypeTwoKey]*multi.TypeTwo{},
 	}, nil
 }

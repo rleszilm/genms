@@ -6,7 +6,6 @@ import (
 	time "time"
 
 	cache "github.com/rleszilm/genms/cache"
-	keyvalue "github.com/rleszilm/genms/cmd/protoc-gen-go-genms-dal/example/multi/dal/keyvalue"
 	service "github.com/rleszilm/genms/service"
 	stats "go.opencensus.io/stats"
 	tag "go.opencensus.io/tag"
@@ -17,9 +16,9 @@ type TypeOneUpdater struct {
 	service.Dependencies
 
 	name     string
-	reader   keyvalue.TypeOneReadAller
-	writer   keyvalue.TypeOneWriter
-	key      keyvalue.TypeOneKeyFunc
+	reader   TypeOneReadAller
+	writer   TypeOneWriter
+	key      TypeOneKeyFunc
 	interval time.Duration
 	done     chan struct{}
 }
@@ -39,7 +38,7 @@ func (x *TypeOneUpdater) Shutdown(_ context.Context) error {
 // String returns the name of the updater.
 func (x *TypeOneUpdater) String() string {
 	if x.name != "" {
-		return "cache-dal-multi-type-one-updater-" + x.name
+		return x.name
 	}
 	return "cache-dal-multi-type-one-updater"
 }
@@ -63,7 +62,7 @@ func (x *TypeOneUpdater) update(ctx context.Context) {
 		case <-ctx.Done():
 			return
 		case <-ticker.C:
-			cache.Logs().Infof("starting update for %s", x.name)
+			logs.Infof("starting update for %s", x.name)
 			start := time.Now()
 			stats.Record(ctx, cache.MeasureInflight.M(1))
 
@@ -72,9 +71,9 @@ func (x *TypeOneUpdater) update(ctx context.Context) {
 			}
 
 			for _, val := range vals {
-				cache.Logs().Trace("updater TypeOne storing value:", x.key(val), val)
-				if _, err = x.writer.SetByKey(ctx, x.key(val), val); err != nil {
-					cache.Logs().Error("updater TypeOne could not store value:", x.key(val), val, err)
+				logs.Trace("updater TypeOne storing value:", x.key(val), val)
+				if _, err = x.writer.Set(ctx, x.key(val), val); err != nil {
+					logs.Error("updater TypeOne could not store value:", x.key(val), val, err)
 					break
 				}
 			}
@@ -90,27 +89,27 @@ func (x *TypeOneUpdater) update(ctx context.Context) {
 			stats.Record(ctx, cache.MeasureLatency.M(dur))
 
 			if x.interval == 0 {
-				cache.Logs().Infof("updater %s is terminating", x.name)
+				logs.Infof("updater %s is terminating", x.name)
 				return
 			}
-			cache.Logs().Infof("scheduling next update for %v", x.interval)
+			logs.Infof("scheduling next update for %v", x.interval)
 			ticker.Reset(x.interval)
 		}
 	}
 }
 
 // WithReadAller tells the TypeOneMap where to source values from if they don't exist in cache.
-func (x *TypeOneUpdater) WithReadAller(r keyvalue.TypeOneReadAller) {
+func (x *TypeOneUpdater) WithReadAller(r TypeOneReadAller) {
 	x.reader = r
 }
 
 // WithWriter tells the TypeOneMap where to source values from if they don't exist in cache.
-func (x *TypeOneUpdater) WithWriter(w keyvalue.TypeOneWriter) {
+func (x *TypeOneUpdater) WithWriter(w TypeOneWriter) {
 	x.writer = w
 }
 
 // NewTypeOneUpdater returns a new TypeOneUpdater.
-func NewTypeOneUpdater(name string, k keyvalue.TypeOneKeyFunc, i time.Duration) *TypeOneUpdater {
+func NewTypeOneUpdater(name string, k TypeOneKeyFunc, i time.Duration) *TypeOneUpdater {
 	return &TypeOneUpdater{
 		name:     name,
 		key:      k,

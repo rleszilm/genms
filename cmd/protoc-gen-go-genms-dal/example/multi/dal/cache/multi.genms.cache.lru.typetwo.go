@@ -6,59 +6,59 @@ import (
 	fmt "fmt"
 	time "time"
 
+	golang_lru "github.com/hashicorp/golang-lru"
 	cache "github.com/rleszilm/genms/cache"
 	multi "github.com/rleszilm/genms/cmd/protoc-gen-go-genms-dal/example/multi"
-	keyvalue "github.com/rleszilm/genms/cmd/protoc-gen-go-genms-dal/example/multi/dal/keyvalue"
 	service "github.com/rleszilm/genms/service"
 	stats "go.opencensus.io/stats"
 	tag "go.opencensus.io/tag"
 )
 
-// TypeTwoMap defines a Map base cache implementing keyvalue.TypeTwoReadWriter.
+// TypeTwoLRU defines a LRU cache implementing TypeTwoReadWriter.
 // If a key is queries that does not exist an attempt to read and store it is made.
-type TypeTwoMap struct {
+type TypeTwoLRU struct {
 	service.Dependencies
-	NilTypeTwoCache
+	UnimplementedTypeTwoCache
 
 	name   string
-	reader keyvalue.TypeTwoReader
-	writer keyvalue.TypeTwoWriter
-	cache  map[keyvalue.TypeTwoKey]*multi.TypeTwo
+	reader TypeTwoReader
+	writer TypeTwoWriter
+	lru    *golang_lru.ARCCache
 	all    []*multi.TypeTwo
 }
 
 // Initialize initializes and starts the service. Initialize should panic in case of
 // any errors. It is intended that Initialize be called only once during the service life-cycle.
-func (x *TypeTwoMap) Initialize(ctx context.Context) error {
+func (x *TypeTwoLRU) Initialize(ctx context.Context) error {
 	return nil
 }
 
 // Shutdown closes the long-running instance, or service.
-func (x *TypeTwoMap) Shutdown(_ context.Context) error {
+func (x *TypeTwoLRU) Shutdown(_ context.Context) error {
 	return nil
 }
 
-// String returns the name of the map.
-func (x *TypeTwoMap) String() string {
+// String returns the name of the LRU.
+func (x *TypeTwoLRU) String() string {
 	if x.name != "" {
-		return "cache-dal-multi-type-two-map-" + x.name
+		return x.name
 	}
-	return "cache-dal-multi-type-two-map"
+	return "cache-dal-multi-type-two-lru"
 }
 
-// NameOf returns the name of the map.
-func (x *TypeTwoMap) NameOf() string {
+// NameOf returns the name of the LRU.
+func (x *TypeTwoLRU) NameOf() string {
 	return x.String()
 }
 
-// All implements implements keyvalue.TypeTwoReadAller.
-func (x *TypeTwoMap) All(ctx context.Context) ([]*multi.TypeTwo, error) {
+// All implements implements TypeTwoReadAller.
+func (x *TypeTwoLRU) All(ctx context.Context) ([]*multi.TypeTwo, error) {
 	start := time.Now()
 	ctx, _ = tag.New(ctx,
 		tag.Upsert(cache.TagCollection, "type_two"),
 		tag.Upsert(cache.TagInstance, x.name),
 		tag.Upsert(cache.TagMethod, "all"),
-		tag.Upsert(cache.TagType, "map"),
+		tag.Upsert(cache.TagType, "lru"),
 	)
 	stats.Record(ctx, cache.MeasureInflight.M(1))
 	defer func() {
@@ -70,14 +70,14 @@ func (x *TypeTwoMap) All(ctx context.Context) ([]*multi.TypeTwo, error) {
 	return x.all, nil
 }
 
-// GetByKey implements keyvalue.TypeTwoReader.
-func (x *TypeTwoMap) GetByKey(ctx context.Context, key keyvalue.TypeTwoKey) (*multi.TypeTwo, error) {
+// Get implements TypeTwoReader.
+func (x *TypeTwoLRU) Get(ctx context.Context, key TypeTwoKey) (*multi.TypeTwo, error) {
 	start := time.Now()
 	ctx, _ = tag.New(ctx,
 		tag.Upsert(cache.TagCollection, "type_two"),
 		tag.Upsert(cache.TagInstance, x.name),
 		tag.Upsert(cache.TagMethod, "get"),
-		tag.Upsert(cache.TagType, "map"),
+		tag.Upsert(cache.TagType, "lru"),
 	)
 	stats.Record(ctx, cache.MeasureInflight.M(1))
 	defer func() {
@@ -86,31 +86,33 @@ func (x *TypeTwoMap) GetByKey(ctx context.Context, key keyvalue.TypeTwoKey) (*mu
 		stats.Record(ctx, cache.MeasureLatency.M(dur), cache.MeasureInflight.M(-1))
 	}()
 
-	if val, ok := x.cache[key]; ok {
-		return val, nil
+	if val, ok := x.lru.Get(key); ok {
+		stats.Record(ctx, cache.MeasureHit.M(1))
+		return val.(*multi.TypeTwo), nil
 	}
+	stats.Record(ctx, cache.MeasureMiss.M(1))
 
 	if x.reader != nil {
-		val, err := x.reader.GetByKey(ctx, key)
+		val, err := x.reader.Get(ctx, key)
 		if err != nil {
-			return nil, fmt.Errorf("map: TypeTwo.GetByKey - %w", err)
+			return nil, fmt.Errorf("lru: TypeTwo.Get - %w", err)
 		}
-		x.cache[key] = val
+		x.lru.Add(key, val)
 		return val, nil
 	}
 
 	stats.Record(ctx, cache.MeasureError.M(1))
-	return nil, fmt.Errorf("map: TypeTwo.GetByKey - %w", cache.ErrGetValue)
+	return nil, fmt.Errorf("lru: TypeTwo.Get - %w", cache.ErrNoValue)
 }
 
-// SetByKey implements keyvalue.TypeTwoWriter.
-func (x *TypeTwoMap) SetByKey(ctx context.Context, key keyvalue.TypeTwoKey, val *multi.TypeTwo) (*multi.TypeTwo, error) {
+// Set implements TypeTwoWriter.
+func (x *TypeTwoLRU) Set(ctx context.Context, key TypeTwoKey, val *multi.TypeTwo) (*multi.TypeTwo, error) {
 	start := time.Now()
 	ctx, _ = tag.New(ctx,
 		tag.Upsert(cache.TagCollection, "type_two"),
 		tag.Upsert(cache.TagInstance, x.name),
-		tag.Upsert(cache.TagMethod, "get"),
-		tag.Upsert(cache.TagType, "map"),
+		tag.Upsert(cache.TagMethod, "set"),
+		tag.Upsert(cache.TagType, "lru"),
 	)
 	stats.Record(ctx, cache.MeasureInflight.M(1))
 	defer func() {
@@ -120,39 +122,45 @@ func (x *TypeTwoMap) SetByKey(ctx context.Context, key keyvalue.TypeTwoKey, val 
 	}()
 
 	if x.writer != nil {
-		upd, err := x.writer.SetByKey(ctx, key, val)
+		upd, err := x.writer.Set(ctx, key, val)
 		if err != nil {
 			stats.Record(ctx, cache.MeasureError.M(1))
-			return nil, fmt.Errorf("map: TypeTwo.SetByKey - %w", err)
+			return nil, fmt.Errorf("lru: TypeTwo.Set - %w", err)
 		}
 		val = upd
 	}
 
-	x.cache[key] = val
+	x.lru.Add(key, val)
 
 	all := []*multi.TypeTwo{}
-	for _, v := range x.cache {
-		all = append(all, v)
+	for _, k := range x.lru.Keys() {
+		y, _ := x.lru.Get(k)
+		all = append(all, y.(*multi.TypeTwo))
 	}
 	x.all = all
 
 	return val, nil
 }
 
-// WithReader tells the TypeTwoMap where to source values from if they don't exist in cache.
-func (x *TypeTwoMap) WithReader(r keyvalue.TypeTwoReader) {
+// WithReader tells the TypeTwoLRU where to source values from if they don't exist in cache.
+func (x *TypeTwoLRU) WithReader(r TypeTwoReader) {
 	x.reader = r
 }
 
-// WithWriter tells the TypeTwoMap where to source values from if they don't exist in cache.
-func (x *TypeTwoMap) WithWriter(w keyvalue.TypeTwoWriter) {
+// WithWriter tells the TypeTwoLRU where to source values from if they don't exist in cache.
+func (x *TypeTwoLRU) WithWriter(w TypeTwoWriter) {
 	x.writer = w
 }
 
-// NewTypeTwoMap returns a new TypeTwoMap cache.
-func NewTypeTwoMap(name string) (*TypeTwoMap, error) {
-	return &TypeTwoMap{
-		name:  name,
-		cache: map[keyvalue.TypeTwoKey]*multi.TypeTwo{},
+// NewTypeTwoLRU returns a new TypeTwoLRU cache.
+func NewTypeTwoLRU(name string, i int) (*TypeTwoLRU, error) {
+	arc, err := golang_lru.NewARC(i)
+	if err != nil {
+		return nil, fmt.Errorf("lru: arc init - %w", err)
+	}
+
+	return &TypeTwoLRU{
+		name: name,
+		lru:  arc,
 	}, nil
 }
