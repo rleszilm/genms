@@ -15,7 +15,7 @@ import (
 )
 
 var (
-	generatedCommon bool
+	generatedCommon = map[string]struct{}{}
 )
 
 // Collection is a struct that generates a collection file.
@@ -54,14 +54,8 @@ func NewCollection(plugin *protogen.Plugin, file *protogen.File, msg *protogen.M
 }
 
 func (c *Collection) render() error {
-	if !generatedCommon {
-		if err := c.defineCommon(); err != nil {
-			return err
-		}
-		generatedCommon = true
-	}
-
 	steps := []func() error{
+		c.defineCommon,
 		c.definePackage,
 		c.defineConfig,
 		c.defineInternalStructs,
@@ -97,6 +91,11 @@ func (c *Collection) render() error {
 }
 
 func (c *Collection) defineCommon() error {
+	if _, ok := generatedCommon[c.File.DalPackagePath()]; ok {
+		return nil
+	}
+	generatedCommon[c.File.DalPackagePath()] = struct{}{}
+
 	file := c.File.Proto()
 	plugin := c.plugin
 	dir := path.Dir(file.GeneratedFilenamePrefix)
