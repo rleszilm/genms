@@ -222,13 +222,13 @@ func (x *Unimplemented{{ .C.Message.Name }}Cache) All(_ {{ .P.Context }}.Context
 }
 
 
-// GetByKey implements {{ .C.Message.Name }}Reader.
-func (x *Unimplemented{{ .C.Message.Name }}Cache) GetByKey(_ {{ .P.Context }}.Context, _ {{ .C.Message.Name }}Key) (*{{ .C.Message.QualifiedKind }}, error) {
+// Get implements {{ .C.Message.Name }}Reader.
+func (x *Unimplemented{{ .C.Message.Name }}Cache) Get(_ {{ .P.Context }}.Context, _ {{ .C.Message.Name }}Key) (*{{ .C.Message.QualifiedKind }}, error) {
 	return nil, {{ .P.Cache }}.ErrUnimplemented
 }
 
-// SetByKey implements {{ .C.Message.Name }}Writer.
-func (x *Unimplemented{{ .C.Message.Name }}Cache) SetByKey(_ {{ .P.Context }}.Context, _ {{ .C.Message.Name }}Key, _ *{{ .C.Message.QualifiedKind }}) (*{{ .C.Message.QualifiedKind }}, error) {
+// Set implements {{ .C.Message.Name }}Writer.
+func (x *Unimplemented{{ .C.Message.Name }}Cache) Set(_ {{ .P.Context }}.Context, _ {{ .C.Message.Name }}Key, _ *{{ .C.Message.QualifiedKind }}) (*{{ .C.Message.QualifiedKind }}, error) {
 	return nil, {{ .P.Cache }}.ErrUnimplemented
 }
 

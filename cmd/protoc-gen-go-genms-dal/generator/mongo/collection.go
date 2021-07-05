@@ -109,7 +109,7 @@ package {{ $.C.File.MongoPackageName }}
 //go:generate go run github.com/maxbrunsfeld/counterfeiter/v6 -generate
 
 var (
-	logs = logs
+	logs = {{ $.P.Mongo }}.Logs()
 )
 
 `
@@ -119,7 +119,7 @@ var (
 		Parse(tmplSrc)
 
 	p := map[string]string{
-		"Cache": c.File.QualifiedPackageName("github.com/rleszilm/genms/mongo"),
+		"Mongo": c.File.QualifiedPackageName("github.com/rleszilm/genms/mongo"),
 	}
 
 	buf := &bytes.Buffer{}

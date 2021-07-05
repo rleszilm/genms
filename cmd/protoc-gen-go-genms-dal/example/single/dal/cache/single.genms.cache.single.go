@@ -48,12 +48,12 @@ func (x *UnimplementedSingleCache) All(_ context.Context) (*single.Single, error
 	return nil, cache.ErrUnimplemented
 }
 
-// GetByKey implements SingleReader.
-func (x *UnimplementedSingleCache) GetByKey(_ context.Context, _ SingleKey) (*single.Single, error) {
+// Get implements SingleReader.
+func (x *UnimplementedSingleCache) Get(_ context.Context, _ SingleKey) (*single.Single, error) {
 	return nil, cache.ErrUnimplemented
 }
 
-// SetByKey implements SingleWriter.
-func (x *UnimplementedSingleCache) SetByKey(_ context.Context, _ SingleKey, _ *single.Single) (*single.Single, error) {
+// Set implements SingleWriter.
+func (x *UnimplementedSingleCache) Set(_ context.Context, _ SingleKey, _ *single.Single) (*single.Single, error) {
 	return nil, cache.ErrUnimplemented
 }

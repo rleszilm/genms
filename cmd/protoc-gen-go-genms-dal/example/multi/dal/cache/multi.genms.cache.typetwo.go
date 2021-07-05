@@ -48,12 +48,12 @@ func (x *UnimplementedTypeTwoCache) All(_ context.Context) (*multi.TypeTwo, erro
 	return nil, cache.ErrUnimplemented
 }
 
-// GetByKey implements TypeTwoReader.
-func (x *UnimplementedTypeTwoCache) GetByKey(_ context.Context, _ TypeTwoKey) (*multi.TypeTwo, error) {
+// Get implements TypeTwoReader.
+func (x *UnimplementedTypeTwoCache) Get(_ context.Context, _ TypeTwoKey) (*multi.TypeTwo, error) {
 	return nil, cache.ErrUnimplemented
 }
 
-// SetByKey implements TypeTwoWriter.
-func (x *UnimplementedTypeTwoCache) SetByKey(_ context.Context, _ TypeTwoKey, _ *multi.TypeTwo) (*multi.TypeTwo, error) {
+// Set implements TypeTwoWriter.
+func (x *UnimplementedTypeTwoCache) Set(_ context.Context, _ TypeTwoKey, _ *multi.TypeTwo) (*multi.TypeTwo, error) {
 	return nil, cache.ErrUnimplemented
 }

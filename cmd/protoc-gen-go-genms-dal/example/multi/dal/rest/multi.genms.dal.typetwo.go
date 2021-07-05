@@ -458,7 +458,7 @@ type TypeTwoConfig struct {
 
 // TypeTwoUrlTemplateProvider is an interface that returns the query templated that should be executed
 // to generate the queries that the collection will use.
-//go:generate go run github.com/maxbrunsfeld/counterfeiter/v6 . TypeTwoUrlTemplateProvider
+//counterfeiter:generate .  TypeTwoUrlTemplateProvider
 type TypeTwoUrlTemplateProvider interface {
 	All() string
 	OneParam() string

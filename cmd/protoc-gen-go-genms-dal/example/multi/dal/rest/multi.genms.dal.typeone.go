@@ -458,7 +458,7 @@ type TypeOneConfig struct {
 
 // TypeOneUrlTemplateProvider is an interface that returns the query templated that should be executed
 // to generate the queries that the collection will use.
-//go:generate go run github.com/maxbrunsfeld/counterfeiter/v6 . TypeOneUrlTemplateProvider
+//counterfeiter:generate .  TypeOneUrlTemplateProvider
 type TypeOneUrlTemplateProvider interface {
 	All() string
 	OneParam() string
