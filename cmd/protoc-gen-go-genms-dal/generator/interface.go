@@ -15,7 +15,7 @@ import (
 )
 
 var (
-	generatedCommon bool
+	generatedCommon = map[string]struct{}{}
 )
 
 // Interface generates the interface for the dal type.
@@ -57,14 +57,8 @@ func GenerateInterface(plugin *protogen.Plugin, file *protogen.File, msg *protog
 }
 
 func (i *Interface) render() error {
-	if !generatedCommon {
-		if err := i.defineCommon(); err != nil {
-			return err
-		}
-		generatedCommon = true
-	}
-
 	steps := []func() error{
+		i.defineCommon,
 		i.definePackage,
 		i.defineErrors,
 		i.defineInterface,
@@ -82,6 +76,11 @@ func (i *Interface) render() error {
 }
 
 func (i *Interface) defineCommon() error {
+	if _, ok := generatedCommon[i.File.DalPackagePath()]; ok {
+		return nil
+	}
+	generatedCommon[i.File.DalPackagePath()] = struct{}{}
+
 	file := i.File.Proto()
 	plugin := i.plugin
 	dir := path.Dir(file.GeneratedFilenamePrefix)

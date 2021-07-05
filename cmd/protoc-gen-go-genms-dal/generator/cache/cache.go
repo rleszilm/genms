@@ -15,7 +15,7 @@ import (
 )
 
 var (
-	generatedCommon bool
+	generatedCommon = map[string]struct{}{}
 )
 
 // Cache is a struct that generates an base cache file.
@@ -60,14 +60,8 @@ func GenerateCache(plugin *protogen.Plugin, file *protogen.File, msg *protogen.M
 }
 
 func (c *Cache) render() error {
-	if !generatedCommon {
-		if err := c.defineCommon(); err != nil {
-			return err
-		}
-		generatedCommon = true
-	}
-
 	steps := []func() error{
+		c.defineCommon,
 		c.definePackage,
 		c.defineCache,
 	}
@@ -97,6 +91,11 @@ func (c *Cache) render() error {
 }
 
 func (c *Cache) defineCommon() error {
+	if _, ok := generatedCommon[c.File.CachePackagePath()]; ok {
+		return nil
+	}
+	generatedCommon[c.File.CachePackagePath()] = struct{}{}
+
 	file := c.File.Proto()
 	plugin := c.plugin
 	dir := path.Dir(file.GeneratedFilenamePrefix)
