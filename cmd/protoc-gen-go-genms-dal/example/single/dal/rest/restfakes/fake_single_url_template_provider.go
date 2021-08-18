@@ -18,6 +18,16 @@ type FakeSingleUrlTemplateProvider struct {
 	allReturnsOnCall map[int]struct {
 		result1 string
 	}
+	ByIdStub        func() string
+	byIdMutex       sync.RWMutex
+	byIdArgsForCall []struct {
+	}
+	byIdReturns struct {
+		result1 string
+	}
+	byIdReturnsOnCall map[int]struct {
+		result1 string
+	}
 	MessageParamStub        func() string
 	messageParamMutex       sync.RWMutex
 	messageParamArgsForCall []struct {
@@ -36,6 +46,16 @@ type FakeSingleUrlTemplateProvider struct {
 		result1 string
 	}
 	multipleParamReturnsOnCall map[int]struct {
+		result1 string
+	}
+	NonFieldOnlyStub        func() string
+	nonFieldOnlyMutex       sync.RWMutex
+	nonFieldOnlyArgsForCall []struct {
+	}
+	nonFieldOnlyReturns struct {
+		result1 string
+	}
+	nonFieldOnlyReturnsOnCall map[int]struct {
 		result1 string
 	}
 	OneParamStub        func() string
@@ -130,6 +150,58 @@ func (fake *FakeSingleUrlTemplateProvider) AllReturnsOnCall(i int, result1 strin
 		})
 	}
 	fake.allReturnsOnCall[i] = struct {
+		result1 string
+	}{result1}
+}
+
+func (fake *FakeSingleUrlTemplateProvider) ById() string {
+	fake.byIdMutex.Lock()
+	ret, specificReturn := fake.byIdReturnsOnCall[len(fake.byIdArgsForCall)]
+	fake.byIdArgsForCall = append(fake.byIdArgsForCall, struct {
+	}{})
+	fake.recordInvocation("ById", []interface{}{})
+	fake.byIdMutex.Unlock()
+	if fake.ByIdStub != nil {
+		return fake.ByIdStub()
+	}
+	if specificReturn {
+		return ret.result1
+	}
+	fakeReturns := fake.byIdReturns
+	return fakeReturns.result1
+}
+
+func (fake *FakeSingleUrlTemplateProvider) ByIdCallCount() int {
+	fake.byIdMutex.RLock()
+	defer fake.byIdMutex.RUnlock()
+	return len(fake.byIdArgsForCall)
+}
+
+func (fake *FakeSingleUrlTemplateProvider) ByIdCalls(stub func() string) {
+	fake.byIdMutex.Lock()
+	defer fake.byIdMutex.Unlock()
+	fake.ByIdStub = stub
+}
+
+func (fake *FakeSingleUrlTemplateProvider) ByIdReturns(result1 string) {
+	fake.byIdMutex.Lock()
+	defer fake.byIdMutex.Unlock()
+	fake.ByIdStub = nil
+	fake.byIdReturns = struct {
+		result1 string
+	}{result1}
+}
+
+func (fake *FakeSingleUrlTemplateProvider) ByIdReturnsOnCall(i int, result1 string) {
+	fake.byIdMutex.Lock()
+	defer fake.byIdMutex.Unlock()
+	fake.ByIdStub = nil
+	if fake.byIdReturnsOnCall == nil {
+		fake.byIdReturnsOnCall = make(map[int]struct {
+			result1 string
+		})
+	}
+	fake.byIdReturnsOnCall[i] = struct {
 		result1 string
 	}{result1}
 }
@@ -234,6 +306,58 @@ func (fake *FakeSingleUrlTemplateProvider) MultipleParamReturnsOnCall(i int, res
 		})
 	}
 	fake.multipleParamReturnsOnCall[i] = struct {
+		result1 string
+	}{result1}
+}
+
+func (fake *FakeSingleUrlTemplateProvider) NonFieldOnly() string {
+	fake.nonFieldOnlyMutex.Lock()
+	ret, specificReturn := fake.nonFieldOnlyReturnsOnCall[len(fake.nonFieldOnlyArgsForCall)]
+	fake.nonFieldOnlyArgsForCall = append(fake.nonFieldOnlyArgsForCall, struct {
+	}{})
+	fake.recordInvocation("NonFieldOnly", []interface{}{})
+	fake.nonFieldOnlyMutex.Unlock()
+	if fake.NonFieldOnlyStub != nil {
+		return fake.NonFieldOnlyStub()
+	}
+	if specificReturn {
+		return ret.result1
+	}
+	fakeReturns := fake.nonFieldOnlyReturns
+	return fakeReturns.result1
+}
+
+func (fake *FakeSingleUrlTemplateProvider) NonFieldOnlyCallCount() int {
+	fake.nonFieldOnlyMutex.RLock()
+	defer fake.nonFieldOnlyMutex.RUnlock()
+	return len(fake.nonFieldOnlyArgsForCall)
+}
+
+func (fake *FakeSingleUrlTemplateProvider) NonFieldOnlyCalls(stub func() string) {
+	fake.nonFieldOnlyMutex.Lock()
+	defer fake.nonFieldOnlyMutex.Unlock()
+	fake.NonFieldOnlyStub = stub
+}
+
+func (fake *FakeSingleUrlTemplateProvider) NonFieldOnlyReturns(result1 string) {
+	fake.nonFieldOnlyMutex.Lock()
+	defer fake.nonFieldOnlyMutex.Unlock()
+	fake.NonFieldOnlyStub = nil
+	fake.nonFieldOnlyReturns = struct {
+		result1 string
+	}{result1}
+}
+
+func (fake *FakeSingleUrlTemplateProvider) NonFieldOnlyReturnsOnCall(i int, result1 string) {
+	fake.nonFieldOnlyMutex.Lock()
+	defer fake.nonFieldOnlyMutex.Unlock()
+	fake.NonFieldOnlyStub = nil
+	if fake.nonFieldOnlyReturnsOnCall == nil {
+		fake.nonFieldOnlyReturnsOnCall = make(map[int]struct {
+			result1 string
+		})
+	}
+	fake.nonFieldOnlyReturnsOnCall[i] = struct {
 		result1 string
 	}{result1}
 }
@@ -451,10 +575,14 @@ func (fake *FakeSingleUrlTemplateProvider) Invocations() map[string][][]interfac
 	defer fake.invocationsMutex.RUnlock()
 	fake.allMutex.RLock()
 	defer fake.allMutex.RUnlock()
+	fake.byIdMutex.RLock()
+	defer fake.byIdMutex.RUnlock()
 	fake.messageParamMutex.RLock()
 	defer fake.messageParamMutex.RUnlock()
 	fake.multipleParamMutex.RLock()
 	defer fake.multipleParamMutex.RUnlock()
+	fake.nonFieldOnlyMutex.RLock()
+	defer fake.nonFieldOnlyMutex.RUnlock()
 	fake.oneParamMutex.RLock()
 	defer fake.oneParamMutex.RUnlock()
 	fake.providerStubOnlyMutex.RLock()

@@ -16,20 +16,20 @@ type Collection interface {
 	Clone(...*CollectionOptions) (Collection, error)
 	Name() string
 	Database() Database
-	BulkWrite(context.Context, []WriteModel, ...*BulkWriteOptions) (*BulkWriteResult, error)
-	InsertOne(context.Context, interface{}, ...*InsertOneOptions) (*InsertOneResult, error)
-	InsertMany(context.Context, []interface{}, ...*InsertManyOptions) (*InsertManyResult, error)
-	DeleteOne(context.Context, interface{}, ...*DeleteOptions) (*DeleteResult, error)
-	DeleteMany(context.Context, interface{}, ...*DeleteOptions) (*DeleteResult, error)
-	UpdateByID(context.Context, interface{}, interface{}, ...*UpdateOptions) (*UpdateResult, error)
-	UpdateOne(context.Context, interface{}, interface{}, ...*UpdateOptions) (*UpdateResult, error)
-	UpdateMany(context.Context, interface{}, interface{}, ...*UpdateOptions) (*UpdateResult, error)
-	ReplaceOne(context.Context, interface{}, interface{}, ...*ReplaceOptions) (*UpdateResult, error)
-	Find(context.Context, interface{}, interface{}, ...*FindOptions) (Cursor, error)
-	FindOne(context.Context, interface{}, interface{}, ...*FindOneOptions) SingleResult
-	FindOneAndDelete(context.Context, interface{}, interface{}, ...*FindOneAndDeleteOptions) SingleResult
-	FindOneAndReplace(context.Context, interface{}, interface{}, interface{}, ...*FindOneAndReplaceOptions) SingleResult
-	FindOneAndUpdate(context.Context, interface{}, interface{}, interface{}, ...*FindOneAndUpdateOptions) SingleResult
+	BulkWrite(ctx context.Context, models []WriteModel, opts ...*BulkWriteOptions) (*BulkWriteResult, error)
+	InsertOne(ctx context.Context, obj interface{}, opts ...*InsertOneOptions) (*InsertOneResult, error)
+	InsertMany(ctx context.Context, objs []interface{}, opts ...*InsertManyOptions) (*InsertManyResult, error)
+	DeleteOne(ctx context.Context, filter interface{}, opts ...*DeleteOptions) (*DeleteResult, error)
+	DeleteMany(ctx context.Context, filter interface{}, opts ...*DeleteOptions) (*DeleteResult, error)
+	UpdateByID(ctx context.Context, id interface{}, update interface{}, opts ...*UpdateOptions) (*UpdateResult, error)
+	UpdateOne(ctx context.Context, filter interface{}, update interface{}, opts ...*UpdateOptions) (*UpdateResult, error)
+	UpdateMany(ctx context.Context, filter interface{}, update interface{}, opts ...*UpdateOptions) (*UpdateResult, error)
+	ReplaceOne(ctx context.Context, filter interface{}, obj interface{}, opts ...*ReplaceOptions) (*UpdateResult, error)
+	Find(ctx context.Context, filter interface{}, projection interface{}, opts ...*FindOptions) (Cursor, error)
+	FindOne(ctx context.Context, filter interface{}, projection interface{}, opts ...*FindOneOptions) SingleResult
+	FindOneAndDelete(ctx context.Context, filter interface{}, projection interface{}, opts ...*FindOneAndDeleteOptions) SingleResult
+	FindOneAndReplace(ctx context.Context, filter interface{}, projection interface{}, obj interface{}, opts ...*FindOneAndReplaceOptions) SingleResult
+	FindOneAndUpdate(ctx context.Context, filter interface{}, projection interface{}, obj interface{}, opts ...*FindOneAndUpdateOptions) SingleResult
 }
 
 // SimpleCollection is a wrapper for mongo.Collection
@@ -108,13 +108,13 @@ func (c *SimpleCollection) InsertMany(ctx context.Context, objs []interface{}, o
 }
 
 // DeleteOne implements mongo.Collection.DeleteOne
-func (c *SimpleCollection) DeleteOne(ctx context.Context, obj interface{}, opts ...*DeleteOptions) (*DeleteResult, error) {
+func (c *SimpleCollection) DeleteOne(ctx context.Context, filter interface{}, opts ...*DeleteOptions) (*DeleteResult, error) {
 	iOpts := []*options.DeleteOptions{}
 	for _, opt := range opts {
 		iOpts = append(iOpts, &opt.DeleteOptions)
 	}
 
-	res, err := c.Collection.DeleteOne(ctx, obj, iOpts...)
+	res, err := c.Collection.DeleteOne(ctx, filter, iOpts...)
 	if err != nil {
 		return nil, err
 	}

@@ -2,6 +2,7 @@ package service
 
 import (
 	"context"
+	"fmt"
 	"os"
 	"os/signal"
 )
@@ -37,7 +38,7 @@ func (m *Manager) Initialize(ctx context.Context) error {
 			svc := m.svcs[i]
 			logs.Infof("starting service %s(%T)\n", svc.NameOf(), svc)
 			if err := svc.Initialize(ctx); err != nil {
-				done <- err
+				done <- fmt.Errorf("cannot start service: %s - %w", svc.NameOf(), err)
 				return
 			}
 		}

@@ -3,27 +3,55 @@ package cache_dal_single
 
 import (
 	context "context"
+	fmt "fmt"
 	time "time"
 
 	golang_lru "github.com/hashicorp/golang-lru"
 	cache "github.com/rleszilm/genms/cache"
 	single "github.com/rleszilm/genms/cmd/protoc-gen-go-genms-dal/example/single"
-	keyvalue "github.com/rleszilm/genms/cmd/protoc-gen-go-genms-dal/example/single/dal/keyvalue"
+	service "github.com/rleszilm/genms/service"
 	stats "go.opencensus.io/stats"
 	tag "go.opencensus.io/tag"
 )
 
-// SingleLRU defines a LRU cache implementing keyvalue.SingleReadWriter.
+// SingleLRU defines a LRU cache implementing SingleReadWriter.
 // If a key is queries that does not exist an attempt to read and store it is made.
 type SingleLRU struct {
+	service.Dependencies
+	UnimplementedSingleCache
+
 	name   string
-	reader keyvalue.SingleReader
-	writer keyvalue.SingleWriter
+	reader SingleReader
+	writer SingleWriter
 	lru    *golang_lru.ARCCache
 	all    []*single.Single
 }
 
-// All implements implements keyvalue.SingleReadAller.
+// Initialize initializes and starts the service. Initialize should panic in case of
+// any errors. It is intended that Initialize be called only once during the service life-cycle.
+func (x *SingleLRU) Initialize(ctx context.Context) error {
+	return nil
+}
+
+// Shutdown closes the long-running instance, or service.
+func (x *SingleLRU) Shutdown(_ context.Context) error {
+	return nil
+}
+
+// String returns the name of the LRU.
+func (x *SingleLRU) String() string {
+	if x.name != "" {
+		return x.name
+	}
+	return "cache-dal-single-single-lru"
+}
+
+// NameOf returns the name of the LRU.
+func (x *SingleLRU) NameOf() string {
+	return x.String()
+}
+
+// All implements implements SingleReadAller.
 func (x *SingleLRU) All(ctx context.Context) ([]*single.Single, error) {
 	start := time.Now()
 	ctx, _ = tag.New(ctx,
@@ -42,8 +70,8 @@ func (x *SingleLRU) All(ctx context.Context) ([]*single.Single, error) {
 	return x.all, nil
 }
 
-// GetByKey implements keyvalue.SingleReader.
-func (x *SingleLRU) GetByKey(ctx context.Context, key keyvalue.SingleKey) (*single.Single, error) {
+// Get implements SingleReader.
+func (x *SingleLRU) Get(ctx context.Context, key SingleKey) (*single.Single, error) {
 	start := time.Now()
 	ctx, _ = tag.New(ctx,
 		tag.Upsert(cache.TagCollection, "single"),
@@ -65,20 +93,20 @@ func (x *SingleLRU) GetByKey(ctx context.Context, key keyvalue.SingleKey) (*sing
 	stats.Record(ctx, cache.MeasureMiss.M(1))
 
 	if x.reader != nil {
-		val, err := x.reader.GetByKey(ctx, key)
+		val, err := x.reader.Get(ctx, key)
 		if err != nil {
-			return nil, err
+			return nil, fmt.Errorf("lru: Single.Get - %w", err)
 		}
 		x.lru.Add(key, val)
 		return val, nil
 	}
 
 	stats.Record(ctx, cache.MeasureError.M(1))
-	return nil, nil
+	return nil, fmt.Errorf("lru: Single.Get - %w", cache.ErrNoValue)
 }
 
-// SetByKey implements keyvalue.SingleWriter.
-func (x *SingleLRU) SetByKey(ctx context.Context, key keyvalue.SingleKey, val *single.Single) error {
+// Set implements SingleWriter.
+func (x *SingleLRU) Set(ctx context.Context, key SingleKey, val *single.Single) (*single.Single, error) {
 	start := time.Now()
 	ctx, _ = tag.New(ctx,
 		tag.Upsert(cache.TagCollection, "single"),
@@ -94,10 +122,12 @@ func (x *SingleLRU) SetByKey(ctx context.Context, key keyvalue.SingleKey, val *s
 	}()
 
 	if x.writer != nil {
-		if err := x.writer.SetByKey(ctx, key, val); err != nil {
+		upd, err := x.writer.Set(ctx, key, val)
+		if err != nil {
 			stats.Record(ctx, cache.MeasureError.M(1))
-			return err
+			return nil, fmt.Errorf("lru: Single.Set - %w", err)
 		}
+		val = upd
 	}
 
 	x.lru.Add(key, val)
@@ -109,16 +139,16 @@ func (x *SingleLRU) SetByKey(ctx context.Context, key keyvalue.SingleKey, val *s
 	}
 	x.all = all
 
-	return nil
+	return val, nil
 }
 
 // WithReader tells the SingleLRU where to source values from if they don't exist in cache.
-func (x *SingleLRU) WithReader(r keyvalue.SingleReader) {
+func (x *SingleLRU) WithReader(r SingleReader) {
 	x.reader = r
 }
 
 // WithWriter tells the SingleLRU where to source values from if they don't exist in cache.
-func (x *SingleLRU) WithWriter(w keyvalue.SingleWriter) {
+func (x *SingleLRU) WithWriter(w SingleWriter) {
 	x.writer = w
 }
 
@@ -126,7 +156,7 @@ func (x *SingleLRU) WithWriter(w keyvalue.SingleWriter) {
 func NewSingleLRU(name string, i int) (*SingleLRU, error) {
 	arc, err := golang_lru.NewARC(i)
 	if err != nil {
-		return nil, err
+		return nil, fmt.Errorf("lru: arc init - %w", err)
 	}
 
 	return &SingleLRU{

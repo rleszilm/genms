@@ -12,10 +12,11 @@ import (
 var (
 	logs = log.NewChannel("genms-cache")
 
-	ErrAll      = errors.New("cache: cannot get all values")
-	ErrGetNone  = errors.New("cache: no value for key")
-	ErrGetValue = errors.New("cache: cannot get value from cache")
-	ErrSetValue = errors.New("cache: cannot set value in cache")
+	ErrAll           = errors.New("cache: cannot get all values")
+	ErrNoValue       = errors.New("cache: no value for key")
+	ErrGetValue      = errors.New("cache: cannot get value from cache")
+	ErrSetValue      = errors.New("cache: cannot set value in cache")
+	ErrUnimplemented = errors.New("cache: cache method unimplemented")
 
 	TagCollection = tag.MustNewKey("genms_cache_collection")
 	TagInstance   = tag.MustNewKey("genms_cache_instance")

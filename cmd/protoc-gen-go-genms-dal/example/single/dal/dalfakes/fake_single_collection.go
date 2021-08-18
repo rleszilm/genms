@@ -24,6 +24,20 @@ type FakeSingleCollection struct {
 		result1 []*single.Single
 		result2 error
 	}
+	ByIdStub        func(context.Context, string) ([]*single.Single, error)
+	byIdMutex       sync.RWMutex
+	byIdArgsForCall []struct {
+		arg1 context.Context
+		arg2 string
+	}
+	byIdReturns struct {
+		result1 []*single.Single
+		result2 error
+	}
+	byIdReturnsOnCall map[int]struct {
+		result1 []*single.Single
+		result2 error
+	}
 	DependantsStub        func() service.Services
 	dependantsMutex       sync.RWMutex
 	dependantsArgsForCall []struct {
@@ -125,6 +139,20 @@ type FakeSingleCollection struct {
 	}
 	nameOfReturnsOnCall map[int]struct {
 		result1 string
+	}
+	NonFieldOnlyStub        func(context.Context, string) ([]*single.Single, error)
+	nonFieldOnlyMutex       sync.RWMutex
+	nonFieldOnlyArgsForCall []struct {
+		arg1 context.Context
+		arg2 string
+	}
+	nonFieldOnlyReturns struct {
+		result1 []*single.Single
+		result2 error
+	}
+	nonFieldOnlyReturnsOnCall map[int]struct {
+		result1 []*single.Single
+		result2 error
 	}
 	OneParamStub        func(context.Context, int32) ([]*single.Single, error)
 	oneParamMutex       sync.RWMutex
@@ -301,6 +329,70 @@ func (fake *FakeSingleCollection) AllReturnsOnCall(i int, result1 []*single.Sing
 		})
 	}
 	fake.allReturnsOnCall[i] = struct {
+		result1 []*single.Single
+		result2 error
+	}{result1, result2}
+}
+
+func (fake *FakeSingleCollection) ById(arg1 context.Context, arg2 string) ([]*single.Single, error) {
+	fake.byIdMutex.Lock()
+	ret, specificReturn := fake.byIdReturnsOnCall[len(fake.byIdArgsForCall)]
+	fake.byIdArgsForCall = append(fake.byIdArgsForCall, struct {
+		arg1 context.Context
+		arg2 string
+	}{arg1, arg2})
+	fake.recordInvocation("ById", []interface{}{arg1, arg2})
+	fake.byIdMutex.Unlock()
+	if fake.ByIdStub != nil {
+		return fake.ByIdStub(arg1, arg2)
+	}
+	if specificReturn {
+		return ret.result1, ret.result2
+	}
+	fakeReturns := fake.byIdReturns
+	return fakeReturns.result1, fakeReturns.result2
+}
+
+func (fake *FakeSingleCollection) ByIdCallCount() int {
+	fake.byIdMutex.RLock()
+	defer fake.byIdMutex.RUnlock()
+	return len(fake.byIdArgsForCall)
+}
+
+func (fake *FakeSingleCollection) ByIdCalls(stub func(context.Context, string) ([]*single.Single, error)) {
+	fake.byIdMutex.Lock()
+	defer fake.byIdMutex.Unlock()
+	fake.ByIdStub = stub
+}
+
+func (fake *FakeSingleCollection) ByIdArgsForCall(i int) (context.Context, string) {
+	fake.byIdMutex.RLock()
+	defer fake.byIdMutex.RUnlock()
+	argsForCall := fake.byIdArgsForCall[i]
+	return argsForCall.arg1, argsForCall.arg2
+}
+
+func (fake *FakeSingleCollection) ByIdReturns(result1 []*single.Single, result2 error) {
+	fake.byIdMutex.Lock()
+	defer fake.byIdMutex.Unlock()
+	fake.ByIdStub = nil
+	fake.byIdReturns = struct {
+		result1 []*single.Single
+		result2 error
+	}{result1, result2}
+}
+
+func (fake *FakeSingleCollection) ByIdReturnsOnCall(i int, result1 []*single.Single, result2 error) {
+	fake.byIdMutex.Lock()
+	defer fake.byIdMutex.Unlock()
+	fake.ByIdStub = nil
+	if fake.byIdReturnsOnCall == nil {
+		fake.byIdReturnsOnCall = make(map[int]struct {
+			result1 []*single.Single
+			result2 error
+		})
+	}
+	fake.byIdReturnsOnCall[i] = struct {
 		result1 []*single.Single
 		result2 error
 	}{result1, result2}
@@ -789,6 +881,70 @@ func (fake *FakeSingleCollection) NameOfReturnsOnCall(i int, result1 string) {
 	fake.nameOfReturnsOnCall[i] = struct {
 		result1 string
 	}{result1}
+}
+
+func (fake *FakeSingleCollection) NonFieldOnly(arg1 context.Context, arg2 string) ([]*single.Single, error) {
+	fake.nonFieldOnlyMutex.Lock()
+	ret, specificReturn := fake.nonFieldOnlyReturnsOnCall[len(fake.nonFieldOnlyArgsForCall)]
+	fake.nonFieldOnlyArgsForCall = append(fake.nonFieldOnlyArgsForCall, struct {
+		arg1 context.Context
+		arg2 string
+	}{arg1, arg2})
+	fake.recordInvocation("NonFieldOnly", []interface{}{arg1, arg2})
+	fake.nonFieldOnlyMutex.Unlock()
+	if fake.NonFieldOnlyStub != nil {
+		return fake.NonFieldOnlyStub(arg1, arg2)
+	}
+	if specificReturn {
+		return ret.result1, ret.result2
+	}
+	fakeReturns := fake.nonFieldOnlyReturns
+	return fakeReturns.result1, fakeReturns.result2
+}
+
+func (fake *FakeSingleCollection) NonFieldOnlyCallCount() int {
+	fake.nonFieldOnlyMutex.RLock()
+	defer fake.nonFieldOnlyMutex.RUnlock()
+	return len(fake.nonFieldOnlyArgsForCall)
+}
+
+func (fake *FakeSingleCollection) NonFieldOnlyCalls(stub func(context.Context, string) ([]*single.Single, error)) {
+	fake.nonFieldOnlyMutex.Lock()
+	defer fake.nonFieldOnlyMutex.Unlock()
+	fake.NonFieldOnlyStub = stub
+}
+
+func (fake *FakeSingleCollection) NonFieldOnlyArgsForCall(i int) (context.Context, string) {
+	fake.nonFieldOnlyMutex.RLock()
+	defer fake.nonFieldOnlyMutex.RUnlock()
+	argsForCall := fake.nonFieldOnlyArgsForCall[i]
+	return argsForCall.arg1, argsForCall.arg2
+}
+
+func (fake *FakeSingleCollection) NonFieldOnlyReturns(result1 []*single.Single, result2 error) {
+	fake.nonFieldOnlyMutex.Lock()
+	defer fake.nonFieldOnlyMutex.Unlock()
+	fake.NonFieldOnlyStub = nil
+	fake.nonFieldOnlyReturns = struct {
+		result1 []*single.Single
+		result2 error
+	}{result1, result2}
+}
+
+func (fake *FakeSingleCollection) NonFieldOnlyReturnsOnCall(i int, result1 []*single.Single, result2 error) {
+	fake.nonFieldOnlyMutex.Lock()
+	defer fake.nonFieldOnlyMutex.Unlock()
+	fake.NonFieldOnlyStub = nil
+	if fake.nonFieldOnlyReturnsOnCall == nil {
+		fake.nonFieldOnlyReturnsOnCall = make(map[int]struct {
+			result1 []*single.Single
+			result2 error
+		})
+	}
+	fake.nonFieldOnlyReturnsOnCall[i] = struct {
+		result1 []*single.Single
+		result2 error
+	}{result1, result2}
 }
 
 func (fake *FakeSingleCollection) OneParam(arg1 context.Context, arg2 int32) ([]*single.Single, error) {
@@ -1326,6 +1482,8 @@ func (fake *FakeSingleCollection) Invocations() map[string][][]interface{} {
 	defer fake.invocationsMutex.RUnlock()
 	fake.allMutex.RLock()
 	defer fake.allMutex.RUnlock()
+	fake.byIdMutex.RLock()
+	defer fake.byIdMutex.RUnlock()
 	fake.dependantsMutex.RLock()
 	defer fake.dependantsMutex.RUnlock()
 	fake.filterMutex.RLock()
@@ -1342,6 +1500,8 @@ func (fake *FakeSingleCollection) Invocations() map[string][][]interface{} {
 	defer fake.multipleParamMutex.RUnlock()
 	fake.nameOfMutex.RLock()
 	defer fake.nameOfMutex.RUnlock()
+	fake.nonFieldOnlyMutex.RLock()
+	defer fake.nonFieldOnlyMutex.RUnlock()
 	fake.oneParamMutex.RLock()
 	defer fake.oneParamMutex.RUnlock()
 	fake.providerStubOnlyMutex.RLock()

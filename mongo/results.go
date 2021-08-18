@@ -32,7 +32,7 @@ type UpdateResult struct {
 
 // SingleResult is an interface that mirrors the mongo driver SingleResult struct.
 type SingleResult interface {
-	Decode(interface{}) error
+	Decode(obj interface{}) error
 	DecodeBytes() (bson.Raw, error)
 	Err() error
 }

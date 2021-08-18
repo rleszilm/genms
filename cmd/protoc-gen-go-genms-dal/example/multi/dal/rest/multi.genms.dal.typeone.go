@@ -51,15 +51,17 @@ func (x *TypeOneCollection) Shutdown(_ context.Context) error {
 	return nil
 }
 
-// NameOf returns the name of a service. This must be unique if there are multiple instances of the same
-// service.
-func (x *TypeOneCollection) NameOf() string {
-	return "rest_dal_multi_" + x.config.Name
+// String returns the name of the Collection.
+func (x *TypeOneCollection) String() string {
+	if x.name != "" {
+		return "rest-dal-multi-type-one-" + x.name
+	}
+	return "rest-dal-multi-type-one"
 }
 
-// String returns a string identifier for the service.
-func (x *TypeOneCollection) String() string {
-	return x.NameOf()
+// NameOf returns the name of the Collection.
+func (x *TypeOneCollection) NameOf() string {
+	return x.String()
 }
 
 // DoReq executes the given http request.
@@ -275,14 +277,14 @@ func (x *TypeOneCollection) WithRest(ctx context.Context, scalar_int32 int32, sc
 
 	req.URL.RawQuery = queryValues.Encode()
 
-	pathValues := map[string]interface{}{"scalar_int64": &scalar_int64}
+	pathValues := map[string]interface{}{"scalar_int64": scalar_int64}
 	pathBuf := &bytes.Buffer{}
 	if err := x.urlTmplWithRest.Execute(pathBuf, pathValues); err != nil {
 		return nil, err
 	}
 	req.URL.Path = pathBuf.String()
 
-	bodyValues := map[string]interface{}{"scalar_float32": &scalar_float32}
+	bodyValues := map[string]interface{}{"scalar_float32": scalar_float32}
 	bodyBytes, err := json.Marshal(bodyValues)
 	if err != nil {
 		return nil, err
@@ -456,7 +458,7 @@ type TypeOneConfig struct {
 
 // TypeOneUrlTemplateProvider is an interface that returns the query templated that should be executed
 // to generate the queries that the collection will use.
-//go:generate go run github.com/maxbrunsfeld/counterfeiter/v6 . TypeOneUrlTemplateProvider
+//counterfeiter:generate .  TypeOneUrlTemplateProvider
 type TypeOneUrlTemplateProvider interface {
 	All() string
 	OneParam() string

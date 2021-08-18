@@ -5,6 +5,7 @@ proto: proto-single proto-multi
 
 proto-single:
 	protoc \
+		--experimental_allow_proto3_optional \
 		-I ../../../.proto/grpc-graphql-gateway/include \
 		-I ../../../.proto/googleapis \
 		-I ../.. \
@@ -17,6 +18,7 @@ proto-single:
 
 proto-multi:
 	protoc \
+		--experimental_allow_proto3_optional \
 		-I ../../../.proto/grpc-graphql-gateway/include \
 		-I ../../../.proto/googleapis \
 		-I ../.. \

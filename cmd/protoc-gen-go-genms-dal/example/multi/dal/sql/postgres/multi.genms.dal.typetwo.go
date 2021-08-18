@@ -52,15 +52,17 @@ func (x *TypeTwoCollection) Shutdown(_ context.Context) error {
 	return nil
 }
 
-// NameOf returns the name of a service. This must be unique if there are multiple instances of the same
-// service.
-func (x *TypeTwoCollection) NameOf() string {
-	return "postgres_dal_multi_" + x.config.TableName
+// String returns the name of the Collection.
+func (x *TypeTwoCollection) String() string {
+	if x.name != "" {
+		return "postgres-dal-multi-type-two-" + x.name
+	}
+	return "postgres-dal-multi-type-two"
 }
 
-// String returns a string identifier for the service.
-func (x *TypeTwoCollection) String() string {
-	return x.NameOf()
+// NameOf returns the name of the Collection.
+func (x *TypeTwoCollection) NameOf() string {
+	return x.String()
 }
 
 // DoInsert provides the base logic for dal.TypeTwoCollection.Insert.
@@ -300,31 +302,31 @@ func (x *TypeTwoCollection) find(ctx context.Context, label string, query string
 
 // OneParam implements dal.TypeTwoCollection.OneParam
 func (x *TypeTwoCollection) OneParam(ctx context.Context, scalar_int32 int32) ([]*multi.TypeTwo, error) {
-	fvs := map[string]interface{}{"scalar_int32": &scalar_int32}
+	fvs := map[string]interface{}{"scalar_int32": scalar_int32}
 	return x.find(ctx, "one_param", x.queryOneParam, fvs)
 }
 
 // MultipleParam implements dal.TypeTwoCollection.MultipleParam
 func (x *TypeTwoCollection) MultipleParam(ctx context.Context, scalar_int32 int32, scalar_int64 int64, scalar_float32 float32) ([]*multi.TypeTwo, error) {
-	fvs := map[string]interface{}{"scalar_int32": &scalar_int32, "scalar_int64": &scalar_int64, "scalar_float32": &scalar_float32}
+	fvs := map[string]interface{}{"scalar_int32": scalar_int32, "scalar_int64": scalar_int64, "scalar_float32": scalar_float32}
 	return x.find(ctx, "multiple_param", x.queryMultipleParam, fvs)
 }
 
 // MessageParam implements dal.TypeTwoCollection.MessageParam
 func (x *TypeTwoCollection) MessageParam(ctx context.Context, obj_message *multi.TypeTwo_Message) ([]*multi.TypeTwo, error) {
-	fvs := map[string]interface{}{"obj_message": obj_message}
+	fvs := map[string]interface{}{"obj_message": &obj_message}
 	return x.find(ctx, "message_param", x.queryMessageParam, fvs)
 }
 
 // WithComparator implements dal.TypeTwoCollection.WithComparator
 func (x *TypeTwoCollection) WithComparator(ctx context.Context, scalar_int32 int32) ([]*multi.TypeTwo, error) {
-	fvs := map[string]interface{}{"scalar_int32": &scalar_int32}
+	fvs := map[string]interface{}{"scalar_int32": scalar_int32}
 	return x.find(ctx, "with_comparator", x.queryWithComparator, fvs)
 }
 
 // WithRest implements dal.TypeTwoCollection.WithRest
 func (x *TypeTwoCollection) WithRest(ctx context.Context, scalar_int32 int32, scalar_int64 int64, scalar_float32 float32, scalar_float64 float64) ([]*multi.TypeTwo, error) {
-	fvs := map[string]interface{}{"scalar_int32": &scalar_int32, "scalar_int64": &scalar_int64, "scalar_float32": &scalar_float32, "scalar_float64": &scalar_float64}
+	fvs := map[string]interface{}{"scalar_int32": scalar_int32, "scalar_int64": scalar_int64, "scalar_float32": scalar_float32, "scalar_float64": scalar_float64}
 	return x.find(ctx, "with_rest", x.queryWithRest, fvs)
 }
 
