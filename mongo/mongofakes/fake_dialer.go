@@ -6,9 +6,20 @@ import (
 	"sync"
 
 	"github.com/rleszilm/genms/mongo"
+	"github.com/rleszilm/genms/service"
 )
 
 type FakeDialer struct {
+	DependantsStub        func() service.Services
+	dependantsMutex       sync.RWMutex
+	dependantsArgsForCall []struct {
+	}
+	dependantsReturns struct {
+		result1 service.Services
+	}
+	dependantsReturnsOnCall map[int]struct {
+		result1 service.Services
+	}
 	DialStub        func(context.Context) (mongo.Client, error)
 	dialMutex       sync.RWMutex
 	dialArgsForCall []struct {
@@ -33,6 +44,16 @@ type FakeDialer struct {
 	initializeReturnsOnCall map[int]struct {
 		result1 error
 	}
+	NameOfStub        func() string
+	nameOfMutex       sync.RWMutex
+	nameOfArgsForCall []struct {
+	}
+	nameOfReturns struct {
+		result1 string
+	}
+	nameOfReturnsOnCall map[int]struct {
+		result1 string
+	}
 	ShutdownStub        func(context.Context) error
 	shutdownMutex       sync.RWMutex
 	shutdownArgsForCall []struct {
@@ -44,8 +65,75 @@ type FakeDialer struct {
 	shutdownReturnsOnCall map[int]struct {
 		result1 error
 	}
+	StringStub        func() string
+	stringMutex       sync.RWMutex
+	stringArgsForCall []struct {
+	}
+	stringReturns struct {
+		result1 string
+	}
+	stringReturnsOnCall map[int]struct {
+		result1 string
+	}
+	WithDependenciesStub        func(...service.Service)
+	withDependenciesMutex       sync.RWMutex
+	withDependenciesArgsForCall []struct {
+		arg1 []service.Service
+	}
 	invocations      map[string][][]interface{}
 	invocationsMutex sync.RWMutex
+}
+
+func (fake *FakeDialer) Dependants() service.Services {
+	fake.dependantsMutex.Lock()
+	ret, specificReturn := fake.dependantsReturnsOnCall[len(fake.dependantsArgsForCall)]
+	fake.dependantsArgsForCall = append(fake.dependantsArgsForCall, struct {
+	}{})
+	fake.recordInvocation("Dependants", []interface{}{})
+	fake.dependantsMutex.Unlock()
+	if fake.DependantsStub != nil {
+		return fake.DependantsStub()
+	}
+	if specificReturn {
+		return ret.result1
+	}
+	fakeReturns := fake.dependantsReturns
+	return fakeReturns.result1
+}
+
+func (fake *FakeDialer) DependantsCallCount() int {
+	fake.dependantsMutex.RLock()
+	defer fake.dependantsMutex.RUnlock()
+	return len(fake.dependantsArgsForCall)
+}
+
+func (fake *FakeDialer) DependantsCalls(stub func() service.Services) {
+	fake.dependantsMutex.Lock()
+	defer fake.dependantsMutex.Unlock()
+	fake.DependantsStub = stub
+}
+
+func (fake *FakeDialer) DependantsReturns(result1 service.Services) {
+	fake.dependantsMutex.Lock()
+	defer fake.dependantsMutex.Unlock()
+	fake.DependantsStub = nil
+	fake.dependantsReturns = struct {
+		result1 service.Services
+	}{result1}
+}
+
+func (fake *FakeDialer) DependantsReturnsOnCall(i int, result1 service.Services) {
+	fake.dependantsMutex.Lock()
+	defer fake.dependantsMutex.Unlock()
+	fake.DependantsStub = nil
+	if fake.dependantsReturnsOnCall == nil {
+		fake.dependantsReturnsOnCall = make(map[int]struct {
+			result1 service.Services
+		})
+	}
+	fake.dependantsReturnsOnCall[i] = struct {
+		result1 service.Services
+	}{result1}
 }
 
 func (fake *FakeDialer) Dial(arg1 context.Context) (mongo.Client, error) {
@@ -171,6 +259,58 @@ func (fake *FakeDialer) InitializeReturnsOnCall(i int, result1 error) {
 	}{result1}
 }
 
+func (fake *FakeDialer) NameOf() string {
+	fake.nameOfMutex.Lock()
+	ret, specificReturn := fake.nameOfReturnsOnCall[len(fake.nameOfArgsForCall)]
+	fake.nameOfArgsForCall = append(fake.nameOfArgsForCall, struct {
+	}{})
+	fake.recordInvocation("NameOf", []interface{}{})
+	fake.nameOfMutex.Unlock()
+	if fake.NameOfStub != nil {
+		return fake.NameOfStub()
+	}
+	if specificReturn {
+		return ret.result1
+	}
+	fakeReturns := fake.nameOfReturns
+	return fakeReturns.result1
+}
+
+func (fake *FakeDialer) NameOfCallCount() int {
+	fake.nameOfMutex.RLock()
+	defer fake.nameOfMutex.RUnlock()
+	return len(fake.nameOfArgsForCall)
+}
+
+func (fake *FakeDialer) NameOfCalls(stub func() string) {
+	fake.nameOfMutex.Lock()
+	defer fake.nameOfMutex.Unlock()
+	fake.NameOfStub = stub
+}
+
+func (fake *FakeDialer) NameOfReturns(result1 string) {
+	fake.nameOfMutex.Lock()
+	defer fake.nameOfMutex.Unlock()
+	fake.NameOfStub = nil
+	fake.nameOfReturns = struct {
+		result1 string
+	}{result1}
+}
+
+func (fake *FakeDialer) NameOfReturnsOnCall(i int, result1 string) {
+	fake.nameOfMutex.Lock()
+	defer fake.nameOfMutex.Unlock()
+	fake.NameOfStub = nil
+	if fake.nameOfReturnsOnCall == nil {
+		fake.nameOfReturnsOnCall = make(map[int]struct {
+			result1 string
+		})
+	}
+	fake.nameOfReturnsOnCall[i] = struct {
+		result1 string
+	}{result1}
+}
+
 func (fake *FakeDialer) Shutdown(arg1 context.Context) error {
 	fake.shutdownMutex.Lock()
 	ret, specificReturn := fake.shutdownReturnsOnCall[len(fake.shutdownArgsForCall)]
@@ -231,15 +371,106 @@ func (fake *FakeDialer) ShutdownReturnsOnCall(i int, result1 error) {
 	}{result1}
 }
 
+func (fake *FakeDialer) String() string {
+	fake.stringMutex.Lock()
+	ret, specificReturn := fake.stringReturnsOnCall[len(fake.stringArgsForCall)]
+	fake.stringArgsForCall = append(fake.stringArgsForCall, struct {
+	}{})
+	fake.recordInvocation("String", []interface{}{})
+	fake.stringMutex.Unlock()
+	if fake.StringStub != nil {
+		return fake.StringStub()
+	}
+	if specificReturn {
+		return ret.result1
+	}
+	fakeReturns := fake.stringReturns
+	return fakeReturns.result1
+}
+
+func (fake *FakeDialer) StringCallCount() int {
+	fake.stringMutex.RLock()
+	defer fake.stringMutex.RUnlock()
+	return len(fake.stringArgsForCall)
+}
+
+func (fake *FakeDialer) StringCalls(stub func() string) {
+	fake.stringMutex.Lock()
+	defer fake.stringMutex.Unlock()
+	fake.StringStub = stub
+}
+
+func (fake *FakeDialer) StringReturns(result1 string) {
+	fake.stringMutex.Lock()
+	defer fake.stringMutex.Unlock()
+	fake.StringStub = nil
+	fake.stringReturns = struct {
+		result1 string
+	}{result1}
+}
+
+func (fake *FakeDialer) StringReturnsOnCall(i int, result1 string) {
+	fake.stringMutex.Lock()
+	defer fake.stringMutex.Unlock()
+	fake.StringStub = nil
+	if fake.stringReturnsOnCall == nil {
+		fake.stringReturnsOnCall = make(map[int]struct {
+			result1 string
+		})
+	}
+	fake.stringReturnsOnCall[i] = struct {
+		result1 string
+	}{result1}
+}
+
+func (fake *FakeDialer) WithDependencies(arg1 ...service.Service) {
+	fake.withDependenciesMutex.Lock()
+	fake.withDependenciesArgsForCall = append(fake.withDependenciesArgsForCall, struct {
+		arg1 []service.Service
+	}{arg1})
+	fake.recordInvocation("WithDependencies", []interface{}{arg1})
+	fake.withDependenciesMutex.Unlock()
+	if fake.WithDependenciesStub != nil {
+		fake.WithDependenciesStub(arg1...)
+	}
+}
+
+func (fake *FakeDialer) WithDependenciesCallCount() int {
+	fake.withDependenciesMutex.RLock()
+	defer fake.withDependenciesMutex.RUnlock()
+	return len(fake.withDependenciesArgsForCall)
+}
+
+func (fake *FakeDialer) WithDependenciesCalls(stub func(...service.Service)) {
+	fake.withDependenciesMutex.Lock()
+	defer fake.withDependenciesMutex.Unlock()
+	fake.WithDependenciesStub = stub
+}
+
+func (fake *FakeDialer) WithDependenciesArgsForCall(i int) []service.Service {
+	fake.withDependenciesMutex.RLock()
+	defer fake.withDependenciesMutex.RUnlock()
+	argsForCall := fake.withDependenciesArgsForCall[i]
+	return argsForCall.arg1
+}
+
 func (fake *FakeDialer) Invocations() map[string][][]interface{} {
 	fake.invocationsMutex.RLock()
 	defer fake.invocationsMutex.RUnlock()
+	fake.dependantsMutex.RLock()
+	defer fake.dependantsMutex.RUnlock()
 	fake.dialMutex.RLock()
 	defer fake.dialMutex.RUnlock()
 	fake.initializeMutex.RLock()
 	defer fake.initializeMutex.RUnlock()
+	fake.nameOfMutex.RLock()
+	defer fake.nameOfMutex.RUnlock()
 	fake.shutdownMutex.RLock()
 	defer fake.shutdownMutex.RUnlock()
+	fake.stringMutex.RLock()
+	defer fake.stringMutex.RUnlock()
+	fake.withDependenciesMutex.RLock()
+	defer fake.withDependenciesMutex.RUnlock()
 	copiedInvocations := map[string][][]interface{}{}
 	for key, value := range fake.invocations {
 		copiedInvocations[key] = value

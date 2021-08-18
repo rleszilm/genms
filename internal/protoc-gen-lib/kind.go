@@ -1,13 +1,10 @@
 package protocgenlib
 
 import (
-	"log"
-
 	"google.golang.org/protobuf/reflect/protoreflect"
 )
 
 func ToGoKind(k protoreflect.Kind, prefix string) string {
-	log.Println("togo:", prefix, k.String(), k.GoString())
 	switch k.String() {
 	case "bool":
 		return prefix + "bool"

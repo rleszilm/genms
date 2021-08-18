@@ -53,6 +53,7 @@ func main() {
 		genError = err
 		return
 	}
+	plugin.SupportedFeatures = uint64(pluginpb.CodeGeneratorResponse_FEATURE_PROTO3_OPTIONAL)
 
 	for _, file := range plugin.Files {
 		for _, msg := range file.Services {

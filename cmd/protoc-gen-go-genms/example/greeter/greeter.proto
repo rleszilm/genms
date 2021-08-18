@@ -9,6 +9,7 @@ import "protoc-gen-go-genms/annotations/annotations.proto";
 
 message Message {
     string value = 1 [(graphql.field) = {required: true}];
+    optional string constraint = 2;
 }
 
 service WithRest {
