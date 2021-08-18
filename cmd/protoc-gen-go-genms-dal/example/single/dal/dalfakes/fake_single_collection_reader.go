@@ -23,6 +23,20 @@ type FakeSingleCollectionReader struct {
 		result1 []*single.Single
 		result2 error
 	}
+	ByIdStub        func(context.Context, string) ([]*single.Single, error)
+	byIdMutex       sync.RWMutex
+	byIdArgsForCall []struct {
+		arg1 context.Context
+		arg2 string
+	}
+	byIdReturns struct {
+		result1 []*single.Single
+		result2 error
+	}
+	byIdReturnsOnCall map[int]struct {
+		result1 []*single.Single
+		result2 error
+	}
 	FilterStub        func(context.Context, *dal_single.SingleFieldValues) ([]*single.Single, error)
 	filterMutex       sync.RWMutex
 	filterArgsForCall []struct {
@@ -77,6 +91,20 @@ type FakeSingleCollectionReader struct {
 		result2 error
 	}
 	multipleParamReturnsOnCall map[int]struct {
+		result1 []*single.Single
+		result2 error
+	}
+	NonFieldOnlyStub        func(context.Context, string) ([]*single.Single, error)
+	nonFieldOnlyMutex       sync.RWMutex
+	nonFieldOnlyArgsForCall []struct {
+		arg1 context.Context
+		arg2 string
+	}
+	nonFieldOnlyReturns struct {
+		result1 []*single.Single
+		result2 error
+	}
+	nonFieldOnlyReturnsOnCall map[int]struct {
 		result1 []*single.Single
 		result2 error
 	}
@@ -200,6 +228,70 @@ func (fake *FakeSingleCollectionReader) AllReturnsOnCall(i int, result1 []*singl
 		})
 	}
 	fake.allReturnsOnCall[i] = struct {
+		result1 []*single.Single
+		result2 error
+	}{result1, result2}
+}
+
+func (fake *FakeSingleCollectionReader) ById(arg1 context.Context, arg2 string) ([]*single.Single, error) {
+	fake.byIdMutex.Lock()
+	ret, specificReturn := fake.byIdReturnsOnCall[len(fake.byIdArgsForCall)]
+	fake.byIdArgsForCall = append(fake.byIdArgsForCall, struct {
+		arg1 context.Context
+		arg2 string
+	}{arg1, arg2})
+	fake.recordInvocation("ById", []interface{}{arg1, arg2})
+	fake.byIdMutex.Unlock()
+	if fake.ByIdStub != nil {
+		return fake.ByIdStub(arg1, arg2)
+	}
+	if specificReturn {
+		return ret.result1, ret.result2
+	}
+	fakeReturns := fake.byIdReturns
+	return fakeReturns.result1, fakeReturns.result2
+}
+
+func (fake *FakeSingleCollectionReader) ByIdCallCount() int {
+	fake.byIdMutex.RLock()
+	defer fake.byIdMutex.RUnlock()
+	return len(fake.byIdArgsForCall)
+}
+
+func (fake *FakeSingleCollectionReader) ByIdCalls(stub func(context.Context, string) ([]*single.Single, error)) {
+	fake.byIdMutex.Lock()
+	defer fake.byIdMutex.Unlock()
+	fake.ByIdStub = stub
+}
+
+func (fake *FakeSingleCollectionReader) ByIdArgsForCall(i int) (context.Context, string) {
+	fake.byIdMutex.RLock()
+	defer fake.byIdMutex.RUnlock()
+	argsForCall := fake.byIdArgsForCall[i]
+	return argsForCall.arg1, argsForCall.arg2
+}
+
+func (fake *FakeSingleCollectionReader) ByIdReturns(result1 []*single.Single, result2 error) {
+	fake.byIdMutex.Lock()
+	defer fake.byIdMutex.Unlock()
+	fake.ByIdStub = nil
+	fake.byIdReturns = struct {
+		result1 []*single.Single
+		result2 error
+	}{result1, result2}
+}
+
+func (fake *FakeSingleCollectionReader) ByIdReturnsOnCall(i int, result1 []*single.Single, result2 error) {
+	fake.byIdMutex.Lock()
+	defer fake.byIdMutex.Unlock()
+	fake.ByIdStub = nil
+	if fake.byIdReturnsOnCall == nil {
+		fake.byIdReturnsOnCall = make(map[int]struct {
+			result1 []*single.Single
+			result2 error
+		})
+	}
+	fake.byIdReturnsOnCall[i] = struct {
 		result1 []*single.Single
 		result2 error
 	}{result1, result2}
@@ -457,6 +549,70 @@ func (fake *FakeSingleCollectionReader) MultipleParamReturnsOnCall(i int, result
 		})
 	}
 	fake.multipleParamReturnsOnCall[i] = struct {
+		result1 []*single.Single
+		result2 error
+	}{result1, result2}
+}
+
+func (fake *FakeSingleCollectionReader) NonFieldOnly(arg1 context.Context, arg2 string) ([]*single.Single, error) {
+	fake.nonFieldOnlyMutex.Lock()
+	ret, specificReturn := fake.nonFieldOnlyReturnsOnCall[len(fake.nonFieldOnlyArgsForCall)]
+	fake.nonFieldOnlyArgsForCall = append(fake.nonFieldOnlyArgsForCall, struct {
+		arg1 context.Context
+		arg2 string
+	}{arg1, arg2})
+	fake.recordInvocation("NonFieldOnly", []interface{}{arg1, arg2})
+	fake.nonFieldOnlyMutex.Unlock()
+	if fake.NonFieldOnlyStub != nil {
+		return fake.NonFieldOnlyStub(arg1, arg2)
+	}
+	if specificReturn {
+		return ret.result1, ret.result2
+	}
+	fakeReturns := fake.nonFieldOnlyReturns
+	return fakeReturns.result1, fakeReturns.result2
+}
+
+func (fake *FakeSingleCollectionReader) NonFieldOnlyCallCount() int {
+	fake.nonFieldOnlyMutex.RLock()
+	defer fake.nonFieldOnlyMutex.RUnlock()
+	return len(fake.nonFieldOnlyArgsForCall)
+}
+
+func (fake *FakeSingleCollectionReader) NonFieldOnlyCalls(stub func(context.Context, string) ([]*single.Single, error)) {
+	fake.nonFieldOnlyMutex.Lock()
+	defer fake.nonFieldOnlyMutex.Unlock()
+	fake.NonFieldOnlyStub = stub
+}
+
+func (fake *FakeSingleCollectionReader) NonFieldOnlyArgsForCall(i int) (context.Context, string) {
+	fake.nonFieldOnlyMutex.RLock()
+	defer fake.nonFieldOnlyMutex.RUnlock()
+	argsForCall := fake.nonFieldOnlyArgsForCall[i]
+	return argsForCall.arg1, argsForCall.arg2
+}
+
+func (fake *FakeSingleCollectionReader) NonFieldOnlyReturns(result1 []*single.Single, result2 error) {
+	fake.nonFieldOnlyMutex.Lock()
+	defer fake.nonFieldOnlyMutex.Unlock()
+	fake.NonFieldOnlyStub = nil
+	fake.nonFieldOnlyReturns = struct {
+		result1 []*single.Single
+		result2 error
+	}{result1, result2}
+}
+
+func (fake *FakeSingleCollectionReader) NonFieldOnlyReturnsOnCall(i int, result1 []*single.Single, result2 error) {
+	fake.nonFieldOnlyMutex.Lock()
+	defer fake.nonFieldOnlyMutex.Unlock()
+	fake.NonFieldOnlyStub = nil
+	if fake.nonFieldOnlyReturnsOnCall == nil {
+		fake.nonFieldOnlyReturnsOnCall = make(map[int]struct {
+			result1 []*single.Single
+			result2 error
+		})
+	}
+	fake.nonFieldOnlyReturnsOnCall[i] = struct {
 		result1 []*single.Single
 		result2 error
 	}{result1, result2}
@@ -725,6 +881,8 @@ func (fake *FakeSingleCollectionReader) Invocations() map[string][][]interface{}
 	defer fake.invocationsMutex.RUnlock()
 	fake.allMutex.RLock()
 	defer fake.allMutex.RUnlock()
+	fake.byIdMutex.RLock()
+	defer fake.byIdMutex.RUnlock()
 	fake.filterMutex.RLock()
 	defer fake.filterMutex.RUnlock()
 	fake.interfaceStubOnlyMutex.RLock()
@@ -733,6 +891,8 @@ func (fake *FakeSingleCollectionReader) Invocations() map[string][][]interface{}
 	defer fake.messageParamMutex.RUnlock()
 	fake.multipleParamMutex.RLock()
 	defer fake.multipleParamMutex.RUnlock()
+	fake.nonFieldOnlyMutex.RLock()
+	defer fake.nonFieldOnlyMutex.RUnlock()
 	fake.oneParamMutex.RLock()
 	defer fake.oneParamMutex.RUnlock()
 	fake.providerStubOnlyMutex.RLock()

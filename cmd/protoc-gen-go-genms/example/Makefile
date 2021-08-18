@@ -3,9 +3,10 @@ build: .DEFAULT
 
 proto:
 	protoc \
-		-I ../../../.proto/grpc-graphql-gateway/include \
-		-I ../../../.proto/googleapis \
+		--experimental_allow_proto3_optional \
 		-I ../.. \
+		-I ../../../.proto/googleapis \
+		-I ../../../.proto/grpc-graphql-gateway/include \
 		-I greeter \
 		--go_out=greeter \
 		--go_opt=paths=source_relative \

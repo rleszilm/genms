@@ -11,10 +11,10 @@ import (
 type Database interface {
 	Client() Client
 	Name() string
-	Collection(string, ...*CollectionOptions) Collection
-	RunCommand(context.Context, interface{}, ...*RunCmdOptions) SingleResult
-	RunCommandCursor(context.Context, interface{}, ...*RunCmdOptions) (Cursor, error)
-	Drop(context.Context) error
+	Collection(name string, opts ...*CollectionOptions) Collection
+	RunCommand(ctx context.Context, cmd interface{}, opts ...*RunCmdOptions) SingleResult
+	RunCommandCursor(ctx context.Context, cmd interface{}, opts ...*RunCmdOptions) (Cursor, error)
+	Drop(ctx context.Context) error
 }
 
 // SimpleDatabase is a wrapper for mongo.Database

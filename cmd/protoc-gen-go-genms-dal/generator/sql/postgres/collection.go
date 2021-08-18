@@ -183,20 +183,25 @@ func (x *{{ .C.Message.Name }}Collection) Shutdown(_ {{ .P.Context }}.Context) e
 	return nil
 }
 
-// NameOf returns the name of a service. This must be unique if there are multiple instances of the same
-// service.
-func (x *{{ .C.Message.Name }}Collection) NameOf() string {
-	return "{{ .C.File.PostgresPackageName }}_" + x.config.TableName
+// String returns the name of the Collection.
+func (x *{{ .C.Message.Name }}Collection) String() string {
+	{{- $pkg := .C.File.PostgresPackageName -}}
+	if x.name != "" {
+		return "{{ ToDashCase $pkg }}-{{ ToDashCase .C.Message.Name }}-" + x.name
+	}
+	return "{{ ToDashCase $pkg }}-{{ ToDashCase .C.Message.Name }}"
 }
 
-// String returns a string identifier for the service.
-func (x *{{ .C.Message.Name }}Collection) String() string {
-	return x.NameOf()
+// NameOf returns the name of the Collection.
+func (x *{{ .C.Message.Name }}Collection) NameOf() string {
+	return x.String()
 }
 `
 
 	tmpl, err := template.New("definePostgresService").
-		Funcs(template.FuncMap{}).
+		Funcs(template.FuncMap{
+			"ToDashCase": protocgenlib.ToDashCase,
+		}).
 		Parse(tmplSrc)
 
 	if err != nil {

@@ -45,37 +45,55 @@ func (f *Field) Name() string {
 
 // Kind returns the fields go type.
 func (f *Field) Kind() string {
+	prefix := f.Prefix()
 	if f.field.Message != nil {
-		return "*" + f.field.Message.GoIdent.GoName
+		return prefix + f.field.Message.GoIdent.GoName
 	}
 	if f.field.Enum != nil {
-		return f.field.Enum.GoIdent.GoName
+		return prefix + f.field.Enum.GoIdent.GoName
 	}
-	return ToGoKind(f.field.Desc.Kind())
+	return ToGoKind(f.field.Desc.Kind(), prefix)
 }
 
 // QualifiedKind returns the fully qualified kind.
 func (f *Field) QualifiedKind() string {
+	prefix := f.Prefix()
 	if f.field.Message != nil {
-		return "*" + f.message.File().QualifiedKind(f.field.Message.GoIdent)
+		return prefix + f.message.File().QualifiedKind(f.field.Message.GoIdent)
 	}
 	if f.field.Enum != nil {
-		return f.message.File().QualifiedKind(f.field.Enum.GoIdent)
+		return prefix + f.message.File().QualifiedKind(f.field.Enum.GoIdent)
 	}
-	return ToGoKind(f.field.Desc.Kind())
+	return ToGoKind(f.field.Desc.Kind(), prefix)
+}
+
+// Prefix returns the prefix.
+func (f *Field) Prefix() string {
+	var prefix string
+	slice := f.IsSlice()
+	message := f.IsMessage()
+	optional := f.IsOptional()
+	if slice && message {
+		prefix = "[]*"
+	} else if slice {
+		prefix = "[]"
+	} else if optional || message {
+		prefix = "*"
+	}
+	return prefix
 }
 
 // ToRef returns the string needed to make a reference of the field.
 func (f *Field) ToRef() string {
-	if f.field.Message != nil {
-		return ""
+	if f.IsMessage() || f.IsOptional() {
+		return "&"
 	}
-	return "&"
+	return ""
 }
 
 // IsRef returns whether the internal type is a reference.
 func (f *Field) IsRef() bool {
-	return f.IsMessage() || f.IsSlice()
+	return f.IsMessage() || f.IsOptional()
 }
 
 // IsMessage returns whether the field is a reference.
@@ -88,10 +106,10 @@ func (f *Field) IsMessage() bool {
 
 // IsSlice returns whether the field is a slice of values.
 func (f *Field) IsSlice() bool {
-	qKind := f.QualifiedKind()
-	if len(qKind) < 2 {
-		return false
-	}
+	return f.field.Desc.IsList()
+}
 
-	return qKind[:2] == "[]"
+// IsOptional returns whether the field is marked as optional.
+func (f *Field) IsOptional() bool {
+	return f.field.Desc.HasOptionalKeyword()
 }

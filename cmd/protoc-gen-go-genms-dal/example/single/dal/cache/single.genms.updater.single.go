@@ -6,7 +6,6 @@ import (
 	time "time"
 
 	cache "github.com/rleszilm/genms/cache"
-	keyvalue "github.com/rleszilm/genms/cmd/protoc-gen-go-genms-dal/example/single/dal/keyvalue"
 	service "github.com/rleszilm/genms/service"
 	stats "go.opencensus.io/stats"
 	tag "go.opencensus.io/tag"
@@ -17,9 +16,9 @@ type SingleUpdater struct {
 	service.Dependencies
 
 	name     string
-	reader   keyvalue.SingleReadAller
-	writer   keyvalue.SingleWriter
-	key      keyvalue.SingleKeyFunc
+	reader   SingleReadAller
+	writer   SingleWriter
+	key      SingleKeyFunc
 	interval time.Duration
 	done     chan struct{}
 }
@@ -36,14 +35,17 @@ func (x *SingleUpdater) Shutdown(_ context.Context) error {
 	return nil
 }
 
-// NameOf returns the name of the updater.
-func (x *SingleUpdater) NameOf() string {
-	return x.name
-}
-
 // String returns the name of the updater.
 func (x *SingleUpdater) String() string {
-	return x.name
+	if x.name != "" {
+		return x.name
+	}
+	return "cache-dal-single-single-updater"
+}
+
+// NameOf returns the name of the updater.
+func (x *SingleUpdater) NameOf() string {
+	return x.String()
 }
 
 func (x *SingleUpdater) update(ctx context.Context) {
@@ -60,17 +62,22 @@ func (x *SingleUpdater) update(ctx context.Context) {
 		case <-ctx.Done():
 			return
 		case <-ticker.C:
+			logs.Infof("starting update for %s", x.name)
 			start := time.Now()
 			stats.Record(ctx, cache.MeasureInflight.M(1))
 
 			vals, err := x.reader.All(ctx)
-			if err == nil {
-				for _, val := range vals {
-					if err = x.writer.SetByKey(ctx, x.key(val), val); err != nil {
-						break
-					}
+			if err != nil {
+			}
+
+			for _, val := range vals {
+				logs.Trace("updater Single storing value:", x.key(val), val)
+				if _, err = x.writer.Set(ctx, x.key(val), val); err != nil {
+					logs.Error("updater Single could not store value:", x.key(val), val, err)
+					break
 				}
 			}
+
 			stats.Record(ctx, cache.MeasureInflight.M(-1))
 
 			if err != nil {
@@ -82,25 +89,27 @@ func (x *SingleUpdater) update(ctx context.Context) {
 			stats.Record(ctx, cache.MeasureLatency.M(dur))
 
 			if x.interval == 0 {
+				logs.Infof("updater %s is terminating", x.name)
 				return
 			}
+			logs.Infof("scheduling next update for %v", x.interval)
 			ticker.Reset(x.interval)
 		}
 	}
 }
 
 // WithReadAller tells the SingleMap where to source values from if they don't exist in cache.
-func (x *SingleUpdater) WithReadAller(r keyvalue.SingleReadAller) {
+func (x *SingleUpdater) WithReadAller(r SingleReadAller) {
 	x.reader = r
 }
 
 // WithWriter tells the SingleMap where to source values from if they don't exist in cache.
-func (x *SingleUpdater) WithWriter(w keyvalue.SingleWriter) {
+func (x *SingleUpdater) WithWriter(w SingleWriter) {
 	x.writer = w
 }
 
 // NewSingleUpdater returns a new SingleUpdater.
-func NewSingleUpdater(name string, k keyvalue.SingleKeyFunc, i time.Duration) *SingleUpdater {
+func NewSingleUpdater(name string, k SingleKeyFunc, i time.Duration) *SingleUpdater {
 	return &SingleUpdater{
 		name:     name,
 		key:      k,

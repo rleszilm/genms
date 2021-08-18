@@ -27,7 +27,7 @@ func TestReadWrite(t *testing.T) {
 
 	input := map[string]*value{}
 	for _, id := range ids {
-		oid, err := pkgBson.ObjectIDFromHex(id)
+		oid, err := pkgBson.ObjectIDHex(id)
 		if err != nil {
 			t.Error(err)
 			return

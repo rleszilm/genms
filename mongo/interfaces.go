@@ -11,11 +11,11 @@ type Dialer interface {
 	service.Service
 
 	// Dial creates a client connected to mongo.
-	Dial(context.Context) (Client, error)
+	Dial(ctx context.Context) (Client, error)
 }
 
 // Cursor is an interface that mirrors the mongo driver Cursor struct.
 type Cursor interface {
-	Decode(interface{}) error
-	Next(context.Context) bool
+	Decode(obj interface{}) error
+	Next(ctx context.Context) bool
 }

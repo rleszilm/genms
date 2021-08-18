@@ -4,25 +4,56 @@ package cache_dal_single
 import (
 	context "context"
 
+	cache "github.com/rleszilm/genms/cache"
 	single "github.com/rleszilm/genms/cmd/protoc-gen-go-genms-dal/example/single"
-	keyvalue "github.com/rleszilm/genms/cmd/protoc-gen-go-genms-dal/example/single/dal/keyvalue"
 )
 
-// NilSingleCache is a KV ReadWriter that takes no action on read or write.
-type NilSingleCache struct {
+// SingleKey defines a Key in the cache.
+type SingleKey interface{}
+
+// SingleReader is defines the interface for getting values from a cache.
+//counterfeiter:generate . SingleReader
+type SingleReader interface {
+	Get(ctx context.Context, key SingleKey) (*single.Single, error)
 }
 
-// GetAll implements keyvalue.SingleReadAller.
-func (x *NilSingleCache) GetAll(_ context.Context) (*single.Single, error) {
-	return nil, nil
+// SingleReadeAller is defines the interface for getting all values from a cache.
+//counterfeiter:generate . SingleReadAller
+type SingleReadAller interface {
+	All(ctx context.Context) ([]*single.Single, error)
 }
 
-// GetByKey implements keyvalue.SingleReader.
-func (x *NilSingleCache) GetByKey(_ context.Context, _ keyvalue.SingleKey) (*single.Single, error) {
-	return nil, nil
+// SingleWriter is defines the interface for setting values in a cache.
+//counterfeiter:generate . SingleWriter
+type SingleWriter interface {
+	Set(ctx context.Context, key SingleKey, obj *single.Single) (*single.Single, error)
 }
 
-// SetByKey implements keyvalue.SingleWriter.
-func (x *NilSingleCache) SetByKey(_ context.Context, _ keyvalue.SingleKey, _ *single.Single) error {
-	return nil
+// SingleReadWriter is defines the interface for setting values in a cache.
+//counterfeiter:generate . SingleReadWriter
+type SingleReadWriter interface {
+	SingleReader
+	SingleWriter
+}
+
+// SingleKeyFunc is a function that generates a unique deterministic key for the single.Single.
+type SingleKeyFunc func(*single.Single) interface{}
+
+// UnimplementedSingleCache is a KV ReadWriter that takes no action on read or write.
+type UnimplementedSingleCache struct {
+}
+
+// GetAll implements SingleReadAller.
+func (x *UnimplementedSingleCache) All(_ context.Context) (*single.Single, error) {
+	return nil, cache.ErrUnimplemented
+}
+
+// Get implements SingleReader.
+func (x *UnimplementedSingleCache) Get(_ context.Context, _ SingleKey) (*single.Single, error) {
+	return nil, cache.ErrUnimplemented
+}
+
+// Set implements SingleWriter.
+func (x *UnimplementedSingleCache) Set(_ context.Context, _ SingleKey, _ *single.Single) (*single.Single, error) {
+	return nil, cache.ErrUnimplemented
 }

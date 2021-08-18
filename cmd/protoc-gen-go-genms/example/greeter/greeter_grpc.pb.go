@@ -11,7 +11,8 @@ import (
 
 // This is a compile-time assertion to ensure that this generated file
 // is compatible with the grpc package it is being compiled against.
-const _ = grpc.SupportPackageIsVersion6
+// Requires gRPC-Go v1.32.0 or later.
+const _ = grpc.SupportPackageIsVersion7
 
 // WithRestClient is the client API for WithRest service.
 //
@@ -49,13 +50,20 @@ type WithRestServer interface {
 type UnimplementedWithRestServer struct {
 }
 
-func (*UnimplementedWithRestServer) HelloRest(context.Context, *Message) (*Message, error) {
+func (UnimplementedWithRestServer) HelloRest(context.Context, *Message) (*Message, error) {
 	return nil, status.Errorf(codes.Unimplemented, "method HelloRest not implemented")
 }
-func (*UnimplementedWithRestServer) mustEmbedUnimplementedWithRestServer() {}
+func (UnimplementedWithRestServer) mustEmbedUnimplementedWithRestServer() {}
 
-func RegisterWithRestServer(s *grpc.Server, srv WithRestServer) {
-	s.RegisterService(&_WithRest_serviceDesc, srv)
+// UnsafeWithRestServer may be embedded to opt out of forward compatibility for this service.
+// Use of this interface is not recommended, as added methods to WithRestServer will
+// result in compilation errors.
+type UnsafeWithRestServer interface {
+	mustEmbedUnimplementedWithRestServer()
+}
+
+func RegisterWithRestServer(s grpc.ServiceRegistrar, srv WithRestServer) {
+	s.RegisterService(&WithRest_ServiceDesc, srv)
 }
 
 func _WithRest_HelloRest_Handler(srv interface{}, ctx context.Context, dec func(interface{}) error, interceptor grpc.UnaryServerInterceptor) (interface{}, error) {
@@ -76,7 +84,10 @@ func _WithRest_HelloRest_Handler(srv interface{}, ctx context.Context, dec func(
 	return interceptor(ctx, in, info, handler)
 }
 
-var _WithRest_serviceDesc = grpc.ServiceDesc{
+// WithRest_ServiceDesc is the grpc.ServiceDesc for WithRest service.
+// It's only intended for direct use with grpc.RegisterService,
+// and not to be introspected or modified (even as a copy)
+var WithRest_ServiceDesc = grpc.ServiceDesc{
 	ServiceName: "greeter.WithRest",
 	HandlerType: (*WithRestServer)(nil),
 	Methods: []grpc.MethodDesc{
@@ -125,13 +136,20 @@ type WithGraphQLServer interface {
 type UnimplementedWithGraphQLServer struct {
 }
 
-func (*UnimplementedWithGraphQLServer) HelloGraphQL(context.Context, *Message) (*Message, error) {
+func (UnimplementedWithGraphQLServer) HelloGraphQL(context.Context, *Message) (*Message, error) {
 	return nil, status.Errorf(codes.Unimplemented, "method HelloGraphQL not implemented")
 }
-func (*UnimplementedWithGraphQLServer) mustEmbedUnimplementedWithGraphQLServer() {}
+func (UnimplementedWithGraphQLServer) mustEmbedUnimplementedWithGraphQLServer() {}
 
-func RegisterWithGraphQLServer(s *grpc.Server, srv WithGraphQLServer) {
-	s.RegisterService(&_WithGraphQL_serviceDesc, srv)
+// UnsafeWithGraphQLServer may be embedded to opt out of forward compatibility for this service.
+// Use of this interface is not recommended, as added methods to WithGraphQLServer will
+// result in compilation errors.
+type UnsafeWithGraphQLServer interface {
+	mustEmbedUnimplementedWithGraphQLServer()
+}
+
+func RegisterWithGraphQLServer(s grpc.ServiceRegistrar, srv WithGraphQLServer) {
+	s.RegisterService(&WithGraphQL_ServiceDesc, srv)
 }
 
 func _WithGraphQL_HelloGraphQL_Handler(srv interface{}, ctx context.Context, dec func(interface{}) error, interceptor grpc.UnaryServerInterceptor) (interface{}, error) {
@@ -152,7 +170,10 @@ func _WithGraphQL_HelloGraphQL_Handler(srv interface{}, ctx context.Context, dec
 	return interceptor(ctx, in, info, handler)
 }
 
-var _WithGraphQL_serviceDesc = grpc.ServiceDesc{
+// WithGraphQL_ServiceDesc is the grpc.ServiceDesc for WithGraphQL service.
+// It's only intended for direct use with grpc.RegisterService,
+// and not to be introspected or modified (even as a copy)
+var WithGraphQL_ServiceDesc = grpc.ServiceDesc{
 	ServiceName: "greeter.WithGraphQL",
 	HandlerType: (*WithGraphQLServer)(nil),
 	Methods: []grpc.MethodDesc{
@@ -201,13 +222,20 @@ type WithRestAndGraphQLServer interface {
 type UnimplementedWithRestAndGraphQLServer struct {
 }
 
-func (*UnimplementedWithRestAndGraphQLServer) HelloRestAndGraphQL(context.Context, *Message) (*Message, error) {
+func (UnimplementedWithRestAndGraphQLServer) HelloRestAndGraphQL(context.Context, *Message) (*Message, error) {
 	return nil, status.Errorf(codes.Unimplemented, "method HelloRestAndGraphQL not implemented")
 }
-func (*UnimplementedWithRestAndGraphQLServer) mustEmbedUnimplementedWithRestAndGraphQLServer() {}
+func (UnimplementedWithRestAndGraphQLServer) mustEmbedUnimplementedWithRestAndGraphQLServer() {}
 
-func RegisterWithRestAndGraphQLServer(s *grpc.Server, srv WithRestAndGraphQLServer) {
-	s.RegisterService(&_WithRestAndGraphQL_serviceDesc, srv)
+// UnsafeWithRestAndGraphQLServer may be embedded to opt out of forward compatibility for this service.
+// Use of this interface is not recommended, as added methods to WithRestAndGraphQLServer will
+// result in compilation errors.
+type UnsafeWithRestAndGraphQLServer interface {
+	mustEmbedUnimplementedWithRestAndGraphQLServer()
+}
+
+func RegisterWithRestAndGraphQLServer(s grpc.ServiceRegistrar, srv WithRestAndGraphQLServer) {
+	s.RegisterService(&WithRestAndGraphQL_ServiceDesc, srv)
 }
 
 func _WithRestAndGraphQL_HelloRestAndGraphQL_Handler(srv interface{}, ctx context.Context, dec func(interface{}) error, interceptor grpc.UnaryServerInterceptor) (interface{}, error) {
@@ -228,7 +256,10 @@ func _WithRestAndGraphQL_HelloRestAndGraphQL_Handler(srv interface{}, ctx contex
 	return interceptor(ctx, in, info, handler)
 }
 
-var _WithRestAndGraphQL_serviceDesc = grpc.ServiceDesc{
+// WithRestAndGraphQL_ServiceDesc is the grpc.ServiceDesc for WithRestAndGraphQL service.
+// It's only intended for direct use with grpc.RegisterService,
+// and not to be introspected or modified (even as a copy)
+var WithRestAndGraphQL_ServiceDesc = grpc.ServiceDesc{
 	ServiceName: "greeter.WithRestAndGraphQL",
 	HandlerType: (*WithRestAndGraphQLServer)(nil),
 	Methods: []grpc.MethodDesc{

@@ -2,13 +2,17 @@ package rest_service
 
 import (
 	"context"
-	"log"
 	"net/http"
 
 	"github.com/grpc-ecosystem/grpc-gateway/v2/runtime"
+	"github.com/rleszilm/genms/log"
 	"github.com/rleszilm/genms/service"
 	grpc_service "github.com/rleszilm/genms/service/grpc"
 	"google.golang.org/grpc"
+)
+
+var (
+	logs = log.NewChannel("service-grpc")
 )
 
 // GrpcProxyRoutes is a function that registers http routes to a grpc server.
@@ -29,11 +33,11 @@ func (s *Server) Initialize(ctx context.Context) error {
 	go func() {
 		if s.config.TLS.Enabled {
 			if err := s.server.ListenAndServeTLS(s.config.TLS.Cert, s.config.TLS.Key); err != nil {
-				log.Fatalln("Error serving rest requests", err)
+				logs.Fatal("Error serving rest requests", err)
 			}
 		} else {
 			if err := s.server.ListenAndServe(); err != nil {
-				log.Fatalln("Error serving rest requests", err)
+				logs.Fatal("Error serving rest requests", err)
 			}
 		}
 	}()
@@ -84,6 +88,7 @@ func (s *Server) WithRouteFunc(pattern string, handler http.HandlerFunc) error {
 // WithGrpcProxy adds rest methods that proxy to a grpc server.
 func (s *Server) WithGrpcProxy(ctx context.Context, proxy *grpc_service.Proxy, proxyFunc GrpcProxyRoutes) error {
 	if !proxy.Enabled {
+		logs.Trace("not adding routes as proxy is disabled")
 		return nil
 	}
 
@@ -97,6 +102,7 @@ func (s *Server) WithGrpcProxy(ctx context.Context, proxy *grpc_service.Proxy, p
 		s.mux.Handle("/", s.grpcMux)
 	}
 
+	logs.Debugf("adding proxy: %+v %+v", proxy, proxyOpts)
 	if err := proxyFunc(ctx, s.grpcMux, proxy.Addr, proxyOpts); err != nil {
 		return err
 	}
