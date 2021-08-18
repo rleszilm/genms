@@ -41,9 +41,28 @@ var (
 		"ignored_rest":     1,
 		"renamed_rest":     1,
 
-		"aliased_mongo":  1,
-		"_id":            1,
-		"bson_bytes_oid": 1,
+		"aliased_mongo":      1,
+		"_id":                1,
+		"bson_bytes_oid":     1,
+		"scalar_int32_opt":   1,
+		"scalar_int64_opt":   1,
+		"scalar_float32_opt": 1,
+		"scalar_float64_opt": 1,
+		"scalar_string_opt":  1,
+		"scalar_bytes_opt":   1,
+		"scalar_bool_opt":    1,
+		"scalar_enum_opt":    1,
+		"obj_message_opt":    1,
+
+		"aliased_opt":          1,
+		"ignored_postgres_opt": 1,
+		"renamed_postgres_opt": 1,
+		"ignored_rest_opt":     1,
+		"renamed_rest_opt":     1,
+
+		"aliased_mongo_opt":  1,
+		"_id_opt":            1,
+		"bson_bytes_oid_opt": 1,
 	}
 )
 
@@ -68,9 +87,28 @@ type SingleMongo struct {
 	IgnoredRest     string `bson:"ignored_rest,omitempty"`
 	RenamedRest     string `bson:"renamed_rest,omitempty"`
 
-	RenamedMongo  string        `bson:"aliased_mongo,omitempty"`
-	BsonStringOid bson.ObjectID `bson:"_id,omitempty"`
-	BsonBytesOid  bson.ObjectID `bson:"bson_bytes_oid,omitempty"`
+	RenamedMongo     string                 `bson:"aliased_mongo,omitempty"`
+	BsonStringOid    bson.ObjectID          `bson:"_id,omitempty"`
+	BsonBytesOid     bson.ObjectID          `bson:"bson_bytes_oid,omitempty"`
+	ScalarInt32Opt   *int32                 `bson:"scalar_int32_opt,omitempty"`
+	ScalarInt64Opt   *int64                 `bson:"scalar_int64_opt,omitempty"`
+	ScalarFloat32Opt *float32               `bson:"scalar_float32_opt,omitempty"`
+	ScalarFloat64Opt *float64               `bson:"scalar_float64_opt,omitempty"`
+	ScalarStringOpt  *string                `bson:"scalar_string_opt,omitempty"`
+	ScalarBytesOpt   []byte                 `bson:"scalar_bytes_opt,omitempty"`
+	ScalarBoolOpt    *bool                  `bson:"scalar_bool_opt,omitempty"`
+	ScalarEnumOpt    *single.Single_Enum    `bson:"scalar_enum_opt,omitempty"`
+	ObjMessageOpt    *single.Single_Message `bson:"obj_message_opt,omitempty"`
+
+	RenamedOpt         *string `bson:"aliased_opt,omitempty"`
+	IgnoredPostgresOpt *string `bson:"ignored_postgres_opt,omitempty"`
+	RenamedPostgresOpt *string `bson:"renamed_postgres_opt,omitempty"`
+	IgnoredRestOpt     *string `bson:"ignored_rest_opt,omitempty"`
+	RenamedRestOpt     *string `bson:"renamed_rest_opt,omitempty"`
+
+	RenamedMongoOpt  *string        `bson:"aliased_mongo_opt,omitempty"`
+	BsonStringOidOpt *bson.ObjectID `bson:"_id_opt,omitempty"`
+	BsonBytesOidOpt  *bson.ObjectID `bson:"bson_bytes_oid_opt,omitempty"`
 }
 
 // Single returns a new single.Single populated with scanned values.
@@ -97,7 +135,26 @@ func (x *SingleMongo) Single() (*single.Single, error) {
 
 	y.RenamedMongo = x.RenamedMongo
 	y.BsonStringOid = x.BsonStringOid.Hex()
+	y.BsonBytesOid = (x.BsonBytesOid)[:]
+	y.ScalarInt32Opt = x.ScalarInt32Opt
+	y.ScalarInt64Opt = x.ScalarInt64Opt
+	y.ScalarFloat32Opt = x.ScalarFloat32Opt
+	y.ScalarFloat64Opt = x.ScalarFloat64Opt
+	y.ScalarStringOpt = x.ScalarStringOpt
+	y.ScalarBytesOpt = x.ScalarBytesOpt
+	y.ScalarBoolOpt = x.ScalarBoolOpt
+	y.ScalarEnumOpt = x.ScalarEnumOpt
+	y.ObjMessageOpt = x.ObjMessageOpt
 
+	y.RenamedOpt = x.RenamedOpt
+	y.IgnoredPostgresOpt = x.IgnoredPostgresOpt
+	y.RenamedPostgresOpt = x.RenamedPostgresOpt
+	y.IgnoredRestOpt = x.IgnoredRestOpt
+	y.RenamedRestOpt = x.RenamedRestOpt
+
+	y.RenamedMongoOpt = x.RenamedMongoOpt
+
+	y.BsonBytesOidOpt = (x.BsonBytesOidOpt)[:]
 	return y, nil
 }
 
@@ -131,6 +188,40 @@ func ToSingleMongo(obj *single.Single) (*SingleMongo, error) {
 			return nil, err
 		}
 		mObj.BsonStringOid = convBsonStringOid
+	}
+
+	if len(obj.BsonBytesOid) != 0 {
+		convBsonBytesOid, err := bson.ToObjectID(obj.BsonBytesOid)
+		if err != nil {
+			return nil, err
+		}
+		mObj.BsonBytesOid = convBsonBytesOid
+	}
+
+	mObj.ScalarInt32Opt = obj.ScalarInt32Opt
+	mObj.ScalarInt64Opt = obj.ScalarInt64Opt
+	mObj.ScalarFloat32Opt = obj.ScalarFloat32Opt
+	mObj.ScalarFloat64Opt = obj.ScalarFloat64Opt
+	mObj.ScalarStringOpt = obj.ScalarStringOpt
+	mObj.ScalarBytesOpt = obj.ScalarBytesOpt
+	mObj.ScalarBoolOpt = obj.ScalarBoolOpt
+	mObj.ScalarEnumOpt = obj.ScalarEnumOpt
+	mObj.ObjMessageOpt = obj.ObjMessageOpt
+
+	mObj.RenamedOpt = obj.RenamedOpt
+	mObj.IgnoredPostgresOpt = obj.IgnoredPostgresOpt
+	mObj.RenamedPostgresOpt = obj.RenamedPostgresOpt
+	mObj.IgnoredRestOpt = obj.IgnoredRestOpt
+	mObj.RenamedRestOpt = obj.RenamedRestOpt
+
+	mObj.RenamedMongoOpt = obj.RenamedMongoOpt
+
+	if len(obj.BsonBytesOidOpt) != 0 {
+		convBsonBytesOidOpt, err := bson.ToObjectID(obj.BsonBytesOidOpt)
+		if err != nil {
+			return nil, err
+		}
+		mObj.BsonBytesOidOpt = &convBsonBytesOidOpt
 	}
 
 	return mObj, nil
@@ -278,13 +369,13 @@ func (x *SingleCollection) Filter(ctx context.Context, fvs *dal.SingleFieldValue
 		filter["scalar_string"] = *fvs.ScalarString
 	}
 	if fvs.ScalarBytes != nil {
-		filter["scalar_bytes"] = fvs.ScalarBytes
+		filter["scalar_bytes"] = *fvs.ScalarBytes
 	}
 	if fvs.ScalarBool != nil {
 		filter["scalar_bool"] = *fvs.ScalarBool
 	}
 	if fvs.ManyScalarBool != nil {
-		filter["many_scalar_bool"] = fvs.ManyScalarBool
+		filter["many_scalar_bool"] = *fvs.ManyScalarBool
 	}
 	if fvs.ScalarEnum != nil {
 		filter["scalar_enum"] = *fvs.ScalarEnum
@@ -324,12 +415,75 @@ func (x *SingleCollection) Filter(ctx context.Context, fvs *dal.SingleFieldValue
 		filter["_id"] = convBsonStringOid
 	}
 	if fvs.BsonBytesOid != nil {
-		convBsonBytesOid, err := bson.ToObjectID(fvs.BsonBytesOid)
+		convBsonBytesOid, err := bson.ToObjectID(*fvs.BsonBytesOid)
 		if err != nil {
 			logs.Error("could not convert value to ObjectID:", err)
 			return nil, err
 		}
 		filter["bson_bytes_oid"] = convBsonBytesOid
+	}
+	if fvs.ScalarInt32Opt != nil {
+		filter["scalar_int32_opt"] = fvs.ScalarInt32Opt
+	}
+	if fvs.ScalarInt64Opt != nil {
+		filter["scalar_int64_opt"] = fvs.ScalarInt64Opt
+	}
+	if fvs.ScalarFloat32Opt != nil {
+		filter["scalar_float32_opt"] = fvs.ScalarFloat32Opt
+	}
+	if fvs.ScalarFloat64Opt != nil {
+		filter["scalar_float64_opt"] = fvs.ScalarFloat64Opt
+	}
+	if fvs.ScalarStringOpt != nil {
+		filter["scalar_string_opt"] = fvs.ScalarStringOpt
+	}
+	if fvs.ScalarBytesOpt != nil {
+		filter["scalar_bytes_opt"] = fvs.ScalarBytesOpt
+	}
+	if fvs.ScalarBoolOpt != nil {
+		filter["scalar_bool_opt"] = fvs.ScalarBoolOpt
+	}
+	if fvs.ScalarEnumOpt != nil {
+		filter["scalar_enum_opt"] = fvs.ScalarEnumOpt
+	}
+	if fvs.ObjMessageOpt != nil {
+		filter["obj_message_opt"] = fvs.ObjMessageOpt
+	}
+
+	if fvs.RenamedOpt != nil {
+		filter["aliased_opt"] = fvs.RenamedOpt
+	}
+	if fvs.IgnoredPostgresOpt != nil {
+		filter["ignored_postgres_opt"] = fvs.IgnoredPostgresOpt
+	}
+	if fvs.RenamedPostgresOpt != nil {
+		filter["renamed_postgres_opt"] = fvs.RenamedPostgresOpt
+	}
+	if fvs.IgnoredRestOpt != nil {
+		filter["ignored_rest_opt"] = fvs.IgnoredRestOpt
+	}
+	if fvs.RenamedRestOpt != nil {
+		filter["renamed_rest_opt"] = fvs.RenamedRestOpt
+	}
+
+	if fvs.RenamedMongoOpt != nil {
+		filter["aliased_mongo_opt"] = fvs.RenamedMongoOpt
+	}
+	if fvs.BsonStringOidOpt != nil {
+		convBsonStringOidOpt, err := bson.ToObjectID(fvs.BsonStringOidOpt)
+		if err != nil {
+			logs.Error("could not convert value to ObjectID:", err)
+			return nil, err
+		}
+		filter["_id_opt"] = convBsonStringOidOpt
+	}
+	if fvs.BsonBytesOidOpt != nil {
+		convBsonBytesOidOpt, err := bson.ToObjectID(fvs.BsonBytesOidOpt)
+		if err != nil {
+			logs.Error("could not convert value to ObjectID:", err)
+			return nil, err
+		}
+		filter["bson_bytes_oid_opt"] = convBsonBytesOidOpt
 	}
 	return x.Find(ctx, "filter", filter)
 }
@@ -499,13 +653,13 @@ func (x *SingleCollection) Update(ctx context.Context, obj *single.Single, fvs *
 		upd["scalar_string"] = *fvs.ScalarString
 	}
 	if fvs.ScalarBytes != nil {
-		upd["scalar_bytes"] = fvs.ScalarBytes
+		upd["scalar_bytes"] = *fvs.ScalarBytes
 	}
 	if fvs.ScalarBool != nil {
 		upd["scalar_bool"] = *fvs.ScalarBool
 	}
 	if fvs.ManyScalarBool != nil {
-		upd["many_scalar_bool"] = fvs.ManyScalarBool
+		upd["many_scalar_bool"] = *fvs.ManyScalarBool
 	}
 	if fvs.ScalarEnum != nil {
 		upd["scalar_enum"] = *fvs.ScalarEnum
@@ -546,13 +700,78 @@ func (x *SingleCollection) Update(ctx context.Context, obj *single.Single, fvs *
 		upd["_id"] = convBsonStringOid
 	}
 	if fvs.BsonBytesOid != nil {
-		convBsonBytesOid, err := bson.ToObjectID(fvs.BsonBytesOid)
+		convBsonBytesOid, err := bson.ToObjectID(*fvs.BsonBytesOid)
 		if err != nil {
-			logs.Error("could not convert to ObjectID:", fvs.BsonBytesOid, err)
+			logs.Error("could not convert to ObjectID:", *fvs.BsonBytesOid, err)
 			stats.Record(ctx, mongo.MeasureError.M(1))
 			return nil, err
 		}
 		upd["bson_bytes_oid"] = convBsonBytesOid
+	}
+	if fvs.ScalarInt32Opt != nil {
+		upd["scalar_int32_opt"] = fvs.ScalarInt32Opt
+	}
+	if fvs.ScalarInt64Opt != nil {
+		upd["scalar_int64_opt"] = fvs.ScalarInt64Opt
+	}
+	if fvs.ScalarFloat32Opt != nil {
+		upd["scalar_float32_opt"] = fvs.ScalarFloat32Opt
+	}
+	if fvs.ScalarFloat64Opt != nil {
+		upd["scalar_float64_opt"] = fvs.ScalarFloat64Opt
+	}
+	if fvs.ScalarStringOpt != nil {
+		upd["scalar_string_opt"] = fvs.ScalarStringOpt
+	}
+	if fvs.ScalarBytesOpt != nil {
+		upd["scalar_bytes_opt"] = fvs.ScalarBytesOpt
+	}
+	if fvs.ScalarBoolOpt != nil {
+		upd["scalar_bool_opt"] = fvs.ScalarBoolOpt
+	}
+	if fvs.ScalarEnumOpt != nil {
+		upd["scalar_enum_opt"] = fvs.ScalarEnumOpt
+	}
+	if fvs.ObjMessageOpt != nil {
+		upd["obj_message_opt"] = fvs.ObjMessageOpt
+	}
+
+	if fvs.RenamedOpt != nil {
+		upd["aliased_opt"] = fvs.RenamedOpt
+	}
+	if fvs.IgnoredPostgresOpt != nil {
+		upd["ignored_postgres_opt"] = fvs.IgnoredPostgresOpt
+	}
+	if fvs.RenamedPostgresOpt != nil {
+		upd["renamed_postgres_opt"] = fvs.RenamedPostgresOpt
+	}
+	if fvs.IgnoredRestOpt != nil {
+		upd["ignored_rest_opt"] = fvs.IgnoredRestOpt
+	}
+	if fvs.RenamedRestOpt != nil {
+		upd["renamed_rest_opt"] = fvs.RenamedRestOpt
+	}
+
+	if fvs.RenamedMongoOpt != nil {
+		upd["aliased_mongo_opt"] = fvs.RenamedMongoOpt
+	}
+	if fvs.BsonStringOidOpt != nil {
+		convBsonStringOidOpt, err := bson.ToObjectID(fvs.BsonStringOidOpt)
+		if err != nil {
+			logs.Error("could not convert to ObjectID:", fvs.BsonStringOidOpt, err)
+			stats.Record(ctx, mongo.MeasureError.M(1))
+			return nil, err
+		}
+		upd["_id_opt"] = convBsonStringOidOpt
+	}
+	if fvs.BsonBytesOidOpt != nil {
+		convBsonBytesOidOpt, err := bson.ToObjectID(fvs.BsonBytesOidOpt)
+		if err != nil {
+			logs.Error("could not convert to ObjectID:", fvs.BsonBytesOidOpt, err)
+			stats.Record(ctx, mongo.MeasureError.M(1))
+			return nil, err
+		}
+		upd["bson_bytes_oid_opt"] = convBsonBytesOidOpt
 	}
 	filter := bson.M{"_id": objID}
 
@@ -583,13 +802,13 @@ func (x *SingleCollection) Update(ctx context.Context, obj *single.Single, fvs *
 		obj.ScalarString = *fvs.ScalarString
 	}
 	if fvs.ScalarBytes != nil {
-		obj.ScalarBytes = fvs.ScalarBytes
+		obj.ScalarBytes = *fvs.ScalarBytes
 	}
 	if fvs.ScalarBool != nil {
 		obj.ScalarBool = *fvs.ScalarBool
 	}
 	if fvs.ManyScalarBool != nil {
-		obj.ManyScalarBool = fvs.ManyScalarBool
+		obj.ManyScalarBool = *fvs.ManyScalarBool
 	}
 	if fvs.ScalarEnum != nil {
 		obj.ScalarEnum = *fvs.ScalarEnum
@@ -624,7 +843,60 @@ func (x *SingleCollection) Update(ctx context.Context, obj *single.Single, fvs *
 		obj.BsonStringOid = *fvs.BsonStringOid
 	}
 	if fvs.BsonBytesOid != nil {
-		obj.BsonBytesOid = fvs.BsonBytesOid
+		obj.BsonBytesOid = *fvs.BsonBytesOid
+	}
+	if fvs.ScalarInt32Opt != nil {
+		obj.ScalarInt32Opt = fvs.ScalarInt32Opt
+	}
+	if fvs.ScalarInt64Opt != nil {
+		obj.ScalarInt64Opt = fvs.ScalarInt64Opt
+	}
+	if fvs.ScalarFloat32Opt != nil {
+		obj.ScalarFloat32Opt = fvs.ScalarFloat32Opt
+	}
+	if fvs.ScalarFloat64Opt != nil {
+		obj.ScalarFloat64Opt = fvs.ScalarFloat64Opt
+	}
+	if fvs.ScalarStringOpt != nil {
+		obj.ScalarStringOpt = fvs.ScalarStringOpt
+	}
+	if fvs.ScalarBytesOpt != nil {
+		obj.ScalarBytesOpt = fvs.ScalarBytesOpt
+	}
+	if fvs.ScalarBoolOpt != nil {
+		obj.ScalarBoolOpt = fvs.ScalarBoolOpt
+	}
+	if fvs.ScalarEnumOpt != nil {
+		obj.ScalarEnumOpt = fvs.ScalarEnumOpt
+	}
+	if fvs.ObjMessageOpt != nil {
+		obj.ObjMessageOpt = fvs.ObjMessageOpt
+	}
+
+	if fvs.RenamedOpt != nil {
+		obj.RenamedOpt = fvs.RenamedOpt
+	}
+	if fvs.IgnoredPostgresOpt != nil {
+		obj.IgnoredPostgresOpt = fvs.IgnoredPostgresOpt
+	}
+	if fvs.RenamedPostgresOpt != nil {
+		obj.RenamedPostgresOpt = fvs.RenamedPostgresOpt
+	}
+	if fvs.IgnoredRestOpt != nil {
+		obj.IgnoredRestOpt = fvs.IgnoredRestOpt
+	}
+	if fvs.RenamedRestOpt != nil {
+		obj.RenamedRestOpt = fvs.RenamedRestOpt
+	}
+
+	if fvs.RenamedMongoOpt != nil {
+		obj.RenamedMongoOpt = fvs.RenamedMongoOpt
+	}
+	if fvs.BsonStringOidOpt != nil {
+		obj.BsonStringOidOpt = fvs.BsonStringOidOpt
+	}
+	if fvs.BsonBytesOidOpt != nil {
+		obj.BsonBytesOidOpt = fvs.BsonBytesOidOpt
 	}
 	return obj, nil
 }

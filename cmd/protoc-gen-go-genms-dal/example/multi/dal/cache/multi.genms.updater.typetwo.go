@@ -3,9 +3,11 @@ package cache_dal_multi
 
 import (
 	context "context"
+	sync "sync"
 	time "time"
 
 	cache "github.com/rleszilm/genms/cache"
+	dal "github.com/rleszilm/genms/cmd/protoc-gen-go-genms-dal/example/multi/dal"
 	service "github.com/rleszilm/genms/service"
 	stats "go.opencensus.io/stats"
 	tag "go.opencensus.io/tag"

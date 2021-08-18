@@ -49,6 +49,38 @@ message Single {
         (genms.dal.field_options).mongo.bson = ObjectID
     ];
 
+    optional int32 scalar_int32_opt = 22;
+    optional int64 scalar_int64_opt = 23;
+    optional float scalar_float32_opt = 24;
+    optional double scalar_float64_opt = 25;
+    optional string scalar_string_opt = 26;
+    optional bytes scalar_bytes_opt = 27;
+    optional bool scalar_bool_opt = 28;
+    
+    optional Enum scalar_enum_opt = 29;
+
+    optional Message obj_message_opt = 30;
+    
+    optional string ignored_opt = 31 [(genms.dal.field_options).ignore = true];
+    optional string renamed_opt = 32 [(genms.dal.field_options).name = "aliased_opt"];
+
+    optional string ignored_postgres_opt = 33 [(genms.dal.field_options).postgres.ignore = true];
+    optional string renamed_postgres_opt = 34 [(genms.dal.field_options).postgres.name = "aliased_postgres_opt"];
+    
+    optional string ignored_rest_opt = 35 [(genms.dal.field_options).rest.ignore = true];
+    optional string renamed_rest_opt = 36 [(genms.dal.field_options).rest.name = "aliased_rest_opt"];
+
+    optional string ignored_mongo_opt = 37 [(genms.dal.field_options).mongo.ignore = true];
+    optional string renamed_mongo_opt = 38 [(genms.dal.field_options).mongo.name = "aliased_mongo_opt"];
+
+    optional string bson_string_oid_opt = 39 [
+        (genms.dal.field_options).mongo.name = "_id_opt",
+        (genms.dal.field_options).mongo.bson = ObjectID
+    ];
+    optional bytes bson_bytes_oid_opt = 40 [
+        (genms.dal.field_options).mongo.bson = ObjectID
+    ];
+
     option (genms.dal.message_options) = {
         queries: [
             {

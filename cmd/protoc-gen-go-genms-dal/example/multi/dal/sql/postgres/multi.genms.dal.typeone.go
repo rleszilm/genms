@@ -302,31 +302,31 @@ func (x *TypeOneCollection) find(ctx context.Context, label string, query string
 
 // OneParam implements dal.TypeOneCollection.OneParam
 func (x *TypeOneCollection) OneParam(ctx context.Context, scalar_int32 int32) ([]*multi.TypeOne, error) {
-	fvs := map[string]interface{}{"scalar_int32": &scalar_int32}
+	fvs := map[string]interface{}{"scalar_int32": scalar_int32}
 	return x.find(ctx, "one_param", x.queryOneParam, fvs)
 }
 
 // MultipleParam implements dal.TypeOneCollection.MultipleParam
 func (x *TypeOneCollection) MultipleParam(ctx context.Context, scalar_int32 int32, scalar_int64 int64, scalar_float32 float32) ([]*multi.TypeOne, error) {
-	fvs := map[string]interface{}{"scalar_int32": &scalar_int32, "scalar_int64": &scalar_int64, "scalar_float32": &scalar_float32}
+	fvs := map[string]interface{}{"scalar_int32": scalar_int32, "scalar_int64": scalar_int64, "scalar_float32": scalar_float32}
 	return x.find(ctx, "multiple_param", x.queryMultipleParam, fvs)
 }
 
 // MessageParam implements dal.TypeOneCollection.MessageParam
 func (x *TypeOneCollection) MessageParam(ctx context.Context, obj_message *multi.TypeOne_Message) ([]*multi.TypeOne, error) {
-	fvs := map[string]interface{}{"obj_message": obj_message}
+	fvs := map[string]interface{}{"obj_message": &obj_message}
 	return x.find(ctx, "message_param", x.queryMessageParam, fvs)
 }
 
 // WithComparator implements dal.TypeOneCollection.WithComparator
 func (x *TypeOneCollection) WithComparator(ctx context.Context, scalar_int32 int32) ([]*multi.TypeOne, error) {
-	fvs := map[string]interface{}{"scalar_int32": &scalar_int32}
+	fvs := map[string]interface{}{"scalar_int32": scalar_int32}
 	return x.find(ctx, "with_comparator", x.queryWithComparator, fvs)
 }
 
 // WithRest implements dal.TypeOneCollection.WithRest
 func (x *TypeOneCollection) WithRest(ctx context.Context, scalar_int32 int32, scalar_int64 int64, scalar_float32 float32, scalar_float64 float64) ([]*multi.TypeOne, error) {
-	fvs := map[string]interface{}{"scalar_int32": &scalar_int32, "scalar_int64": &scalar_int64, "scalar_float32": &scalar_float32, "scalar_float64": &scalar_float64}
+	fvs := map[string]interface{}{"scalar_int32": scalar_int32, "scalar_int64": scalar_int64, "scalar_float32": scalar_float32, "scalar_float64": scalar_float64}
 	return x.find(ctx, "with_rest", x.queryWithRest, fvs)
 }
 

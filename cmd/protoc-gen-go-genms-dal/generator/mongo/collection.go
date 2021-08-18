@@ -821,7 +821,7 @@ func To{{ $.C.Message.Name }}Mongo(obj *{{ $.C.Message.QualifiedKind }}) (*{{ $.
 						if err != nil {
 							return nil, err
 						}
-						mObj.{{ ToTitleCase $f.Name }} = conv{{ ToTitleCase $f.Name }}
+						mObj.{{ ToTitleCase $f.Name }} = {{ $f.ToRef }}conv{{ ToTitleCase $f.Name }}
 					}
 				{{ else if eq $convFrom "[]byte" }}
 					if len(obj.{{ ToTitleCase $f.Name }}) != 0 {
@@ -829,9 +829,9 @@ func To{{ $.C.Message.Name }}Mongo(obj *{{ $.C.Message.QualifiedKind }}) (*{{ $.
 						if err != nil {
 							return nil, err
 						}
-						mObj.{{ ToTitleCase $f.Name }} = conv{{ ToTitleCase $f.Name }}
+						mObj.{{ ToTitleCase $f.Name }} = {{ $f.ToRef }}conv{{ ToTitleCase $f.Name }}
 					}
-				{{ end }}				
+				{{ end }}
 			{{- else -}}
 				mObj.{{ ToTitleCase $f.Name }} = obj.{{ ToTitleCase $f.Name }}
 			{{- end }}

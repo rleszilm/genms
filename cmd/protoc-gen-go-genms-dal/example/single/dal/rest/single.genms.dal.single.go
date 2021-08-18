@@ -310,14 +310,14 @@ func (x *SingleCollection) WithRest(ctx context.Context, scalar_int32 int32, sca
 
 	req.URL.RawQuery = queryValues.Encode()
 
-	pathValues := map[string]interface{}{"scalar_int64": &scalar_int64}
+	pathValues := map[string]interface{}{"scalar_int64": scalar_int64}
 	pathBuf := &bytes.Buffer{}
 	if err := x.urlTmplWithRest.Execute(pathBuf, pathValues); err != nil {
 		return nil, err
 	}
 	req.URL.Path = pathBuf.String()
 
-	bodyValues := map[string]interface{}{"scalar_float32": &scalar_float32}
+	bodyValues := map[string]interface{}{"scalar_float32": scalar_float32}
 	bodyBytes, err := json.Marshal(bodyValues)
 	if err != nil {
 		return nil, err
@@ -509,11 +509,30 @@ type SingleScanner struct {
 	IgnoredPostgres string `json:"ignored_postgres"`
 	RenamedPostgres string `json:"renamed_postgres"`
 
-	RenamedRest   string `json:"aliased_rest"`
-	IgnoredMongo  string `json:"ignored_mongo"`
-	RenamedMongo  string `json:"renamed_mongo"`
-	BsonStringOid string `json:"bson_string_oid"`
-	BsonBytesOid  []byte `json:"bson_bytes_oid"`
+	RenamedRest      string                 `json:"aliased_rest"`
+	IgnoredMongo     string                 `json:"ignored_mongo"`
+	RenamedMongo     string                 `json:"renamed_mongo"`
+	BsonStringOid    string                 `json:"bson_string_oid"`
+	BsonBytesOid     []byte                 `json:"bson_bytes_oid"`
+	ScalarInt32Opt   *int32                 `json:"scalar_int32_opt"`
+	ScalarInt64Opt   *int64                 `json:"scalar_int64_opt"`
+	ScalarFloat32Opt *float32               `json:"scalar_float32_opt"`
+	ScalarFloat64Opt *float64               `json:"scalar_float64_opt"`
+	ScalarStringOpt  *string                `json:"scalar_string_opt"`
+	ScalarBytesOpt   []byte                 `json:"scalar_bytes_opt"`
+	ScalarBoolOpt    *bool                  `json:"scalar_bool_opt"`
+	ScalarEnumOpt    *single.Single_Enum    `json:"scalar_enum_opt"`
+	ObjMessageOpt    *single.Single_Message `json:"obj_message_opt"`
+
+	RenamedOpt         *string `json:"aliased_opt"`
+	IgnoredPostgresOpt *string `json:"ignored_postgres_opt"`
+	RenamedPostgresOpt *string `json:"renamed_postgres_opt"`
+
+	RenamedRestOpt   *string `json:"aliased_rest_opt"`
+	IgnoredMongoOpt  *string `json:"ignored_mongo_opt"`
+	RenamedMongoOpt  *string `json:"renamed_mongo_opt"`
+	BsonStringOidOpt *string `json:"bson_string_oid_opt"`
+	BsonBytesOidOpt  []byte  `json:"bson_bytes_oid_opt"`
 }
 
 // Single returns a new single.Single populated with scanned values.
@@ -541,6 +560,25 @@ func (x *SingleScanner) Single() *single.Single {
 	y.RenamedMongo = x.RenamedMongo
 	y.BsonStringOid = x.BsonStringOid
 	y.BsonBytesOid = x.BsonBytesOid
+	y.ScalarInt32Opt = x.ScalarInt32Opt
+	y.ScalarInt64Opt = x.ScalarInt64Opt
+	y.ScalarFloat32Opt = x.ScalarFloat32Opt
+	y.ScalarFloat64Opt = x.ScalarFloat64Opt
+	y.ScalarStringOpt = x.ScalarStringOpt
+	y.ScalarBytesOpt = x.ScalarBytesOpt
+	y.ScalarBoolOpt = x.ScalarBoolOpt
+	y.ScalarEnumOpt = x.ScalarEnumOpt
+	y.ObjMessageOpt = x.ObjMessageOpt
+
+	y.RenamedOpt = x.RenamedOpt
+	y.IgnoredPostgresOpt = x.IgnoredPostgresOpt
+	y.RenamedPostgresOpt = x.RenamedPostgresOpt
+
+	y.RenamedRestOpt = x.RenamedRestOpt
+	y.IgnoredMongoOpt = x.IgnoredMongoOpt
+	y.RenamedMongoOpt = x.RenamedMongoOpt
+	y.BsonStringOidOpt = x.BsonStringOidOpt
+	y.BsonBytesOidOpt = x.BsonBytesOidOpt
 	return y
 }
 

@@ -277,14 +277,14 @@ func (x *TypeOneCollection) WithRest(ctx context.Context, scalar_int32 int32, sc
 
 	req.URL.RawQuery = queryValues.Encode()
 
-	pathValues := map[string]interface{}{"scalar_int64": &scalar_int64}
+	pathValues := map[string]interface{}{"scalar_int64": scalar_int64}
 	pathBuf := &bytes.Buffer{}
 	if err := x.urlTmplWithRest.Execute(pathBuf, pathValues); err != nil {
 		return nil, err
 	}
 	req.URL.Path = pathBuf.String()
 
-	bodyValues := map[string]interface{}{"scalar_float32": &scalar_float32}
+	bodyValues := map[string]interface{}{"scalar_float32": scalar_float32}
 	bodyBytes, err := json.Marshal(bodyValues)
 	if err != nil {
 		return nil, err

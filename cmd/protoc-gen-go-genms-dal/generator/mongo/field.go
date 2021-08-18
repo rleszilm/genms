@@ -46,7 +46,8 @@ func (f *Field) QueryKind() (string, error) {
 	case annotations.BSONPrimitive_NoBSONPrimitive:
 		return f.Kind(), nil
 	case annotations.BSONPrimitive_ObjectID:
-		return "ObjectID", nil
+		prefix := f.Prefix()
+		return prefix + "ObjectID", nil
 	default:
 		return "", fmt.Errorf("invalid bson primitive: %v", f.Options().GetMongo().GetBson())
 	}
@@ -62,7 +63,8 @@ func (f *Field) QualifiedQueryKind() (string, error) {
 	case annotations.BSONPrimitive_NoBSONPrimitive:
 		return f.Kind(), nil
 	case annotations.BSONPrimitive_ObjectID:
-		return f.Outfile().QualifiedGoIdent(protogen.GoIdent{GoName: "ObjectID", GoImportPath: "github.com/rleszilm/genms/mongo/bson"}), nil
+		prefix := f.Prefix()
+		return prefix + f.Outfile().QualifiedGoIdent(protogen.GoIdent{GoName: "ObjectID", GoImportPath: "github.com/rleszilm/genms/mongo/bson"}), nil
 	default:
 		return "", fmt.Errorf("invalid bson primitive: %v", f.Options().GetMongo().GetBson())
 	}
@@ -94,6 +96,7 @@ func (f *Field) ToGo() (string, error) {
 	case annotations.BSONPrimitive_NoBSONPrimitive:
 		return "", nil
 	}
+
 	return f.Kind(), nil
 }
 

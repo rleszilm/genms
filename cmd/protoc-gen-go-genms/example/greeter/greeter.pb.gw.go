@@ -145,7 +145,7 @@ func RegisterWithRestHandlerServer(ctx context.Context, mux *runtime.ServeMux, s
 		var stream runtime.ServerTransportStream
 		ctx = grpc.NewContextWithServerTransportStream(ctx, &stream)
 		inboundMarshaler, outboundMarshaler := runtime.MarshalerForRequest(mux, req)
-		rctx, err := runtime.AnnotateIncomingContext(ctx, mux, req, "/greeter.WithRest/HelloRest")
+		rctx, err := runtime.AnnotateIncomingContext(ctx, mux, req, "/greeter.WithRest/HelloRest", runtime.WithHTTPPathPattern("/v1/rest"))
 		if err != nil {
 			runtime.HTTPError(ctx, mux, outboundMarshaler, w, req, err)
 			return
@@ -177,7 +177,7 @@ func RegisterWithGraphQLHandlerServer(ctx context.Context, mux *runtime.ServeMux
 		var stream runtime.ServerTransportStream
 		ctx = grpc.NewContextWithServerTransportStream(ctx, &stream)
 		inboundMarshaler, outboundMarshaler := runtime.MarshalerForRequest(mux, req)
-		rctx, err := runtime.AnnotateIncomingContext(ctx, mux, req, "/greeter.WithGraphQL/HelloGraphQL")
+		rctx, err := runtime.AnnotateIncomingContext(ctx, mux, req, "/greeter.WithGraphQL/HelloGraphQL", runtime.WithHTTPPathPattern("/v1/graphql"))
 		if err != nil {
 			runtime.HTTPError(ctx, mux, outboundMarshaler, w, req, err)
 			return
@@ -209,7 +209,7 @@ func RegisterWithRestAndGraphQLHandlerServer(ctx context.Context, mux *runtime.S
 		var stream runtime.ServerTransportStream
 		ctx = grpc.NewContextWithServerTransportStream(ctx, &stream)
 		inboundMarshaler, outboundMarshaler := runtime.MarshalerForRequest(mux, req)
-		rctx, err := runtime.AnnotateIncomingContext(ctx, mux, req, "/greeter.WithRestAndGraphQL/HelloRestAndGraphQL")
+		rctx, err := runtime.AnnotateIncomingContext(ctx, mux, req, "/greeter.WithRestAndGraphQL/HelloRestAndGraphQL", runtime.WithHTTPPathPattern("/v1/rest/graphql"))
 		if err != nil {
 			runtime.HTTPError(ctx, mux, outboundMarshaler, w, req, err)
 			return
@@ -271,7 +271,7 @@ func RegisterWithRestHandlerClient(ctx context.Context, mux *runtime.ServeMux, c
 		ctx, cancel := context.WithCancel(req.Context())
 		defer cancel()
 		inboundMarshaler, outboundMarshaler := runtime.MarshalerForRequest(mux, req)
-		rctx, err := runtime.AnnotateContext(ctx, mux, req, "/greeter.WithRest/HelloRest")
+		rctx, err := runtime.AnnotateContext(ctx, mux, req, "/greeter.WithRest/HelloRest", runtime.WithHTTPPathPattern("/v1/rest"))
 		if err != nil {
 			runtime.HTTPError(ctx, mux, outboundMarshaler, w, req, err)
 			return
@@ -340,7 +340,7 @@ func RegisterWithGraphQLHandlerClient(ctx context.Context, mux *runtime.ServeMux
 		ctx, cancel := context.WithCancel(req.Context())
 		defer cancel()
 		inboundMarshaler, outboundMarshaler := runtime.MarshalerForRequest(mux, req)
-		rctx, err := runtime.AnnotateContext(ctx, mux, req, "/greeter.WithGraphQL/HelloGraphQL")
+		rctx, err := runtime.AnnotateContext(ctx, mux, req, "/greeter.WithGraphQL/HelloGraphQL", runtime.WithHTTPPathPattern("/v1/graphql"))
 		if err != nil {
 			runtime.HTTPError(ctx, mux, outboundMarshaler, w, req, err)
 			return
@@ -409,7 +409,7 @@ func RegisterWithRestAndGraphQLHandlerClient(ctx context.Context, mux *runtime.S
 		ctx, cancel := context.WithCancel(req.Context())
 		defer cancel()
 		inboundMarshaler, outboundMarshaler := runtime.MarshalerForRequest(mux, req)
-		rctx, err := runtime.AnnotateContext(ctx, mux, req, "/greeter.WithRestAndGraphQL/HelloRestAndGraphQL")
+		rctx, err := runtime.AnnotateContext(ctx, mux, req, "/greeter.WithRestAndGraphQL/HelloRestAndGraphQL", runtime.WithHTTPPathPattern("/v1/rest/graphql"))
 		if err != nil {
 			runtime.HTTPError(ctx, mux, outboundMarshaler, w, req, err)
 			return

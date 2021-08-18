@@ -1,24 +1,29 @@
 package protocgenlib
 
-import "google.golang.org/protobuf/reflect/protoreflect"
+import (
+	"log"
 
-func ToGoKind(k protoreflect.Kind) string {
+	"google.golang.org/protobuf/reflect/protoreflect"
+)
+
+func ToGoKind(k protoreflect.Kind, prefix string) string {
+	log.Println("togo:", prefix, k.String(), k.GoString())
 	switch k.String() {
 	case "bool":
-		return "bool"
+		return prefix + "bool"
 	case "double":
-		return "float64"
+		return prefix + "float64"
 	case "float":
-		return "float32"
+		return prefix + "float32"
 	case "int32":
-		return "int32"
+		return prefix + "int32"
 	case "int64":
-		return "int64"
+		return prefix + "int64"
 	case "string":
-		return "string"
+		return prefix + "string"
 	case "bytes":
 		return "[]byte"
 	default:
-		return k.GoString()
+		return prefix + k.GoString()
 	}
 }
