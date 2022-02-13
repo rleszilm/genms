@@ -32,13 +32,8 @@ func (s *Server) Shutdown(ctx context.Context) error {
 	return nil
 }
 
-// NameOf implements Server.NameOf()
-func (s *Server) NameOf() string {
-	return s.name
-}
-
-// String implements Server.String()
-func (s *Server) String() string {
+// ID implements Server.ID()
+func (s *Server) ID() string {
 	return s.name
 }
 

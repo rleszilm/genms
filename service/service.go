@@ -20,12 +20,9 @@ type Service interface {
 	// Shutdown closes the long-running instance, or service.
 	Shutdown(context.Context) error
 
-	// NameOf returns the name of a service. This must be unique if there are multiple instances of the same
-	// service.
-	NameOf() string
-
-	// String returns a string identifier for the service.
-	String() string
+	// ID returns the identifier of a service. This must be unique if there are multiple instances
+	// of the same service.
+	ID() string
 
 	// Dependants returns the servers dependencies.
 	Dependants() Services
@@ -41,6 +38,6 @@ type Listener interface {
 	// Scheme returns the request scheme of the underlying server.
 	Scheme() string
 
-	// Addr returns the address that the LIstener is listening on.
+	// Addr returns the address that the Listener is listening on.
 	Addr() string
 }

@@ -40,7 +40,7 @@ type FakeListener struct {
 	initializeReturnsOnCall map[int]struct {
 		result1 error
 	}
-	NameOfStub        func() string
+	IDStub        func() string
 	nameOfMutex       sync.RWMutex
 	nameOfArgsForCall []struct {
 	}
@@ -254,15 +254,15 @@ func (fake *FakeListener) InitializeReturnsOnCall(i int, result1 error) {
 	}{result1}
 }
 
-func (fake *FakeListener) NameOf() string {
+func (fake *FakeListener) ID() string {
 	fake.nameOfMutex.Lock()
 	ret, specificReturn := fake.nameOfReturnsOnCall[len(fake.nameOfArgsForCall)]
 	fake.nameOfArgsForCall = append(fake.nameOfArgsForCall, struct {
 	}{})
-	fake.recordInvocation("NameOf", []interface{}{})
+	fake.recordInvocation("ID", []interface{}{})
 	fake.nameOfMutex.Unlock()
-	if fake.NameOfStub != nil {
-		return fake.NameOfStub()
+	if fake.IDStub != nil {
+		return fake.IDStub()
 	}
 	if specificReturn {
 		return ret.result1
@@ -271,31 +271,31 @@ func (fake *FakeListener) NameOf() string {
 	return fakeReturns.result1
 }
 
-func (fake *FakeListener) NameOfCallCount() int {
+func (fake *FakeListener) IDCallCount() int {
 	fake.nameOfMutex.RLock()
 	defer fake.nameOfMutex.RUnlock()
 	return len(fake.nameOfArgsForCall)
 }
 
-func (fake *FakeListener) NameOfCalls(stub func() string) {
+func (fake *FakeListener) IDCalls(stub func() string) {
 	fake.nameOfMutex.Lock()
 	defer fake.nameOfMutex.Unlock()
-	fake.NameOfStub = stub
+	fake.IDStub = stub
 }
 
-func (fake *FakeListener) NameOfReturns(result1 string) {
+func (fake *FakeListener) IDReturns(result1 string) {
 	fake.nameOfMutex.Lock()
 	defer fake.nameOfMutex.Unlock()
-	fake.NameOfStub = nil
+	fake.IDStub = nil
 	fake.nameOfReturns = struct {
 		result1 string
 	}{result1}
 }
 
-func (fake *FakeListener) NameOfReturnsOnCall(i int, result1 string) {
+func (fake *FakeListener) IDReturnsOnCall(i int, result1 string) {
 	fake.nameOfMutex.Lock()
 	defer fake.nameOfMutex.Unlock()
-	fake.NameOfStub = nil
+	fake.IDStub = nil
 	if fake.nameOfReturnsOnCall == nil {
 		fake.nameOfReturnsOnCall = make(map[int]struct {
 			result1 string

@@ -6,7 +6,7 @@ import (
 
 // Config is the struct used to parse configuration from environment variables.
 type Config struct {
-	Driver string `envconfig:"driver" default:"prometheus"`
+	Drivers []string `envconfig:"driver" default:"prometheus"`
 }
 
 // NewFromEnv generates a new set of configuration data.

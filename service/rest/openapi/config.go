@@ -1,4 +1,4 @@
-package healthcheck
+package openapi
 
 import (
 	"github.com/kelseyhightower/envconfig"
@@ -6,9 +6,10 @@ import (
 
 // Config is the struct used to parse configuration from environment variables.
 type Config struct {
-	Enabled       bool   `envconfig:"enabled" default:"false"`
 	Name          string `envconfig:"name" default:""`
-	RequestPrefix string `envconfig:"request_path" default:"/health"`
+	Enabled       bool   `envconfig:"enabled"`
+	RequestPrefix string `envconfig:"request_prefix" default:"/openapi/"`
+	Dir           string `envconfig:"dir" default:"var/openapi"`
 }
 
 // NewFromEnv generates a new set of configuration data.

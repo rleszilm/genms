@@ -30,7 +30,7 @@ type FakeService struct {
 	initializeReturnsOnCall map[int]struct {
 		result1 error
 	}
-	NameOfStub        func() string
+	IDStub        func() string
 	nameOfMutex       sync.RWMutex
 	nameOfArgsForCall []struct {
 	}
@@ -182,15 +182,15 @@ func (fake *FakeService) InitializeReturnsOnCall(i int, result1 error) {
 	}{result1}
 }
 
-func (fake *FakeService) NameOf() string {
+func (fake *FakeService) ID() string {
 	fake.nameOfMutex.Lock()
 	ret, specificReturn := fake.nameOfReturnsOnCall[len(fake.nameOfArgsForCall)]
 	fake.nameOfArgsForCall = append(fake.nameOfArgsForCall, struct {
 	}{})
-	fake.recordInvocation("NameOf", []interface{}{})
+	fake.recordInvocation("ID", []interface{}{})
 	fake.nameOfMutex.Unlock()
-	if fake.NameOfStub != nil {
-		return fake.NameOfStub()
+	if fake.IDStub != nil {
+		return fake.IDStub()
 	}
 	if specificReturn {
 		return ret.result1
@@ -199,31 +199,31 @@ func (fake *FakeService) NameOf() string {
 	return fakeReturns.result1
 }
 
-func (fake *FakeService) NameOfCallCount() int {
+func (fake *FakeService) IDCallCount() int {
 	fake.nameOfMutex.RLock()
 	defer fake.nameOfMutex.RUnlock()
 	return len(fake.nameOfArgsForCall)
 }
 
-func (fake *FakeService) NameOfCalls(stub func() string) {
+func (fake *FakeService) IDCalls(stub func() string) {
 	fake.nameOfMutex.Lock()
 	defer fake.nameOfMutex.Unlock()
-	fake.NameOfStub = stub
+	fake.IDStub = stub
 }
 
-func (fake *FakeService) NameOfReturns(result1 string) {
+func (fake *FakeService) IDReturns(result1 string) {
 	fake.nameOfMutex.Lock()
 	defer fake.nameOfMutex.Unlock()
-	fake.NameOfStub = nil
+	fake.IDStub = nil
 	fake.nameOfReturns = struct {
 		result1 string
 	}{result1}
 }
 
-func (fake *FakeService) NameOfReturnsOnCall(i int, result1 string) {
+func (fake *FakeService) IDReturnsOnCall(i int, result1 string) {
 	fake.nameOfMutex.Lock()
 	defer fake.nameOfMutex.Unlock()
-	fake.NameOfStub = nil
+	fake.IDStub = nil
 	if fake.nameOfReturnsOnCall == nil {
 		fake.nameOfReturnsOnCall = make(map[int]struct {
 			result1 string

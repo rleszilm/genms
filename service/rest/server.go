@@ -5,18 +5,18 @@ import (
 	"net/http"
 
 	"github.com/grpc-ecosystem/grpc-gateway/v2/runtime"
-	"github.com/rleszilm/genms/log"
 	"github.com/rleszilm/genms/service"
 	grpc_service "github.com/rleszilm/genms/service/grpc"
 	"google.golang.org/grpc"
 )
 
-var (
-	logs = log.NewChannel("service-grpc")
-)
+// LocalGrpcProxy is a function that registers http routes against a grpc server implementation.
+// Using this method will call the grpc methods directly and may result in middleware being excluded.
+type LocalGrpcProxy func(context.Context, *runtime.ServeMux) error
 
-// GrpcProxyRoutes is a function that registers http routes to a grpc server.
-type GrpcProxyRoutes func(context.Context, *runtime.ServeMux, string, []grpc.DialOption) error
+// RemoteGrpcProxy is a function that registers http routes that will proxy
+// requests to a remote grpc server.
+type RemoteGrpcProxy func(context.Context, *runtime.ServeMux, string, []grpc.DialOption) error
 
 // Server is a service.Service that handles rest requests.
 type Server struct {
@@ -50,14 +50,12 @@ func (s *Server) Shutdown(_ context.Context) error {
 	return s.server.Close()
 }
 
-// NameOf implements Server.NameOf()
-func (s *Server) NameOf() string {
-	return s.name
-}
-
-// String implements Server.String()
-func (s *Server) String() string {
-	return s.name
+// ID implements Server.ID()
+func (s *Server) ID() string {
+	if s.name != "" {
+		return s.name
+	}
+	return "genms-rest"
 }
 
 // Scheme implements service.Listen.Scheme
@@ -85,8 +83,28 @@ func (s *Server) WithRouteFunc(pattern string, handler http.HandlerFunc) error {
 	return nil
 }
 
-// WithGrpcProxy adds rest methods that proxy to a grpc server.
-func (s *Server) WithGrpcProxy(ctx context.Context, proxy *grpc_service.Proxy, proxyFunc GrpcProxyRoutes) error {
+// WithLocalGrpcProxy adds rest methods that proxy to a grpc server.
+func (s *Server) WithLocalGrpcProxy(ctx context.Context, proxy *grpc_service.Proxy, proxyFunc LocalGrpcProxy) error {
+	if !proxy.Enabled {
+		logs.Trace("not adding routes as proxy is disabled")
+		return nil
+	}
+
+	if s.grpcMux == nil {
+		s.grpcMux = runtime.NewServeMux()
+		s.mux.Handle("/", s.grpcMux)
+	}
+
+	logs.Debugf("adding proxy: %+v", proxy)
+	if err := proxyFunc(ctx, s.grpcMux); err != nil {
+		return err
+	}
+
+	return nil
+}
+
+// WithRemoteGrpcProxy adds rest methods that proxy to a grpc server.
+func (s *Server) WithRemoteGrpcProxy(ctx context.Context, proxy *grpc_service.Proxy, proxyFunc RemoteGrpcProxy) error {
 	if !proxy.Enabled {
 		logs.Trace("not adding routes as proxy is disabled")
 		return nil

@@ -36,9 +36,9 @@ func (m *Manager) Initialize(ctx context.Context) error {
 
 		for i := 0; i < len(m.svcs); i++ {
 			svc := m.svcs[i]
-			logs.Infof("starting service %s(%T)\n", svc.NameOf(), svc)
+			logs.Infof("starting service %s(%T)\n", svc.ID(), svc)
 			if err := svc.Initialize(ctx); err != nil {
-				done <- fmt.Errorf("cannot start service: %s - %w", svc.NameOf(), err)
+				done <- fmt.Errorf("cannot start service: %s - %w", svc.ID(), err)
 				return
 			}
 		}
@@ -69,7 +69,7 @@ func (m *Manager) Shutdown(ctx context.Context) error {
 
 		for i := len(m.svcs); i > 0; i-- {
 			svc := m.svcs[i-1]
-			logs.Infof("shutting down service %s(%T)\n", svc.NameOf(), svc)
+			logs.Infof("shutting down service %s(%T)\n", svc.ID(), svc)
 			if err := svc.Shutdown(ctx); err != nil {
 				done <- err
 				return

@@ -52,143 +52,118 @@ type Logger interface {
 
 // Channel identifies a logging channel.
 type Channel struct {
-	name        string
-	level       Level
-	log         Logger
-	nameTrace   string
-	nameDebug   string
-	nameInfo    string
-	nameWarning string
-	nameError   string
-	nameFatal   string
-	namePanic   string
-	namePrint   string
+	name          string
+	level         Level
+	log           Logger
+	prefixTrace   string
+	prefixDebug   string
+	prefixInfo    string
+	prefixWarning string
+	prefixError   string
+	prefixFatal   string
+	prefixPanic   string
+	prefixPrint   string
 }
 
 // Trace logs Trace level messages
 func (c *Channel) Trace(args ...interface{}) {
-	if c.skipLog(LvlTrace) {
-		return
-	}
-
-	c.log.Println(append([]interface{}{c.nameTrace}, args...)...)
+	c.println(LvlTrace, c.prefixTrace, "", args)
 }
 
 // Tracef logs Trace level messages
 func (c *Channel) Tracef(msg string, args ...interface{}) {
-	if c.skipLog(LvlTrace) {
-		return
-	}
-
-	c.Trace(fmt.Sprintf(msg, args...))
+	c.println(LvlTrace, c.prefixTrace, msg, args)
 }
 
 // Debug logs Debug level messages
 func (c *Channel) Debug(args ...interface{}) {
-	if c.skipLog(LvlDebug) {
-		return
-	}
-
-	c.log.Println(append([]interface{}{c.nameDebug}, args...)...)
+	c.println(LvlDebug, c.prefixDebug, "", args)
 }
 
 // Debugf logs Debug level messages
 func (c *Channel) Debugf(msg string, args ...interface{}) {
-	if c.skipLog(LvlDebug) {
-		return
-	}
-
-	c.Debug(fmt.Sprintf(msg, args...))
+	c.println(LvlDebug, c.prefixDebug, msg, args)
 }
 
 // Info logs Info level messages
 func (c *Channel) Info(args ...interface{}) {
-	if c.skipLog(LvlInfo) {
-		return
-	}
-
-	c.log.Println(append([]interface{}{c.nameInfo}, args...)...)
+	c.println(LvlInfo, c.prefixInfo, "", args)
 }
 
 // Infof logs Info level messages
 func (c *Channel) Infof(msg string, args ...interface{}) {
-	if c.skipLog(LvlInfo) {
-		return
-	}
-
-	c.Info(fmt.Sprintf(msg, args...))
+	c.println(LvlInfo, c.prefixInfo, msg, args)
 }
 
 // Warning logs Warning level messages
 func (c *Channel) Warning(args ...interface{}) {
-	if c.skipLog(LvlWarning) {
-		return
-	}
-
-	c.log.Println(append([]interface{}{c.nameWarning}, args...)...)
+	c.println(LvlWarning, c.prefixWarning, "", args)
 }
 
 // Warningf logs Warning level messages
 func (c *Channel) Warningf(msg string, args ...interface{}) {
-	if c.skipLog(LvlWarning) {
-		return
-	}
-
-	c.Warning(fmt.Sprintf(msg, args...))
+	c.println(LvlWarning, c.prefixWarning, msg, args)
 }
 
 // Error logs Error level messages
 func (c *Channel) Error(args ...interface{}) {
-	if c.skipLog(LvlError) {
-		return
-	}
-
-	c.log.Println(append([]interface{}{c.nameError}, args...)...)
+	c.println(LvlError, c.prefixError, "", args)
 }
 
 // Errorf logs Error level messages
 func (c *Channel) Errorf(msg string, args ...interface{}) {
-	if c.skipLog(LvlError) {
-		return
-	}
-
-	c.Error(fmt.Sprintf(msg, args...))
+	c.println(LvlError, c.prefixError, msg, args)
 }
 
 // Fatal logs Fatal level messages
 func (c *Channel) Fatal(args ...interface{}) {
-	c.log.Fatalln(append([]interface{}{c.nameFatal}, args...)...)
+	c.println(LvlFatal, c.prefixFatal, "", args)
 }
 
 // Fatalf logs Fatal level messages
 func (c *Channel) Fatalf(msg string, args ...interface{}) {
-	c.Fatal(fmt.Sprintf(msg, args...))
+	c.println(LvlFatal, c.prefixFatal, msg, args)
 }
 
 // Panic logs Panic level messages
 func (c *Channel) Panic(args ...interface{}) {
-	c.log.Panicln(append([]interface{}{c.namePanic}, args...)...)
+	c.println(LvlPanic, c.prefixPanic, "", args)
 }
 
 // Panicf logs Panic level messages
 func (c *Channel) Panicf(msg string, args ...interface{}) {
-	c.Panic(fmt.Sprintf(msg, args...))
+	c.println(LvlPanic, c.prefixPanic, msg, args)
 }
 
 // Print logs messages as long as the channel is not explicitly disabled.
 func (c *Channel) Print(args ...interface{}) {
-	if c.skipLog(LvlPrint) {
-		return
-	}
-	c.log.Println(append([]interface{}{c.namePrint}, args...)...)
+	c.println(LvlPrint, c.prefixPrint, "", args)
 }
 
 // Printf logs messages as long as the channel is not explicitly disabled.
 func (c *Channel) Printf(msg string, args ...interface{}) {
-	if c.skipLog(LvlPrint) {
+	c.println(LvlPrint, c.prefixPrint, msg, args)
+}
+
+func (c *Channel) println(lvl Level, prefix string, format string, args []interface{}) {
+	if c.skipLog(lvl) {
 		return
 	}
-	c.Print(fmt.Sprintf(msg, args...))
+
+	var output string
+	if format == "" {
+		output = fmt.Sprint(args...)
+	} else {
+		output = fmt.Sprintf(format, args...)
+	}
+
+	if lvl == LvlFatal {
+		c.log.Fatalln(prefix + output)
+	} else if lvl == LvlPanic {
+		c.log.Panicln(prefix + output)
+	} else {
+		c.log.Println(prefix + output)
+	}
 }
 
 // WithFlags sets the flags on the underlying logger.
@@ -283,17 +258,17 @@ func NewChannel(name string) *Channel {
 	}
 
 	channels[name] = &Channel{
-		name:        name,
-		level:       LvlInfo,
-		log:         log.New(os.Stderr, "", log.LstdFlags),
-		nameTrace:   fmt.Sprintf("[Trace](%s):", name),
-		nameDebug:   fmt.Sprintf("[Debug](%s):", name),
-		nameInfo:    fmt.Sprintf("[Info](%s):", name),
-		nameWarning: fmt.Sprintf("[Warning](%s):", name),
-		nameError:   fmt.Sprintf("[Error](%s):", name),
-		nameFatal:   fmt.Sprintf("[Fatal](%s):", name),
-		namePanic:   fmt.Sprintf("[Panic](%s):", name),
-		namePrint:   fmt.Sprintf("[Print](%s):", name),
+		name:          name,
+		level:         LvlInfo,
+		log:           log.New(os.Stderr, "", log.LstdFlags),
+		prefixTrace:   fmt.Sprintf("[Trace](%s): ", name),
+		prefixDebug:   fmt.Sprintf("[Debug](%s): ", name),
+		prefixInfo:    fmt.Sprintf("[Info](%s): ", name),
+		prefixWarning: fmt.Sprintf("[Warning](%s): ", name),
+		prefixError:   fmt.Sprintf("[Error](%s): ", name),
+		prefixFatal:   fmt.Sprintf("[Fatal](%s): ", name),
+		prefixPanic:   fmt.Sprintf("[Panic](%s): ", name),
+		prefixPrint:   fmt.Sprintf("[Print](%s): ", name),
 	}
 	return channels[name]
 }

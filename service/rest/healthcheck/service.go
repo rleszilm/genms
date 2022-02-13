@@ -14,12 +14,16 @@ var (
 	logs = log.NewChannel("health")
 )
 
+// StatusFunc is a function that returns true/false depending on whether the system
+// is in the given status.
+type StatusFunc func() (bool, error)
+
 // Service function returns an http.Handler that handles system status request.
 type Service struct {
 	service.Dependencies
 
-	healthyFunc http.HandlerFunc
-	readyFunc   http.HandlerFunc
+	healthyFunc StatusFunc
+	readyFunc   StatusFunc
 
 	config *Config
 	server *rest_service.Server
@@ -41,17 +45,24 @@ func (s *Service) Shutdown(_ context.Context) error {
 	return nil
 }
 
-// NameOf implements service.NameOf
-func (s *Service) NameOf() string {
+// ID implements service.ID
+func (s *Service) ID() string {
 	if s.config.Name != "" {
 		return s.config.Name
 	}
-	return "healthcheck"
+	return "genms-healthcheck"
 }
 
-// String returns a sting identifier
-func (s *Service) String() string {
-	return s.NameOf()
+// WithHealthyFunc sets the health check function.
+func (s *Service) WithHealthyFunc(f StatusFunc) *Service {
+	s.healthyFunc = f
+	return s
+}
+
+// WithReadyFunc sets the health check function.
+func (s *Service) WithReadyFunc(f StatusFunc) *Service {
+	s.readyFunc = f
+	return s
 }
 
 // ServeHealthy runs the system health check.
@@ -59,8 +70,15 @@ func (s *Service) ServeHealthy(w http.ResponseWriter, req *http.Request) {
 	logs.Debug("serving healthy status")
 	if s.healthyFunc != nil {
 		logs.Trace("using custom healthy logic")
-		s.healthyFunc(w, req)
-		return
+		if ok, err := s.healthyFunc(); err != nil {
+			w.WriteHeader(http.StatusInternalServerError)
+			w.Write([]byte("system is not healthy:" + err.Error()))
+			return
+		} else if !ok {
+			w.WriteHeader(http.StatusInternalServerError)
+			w.Write([]byte("system is not healthy"))
+			return
+		}
 	}
 
 	w.WriteHeader(http.StatusOK)
@@ -72,7 +90,15 @@ func (s *Service) ServeReady(w http.ResponseWriter, req *http.Request) {
 	logs.Debug("serving ready status")
 	if s.readyFunc != nil {
 		logs.Trace("using custom status logic")
-		s.readyFunc(w, req)
+		if ok, err := s.readyFunc(); err != nil {
+			w.WriteHeader(http.StatusInternalServerError)
+			w.Write([]byte("system is not ready:" + err.Error()))
+			return
+		} else if !ok {
+			w.WriteHeader(http.StatusInternalServerError)
+			w.Write([]byte("system is not ready"))
+			return
+		}
 		return
 	}
 
@@ -85,11 +111,6 @@ func NewService(config *Config, server *rest_service.Server) *Service {
 	svc := &Service{
 		config: config,
 		server: server,
-	}
-
-	if config != nil {
-		svc.healthyFunc = config.HealthyFunc
-		svc.readyFunc = config.ReadyFunc
 	}
 
 	server.WithDependencies(svc)

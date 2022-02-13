@@ -1,9 +1,8 @@
-package pprof
+package openapi
 
 import (
 	"context"
-	"net/http/pprof"
-	"runtime"
+	"net/http"
 
 	"github.com/rleszilm/genms/service"
 	rest_service "github.com/rleszilm/genms/service/rest"
@@ -13,19 +12,15 @@ import (
 type Service struct {
 	service.Dependencies
 
-	config *Config
-	server *rest_service.Server
+	config  *Config
+	server  *rest_service.Server
+	handler http.Handler
 }
 
 // Initialize implements the service.Initialize interface for Service.
 func (s *Service) Initialize(_ context.Context) error {
 	if s.config.Enabled {
-		runtime.SetBlockProfileRate(1)
-		s.server.WithRouteFunc("/debug/pprof/", pprof.Index)
-		s.server.WithRouteFunc("/debug/pprof/cmdline", pprof.Cmdline)
-		s.server.WithRouteFunc("/debug/pprof/profile", pprof.Profile)
-		s.server.WithRouteFunc("/debug/pprof/symbol", pprof.Symbol)
-		s.server.WithRouteFunc("/debug/pprof/trace", pprof.Trace)
+		s.server.WithRoute(s.config.RequestPrefix, s.handler)
 	}
 	return nil
 }
@@ -40,14 +35,15 @@ func (s *Service) ID() string {
 	if s.config.Name != "" {
 		return s.config.Name
 	}
-	return "genms-pprof"
+	return "genms-openapi"
 }
 
-// NewService instantitates a Service server.
+// NewService returns a new Service.
 func NewService(config *Config, server *rest_service.Server) *Service {
 	svc := &Service{
-		config: config,
-		server: server,
+		config:  config,
+		server:  server,
+		handler: http.StripPrefix(config.RequestPrefix, http.FileServer(http.Dir(config.Dir))),
 	}
 
 	server.WithDependencies(svc)

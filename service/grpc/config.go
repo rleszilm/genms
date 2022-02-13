@@ -13,7 +13,7 @@ type Config struct {
 // Proxy is configuration used when configuring a rest service as a grpc proxy.
 type Proxy struct {
 	Enabled  bool   `envconfig:"enabled" default:"true"`
-	Pattern  string `envconfig:"pattern" default:"/"`
+	Prefix   string `envconfig:"prefix" default:"/"`
 	Addr     string `envconfig:"addr" default:""`
 	Insecure bool   `envconfig:"insecure" default:"false"`
 }
