@@ -21,8 +21,8 @@ func (s *Service) Shutdown(ctx context.Context) error {
 	return nil
 }
 
-// ID implements service.Service.ID
-func (s *Service) ID() string {
+// String implements service.Service.String
+func (s *Service) String() string {
 	return "metrics"
 }
 

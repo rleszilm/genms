@@ -5,23 +5,38 @@ import (
 	"fmt"
 	"os"
 	"os/signal"
+	"syscall"
+
+	"github.com/rleszilm/genms/log"
+)
+
+var (
+	logs = log.NewChannel("service")
 )
 
 // Manager maintains a list of app.Service interfaces. The Manager is intended to Initialize, Run
 // and Stop all services in the application. User should be aware of the order in which services are
 // added.
 type Manager struct {
-	svcs Services
+	signals chan Signal
+	svcs    Services
 }
 
 // Register adds an Service interface to its slice. Services will start and stop in the order which
 // they are Registered.
 func (m *Manager) Register(svcs ...Service) {
+	l := len(m.svcs)
+	for i := 0; i < len(svcs); i++ {
+		svcs[i].withSID(SID(i + l))
+	}
+
 	m.svcs = append(m.svcs, svcs...)
 }
 
 // Initialize iterates through the list of services registered and invokes their respective Initialize method.
 func (m *Manager) Initialize(ctx context.Context) error {
+	m.signals = make(chan Signal, len(m.svcs))
+
 	done := make(chan error)
 	go func() {
 		defer close(done)
@@ -36,9 +51,9 @@ func (m *Manager) Initialize(ctx context.Context) error {
 
 		for i := 0; i < len(m.svcs); i++ {
 			svc := m.svcs[i]
-			logs.Infof("starting service %s(%T)\n", svc.ID(), svc)
+			logs.Infof("starting service <%d> %s(%T)", svc.SID(), svc.String(), svc)
 			if err := svc.Initialize(ctx); err != nil {
-				done <- fmt.Errorf("cannot start service: %s - %w", svc.ID(), err)
+				done <- fmt.Errorf("cannot start service: <%d> %s - %w", svc.SID(), svc.String(), err)
 				return
 			}
 		}
@@ -55,6 +70,8 @@ func (m *Manager) Initialize(ctx context.Context) error {
 // Shutdown iterates through the list of services registered and invokes their respective shutdown method
 // and logs any errors returned.
 func (m *Manager) Shutdown(ctx context.Context) error {
+	defer close(m.signals)
+
 	done := make(chan error)
 	go func() {
 		defer close(done)
@@ -69,7 +86,7 @@ func (m *Manager) Shutdown(ctx context.Context) error {
 
 		for i := len(m.svcs); i > 0; i-- {
 			svc := m.svcs[i-1]
-			logs.Infof("shutting down service %s(%T)\n", svc.ID(), svc)
+			logs.Infof("shutting down service <%d> %s(%T)", svc.SID(), svc.String(), svc)
 			if err := svc.Shutdown(ctx); err != nil {
 				done <- err
 				return
@@ -85,12 +102,28 @@ func (m *Manager) Shutdown(ctx context.Context) error {
 	}
 }
 
+// Signal accepts a signal from a service.
+func (m *Manager) Signal(s Signal) {
+	m.signals <- s
+}
+
 // Wait blocks until an os signal tells the manager to shutdown.
 func (m *Manager) Wait() {
-	c := make(chan os.Signal)
-	signal.Notify(c, os.Interrupt)
-	signal.Notify(c, os.Kill)
-	<-c
+	c := make(chan os.Signal, 2)
+	signal.Notify(c, syscall.SIGINT)
+	signal.Notify(c, syscall.SIGTERM)
+	for {
+		select {
+		case <-c:
+			return
+		case s := <-m.signals:
+			err := s.Error()
+			if err != nil {
+				logs.Error("manager shutting down due to component error: <%d> %s", s.SID(), err)
+				return
+			}
+		}
+	}
 }
 
 // NewManager returns a new service Manager.

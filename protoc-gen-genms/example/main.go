@@ -6,17 +6,17 @@ import (
 
 	"github.com/rleszilm/genms/protoc-gen-genms/example/greeter"
 	"github.com/rleszilm/genms/service"
-	graphql_service "github.com/rleszilm/genms/service/graphql"
 	grpc_service "github.com/rleszilm/genms/service/grpc"
-	rest_service "github.com/rleszilm/genms/service/rest"
-	"github.com/rleszilm/genms/service/rest/healthcheck"
+	http_service "github.com/rleszilm/genms/service/http"
 )
 
 type greets struct {
-	greeter.UnimplementedWithRestAndGraphQLServer
+	http *http_service.Server
+	greeter.UnimplementedWithHTTPServer
 }
 
-func (g *greets) HelloRestAndGraphQL(_ context.Context, req *greeter.Message) (*greeter.Message, error) {
+func (g *greets) HelloRest(_ context.Context, req *greeter.Message) (*greeter.Message, error) {
+	log.Print(g.http.Routes())
 	return &greeter.Message{Value: req.GetValue() + " received"}, nil
 }
 
@@ -26,8 +26,8 @@ func main() {
 	// create service  manager
 	manager := service.NewManager()
 
-	restServer, err := rest_service.NewServer("rest-api",
-		&rest_service.Config{
+	httpServer, err := http_service.NewServer("http-api",
+		&http_service.Config{
 			Config: service.Config{
 				Transport: "tcp",
 				Addr:      ":8081",
@@ -35,30 +35,9 @@ func main() {
 		},
 	)
 	if err != nil {
-		log.Fatalln("Unable to instantiate rest api server: ", err)
+		log.Fatalln("Unable to instantiate http api server: ", err)
 	}
-	manager.Register(restServer)
-
-	health := healthcheck.NewService(&healthcheck.Config{RequestPrefix: "/health"}, restServer)
-	manager.Register(health)
-
-	graphqlServer, err := graphql_service.NewServer("graphql-api",
-		&graphql_service.Config{
-			RestServer: restServer,
-			Proxies: map[string]*graphql_service.GrpcProxy{
-				"WithRestAndGraphQL": {
-					Enabled:  true,
-					Pattern:  "/graphql",
-					Addr:     ":8080",
-					Insecure: true,
-				},
-			},
-		},
-	)
-	if err != nil {
-		log.Fatalln("Unable to instantiate graphql api server: ", err)
-	}
-	manager.Register(graphqlServer)
+	manager.Register(httpServer)
 
 	grpcServer, err := grpc_service.NewServer("grpc-api",
 		&grpc_service.Config{
@@ -76,16 +55,22 @@ func main() {
 	}
 	manager.Register(grpcServer)
 
-	impl := &greets{}
+	impl := &greets{
+		http: httpServer,
+	}
 
-	proxy := &grpc_service.Proxy{
+	proxy := &service.Proxy{
 		Enabled:  true,
 		Prefix:   "/v1/grpc",
 		Addr:     ":8080",
 		Insecure: true,
 	}
 
-	service := greeter.NewWithRestAndGraphQLServerService(impl, grpcServer, restServer, graphqlServer, proxy)
+	service := greeter.NewWithHTTPService(impl, &greeter.WithHTTPServiceConfig{
+		Proxy: proxy,
+	})
+	service.WithGrpcServer(grpcServer)
+	service.WithHttpServer(httpServer)
 	manager.Register(service)
 
 	if err := manager.Initialize(ctx); err != nil {

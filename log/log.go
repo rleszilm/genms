@@ -36,10 +36,15 @@ const (
 )
 
 var (
+	Default     *Channel
 	channelMux  sync.Mutex
 	globalLevel = LvlInfo
 	channels    = map[string]*Channel{}
 )
+
+func init() {
+	Default = NewChannel("default")
+}
 
 // Logger the interface for the logger that a channel writes to.
 type Logger interface {
@@ -271,4 +276,84 @@ func NewChannel(name string) *Channel {
 		prefixPrint:   fmt.Sprintf("[Print](%s): ", name),
 	}
 	return channels[name]
+}
+
+// Trace logs Trace level messages
+func Trace(args ...interface{}) {
+	Default.println(LvlTrace, Default.prefixTrace, "", args)
+}
+
+// Tracef logs Trace level messages
+func Tracef(msg string, args ...interface{}) {
+	Default.println(LvlTrace, Default.prefixTrace, msg, args)
+}
+
+// Debug logs Debug level messages
+func Debug(args ...interface{}) {
+	Default.println(LvlDebug, Default.prefixDebug, "", args)
+}
+
+// Debugf logs Debug level messages
+func Debugf(msg string, args ...interface{}) {
+	Default.println(LvlDebug, Default.prefixDebug, msg, args)
+}
+
+// Info logs Info level messages
+func Info(args ...interface{}) {
+	Default.println(LvlInfo, Default.prefixInfo, "", args)
+}
+
+// Infof logs Info level messages
+func Infof(msg string, args ...interface{}) {
+	Default.println(LvlInfo, Default.prefixInfo, msg, args)
+}
+
+// Warning logs Warning level messages
+func Warning(args ...interface{}) {
+	Default.println(LvlWarning, Default.prefixWarning, "", args)
+}
+
+// Warningf logs Warning level messages
+func Warningf(msg string, args ...interface{}) {
+	Default.println(LvlWarning, Default.prefixWarning, msg, args)
+}
+
+// Error logs Error level messages
+func Error(args ...interface{}) {
+	Default.println(LvlError, Default.prefixError, "", args)
+}
+
+// Errorf logs Error level messages
+func Errorf(msg string, args ...interface{}) {
+	Default.println(LvlError, Default.prefixError, msg, args)
+}
+
+// Fatal logs Fatal level messages
+func Fatal(args ...interface{}) {
+	Default.println(LvlFatal, Default.prefixFatal, "", args)
+}
+
+// Fatalf logs Fatal level messages
+func Fatalf(msg string, args ...interface{}) {
+	Default.println(LvlFatal, Default.prefixFatal, msg, args)
+}
+
+// Panic logs Panic level messages
+func Panic(args ...interface{}) {
+	Default.println(LvlPanic, Default.prefixPanic, "", args)
+}
+
+// Panicf logs Panic level messages
+func Panicf(msg string, args ...interface{}) {
+	Default.println(LvlPanic, Default.prefixPanic, msg, args)
+}
+
+// Print logs messages as long as the channel is not explicitly disabled.
+func Print(args ...interface{}) {
+	Default.println(LvlPrint, Default.prefixPrint, "", args)
+}
+
+// Printf logs messages as long as the channel is not explicitly disabled.
+func Printf(msg string, args ...interface{}) {
+	Default.println(LvlPrint, Default.prefixPrint, msg, args)
 }

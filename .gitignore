@@ -7,3 +7,6 @@
 # Dependency directories
 vendor/
 
+# Directories
+.proto
+.vscode

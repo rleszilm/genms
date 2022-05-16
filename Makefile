@@ -13,12 +13,23 @@ deps:
 generate:
 	go generate ./...
 
-proto:
+proto: pb-include
 	protoc \
 		-I . \
 		--go_out=. \
 		--go_opt=paths=source_relative \
 		`ls protoc-gen-genms/annotations/*.proto`
+
+pb-include: .proto/github.com/googleapis/googleapis .proto/github.com/rleszilm/grpc-graphql-gateway
+	git -C .proto/github.com/googleapis/googleapis pull
+	git -C .proto/github.com/rleszilm/grpc-graphql-gateway pull
+
+.proto/github.com/googleapis/googleapis:
+	git clone https://github.com/googleapis/googleapis.git .proto/github.com/googleapis/googleapis
+	git clone https://github.com/rleszilm/grpc-graphql-gateway.git .proto/github.com/rleszilm/grpc-graphql-gateway
+
+lint:
+	staticcheck $(PACKAGES)
 
 ## Test runs all project unit tests.
 test:
@@ -42,6 +53,6 @@ tool-chain:
 		github.com/grpc-ecosystem/grpc-gateway/v2/protoc-gen-grpc-gateway \
 		github.com/grpc-ecosystem/grpc-gateway/v2/protoc-gen-openapiv2 \
 		github.com/rleszilm/genms/protoc-gen-genms \
-		github.com/rleszilm/grpc-graphql-gateway/protoc-gen-graphql
+		honnef.co/go/tools/cmd/staticcheck
 
 .DEFAULT: codegen test

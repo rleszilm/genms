@@ -43,6 +43,9 @@ func (m *MicroService) render() error {
 		return err
 	}
 	formatted, err := imports.Process(m.filename, original, nil)
+	if err != nil {
+		return err
+	}
 
 	if diff := deep.Equal(original, formatted); diff != nil {
 		formattedOutfile := m.plugin.NewGeneratedFile(m.filename, ".")
@@ -80,21 +83,34 @@ package {{ .File.PackageName }}
 }
 
 func (m *MicroService) defineMicroService() error {
-	tmplSrc := `// {{ .M.Service.Name }}ServerService implements {{ .M.Service.Name }}Service
-type {{ .M.Service.Name }}ServerService struct {
-	{{ .P.Service }}.Dependencies
+	tmplSrc := `
+// {{ .M.Service.Name }}ServiceConfig defines the basic configuration for a {{ .M.Service.Name }}Service
+type {{ .M.Service.Name }}ServiceConfig struct {
+	Name string ` + "`envconfig:\"name\" default:\"{{ .M.Service.Name | ToDashCase | ToLower }}\"`" + `
+	GrpcServer *{{ .P.GrpcService }}.Server ` + "`ignored:\"true\"`" + `
+	{{ if .M.Opts.Http -}}HttpServer *{{ .P.HttpService }}.Server ` + "`ignored:\"true\"`" + `{{- end }}
+	{{ if (or .M.Opts.Http) -}}Proxy *{{ .P.Service }}.Proxy ` + "`envconfig:\"proxy\"`" + `{{- end }}
+}
 	
+// {{ .M.Service.Name }}Service implements {{ .M.Service.Name }}Service
+type {{ .M.Service.Name }}Service struct {
+	{{ .P.Service }}.UnimplementedService
+	
+	name string
+	config *{{ .M.Service.Name }}ServiceConfig
+
 	impl {{ .M.Service.Name }}Server
-	grpcServer *{{ .P.GRPCService }}.Server
-	{{ if .M.Opts.Rest -}}restServer *{{ .P.RESTService }}.Server{{- end }}
-	{{ if .M.Opts.Graphql -}} graphqlServer *{{ .P.GraphQLService }}.Server {{- end }}
-	{{ if (or .M.Opts.Rest .M.Opts.Graphql) -}}proxy *{{ .P.GRPCService }}.Proxy{{- end }}
+	grpcServer *{{ .P.GrpcService }}.Server
+	{{ if .M.Opts.Http -}}httpServer *{{ .P.HttpService }}.Server{{- end }}
 }
 
 `
 
 	tmpl, err := template.New("defineMicroService").
-		Funcs(template.FuncMap{}).
+		Funcs(template.FuncMap{
+			"ToDashCase": protocgenlib.ToDashCase,
+			"ToLower":    strings.ToLower,
+		}).
 		Parse(tmplSrc)
 
 	if err != nil {
@@ -102,10 +118,9 @@ type {{ .M.Service.Name }}ServerService struct {
 	}
 
 	p := map[string]string{
-		"GRPCService":    m.File.QualifiedPackageName("github.com/rleszilm/genms/service/grpc"),
-		"GraphQLService": m.File.QualifiedPackageName("github.com/rleszilm/genms/service/graphql"),
-		"RESTService":    m.File.QualifiedPackageName("github.com/rleszilm/genms/service/rest"),
-		"Service":        m.File.QualifiedPackageName("github.com/rleszilm/genms/service"),
+		"GrpcService": m.File.QualifiedPackageName("github.com/rleszilm/genms/service/grpc"),
+		"HttpService": m.File.QualifiedPackageName("github.com/rleszilm/genms/service/http"),
+		"Service":     m.File.QualifiedPackageName("github.com/rleszilm/genms/service"),
 	}
 
 	buf := &bytes.Buffer{}
@@ -125,65 +140,91 @@ type {{ .M.Service.Name }}ServerService struct {
 func (m *MicroService) defineService() error {
 	tmplSrc := `{{- $M := .M -}}
 // Initialize implements service.Service.Initialize
-func (s *{{ $M.Service.Name }}ServerService) Initialize(ctx {{ .P.Context }}.Context) error {
-	s.grpcServer.WithService(func(server *{{ .P.GRPC }}.Server) {
-		Register{{ $M.Service.Name }}Server(server, s.impl)
-	})
-	{{ if $M.Opts.Rest }}
-		if err := s.restServer.WithGrpcProxy(ctx, s.proxy, Register{{ $M.Service.Name }}HandlerFromEndpoint); err != nil {
-			return err
-		}
-	{{- end }}
-	{{ if $M.Opts.Graphql }}
-		if err := s.graphqlServer.WithGrpcProxy(ctx, s.proxy, Register{{ $M.Service.Name }}GraphqlWithOptions); err != nil {
-			return err
+func (s *{{ $M.Service.Name }}Service) Initialize(ctx {{ .P.Context }}.Context) error {
+	if s.grpcServer != nil {
+		s.grpcServer.WithService(func(server *{{ .P.GRPC }}.Server) {
+			Register{{ $M.Service.Name }}Server(server, s.impl)
+		})
+	}
+	{{ if $M.Opts.Http }}
+		if s.httpServer != nil {
+			if s.config != nil && s.config.Proxy != nil {
+				if s.config.Proxy.Mode == "remote" {
+					if err := s.httpServer.WithRemoteGrpcProxy(ctx, s.config.Proxy, Register{{ $M.Service.Name }}HandlerFromEndpoint); err != nil {
+						return err
+					}
+				} else {
+					localProxyRegistrar := func(ctx {{ .P.Context }}.Context, mux *{{ .P.Runtime }}.ServeMux) error {
+						return Register{{ $M.Service.Name }}HandlerServer(ctx, mux, s.impl)
+					}
+					if err := s.httpServer.WithLocalGrpcProxy(ctx, s.config.Proxy, localProxyRegistrar); err != nil {
+						return err
+					}
+				}
+			}
 		}
 	{{- end }}
 	return nil
 }
 // Shutdown implements service.Service.Shutdown
-func (s *{{ $M.Service.Name }}ServerService) Shutdown(_ {{ .P.Context }}.Context) error {
+func (s *{{ $M.Service.Name }}Service) Shutdown(_ {{ .P.Context }}.Context) error {
 	return nil
 }
 
-// ID returns the name of the service
-func (s *{{ $M.Service.Name }}ServerService) ID() string {
-	return "{{ $M.Service.Name | ToDashCase | ToLower }}"
+// String returns the name of the service
+func (s *{{ $M.Service.Name }}Service) String() string {
+	if s.name != "" {
+		return s.name
+	}
+	return "{{ .M.Service.Name | ToDashCase | ToLower }}"
 }
 
-// New{{ $M.Service.Name }}ServerService returns a new {{ $M.Service.Name }}ServerService
-func New{{ $M.Service.Name }}ServerService(impl {{ $M.Service.Name }}Server, grpcServer *{{ .P.GRPCService }}.Server
-	{{- if $M.Opts.Rest -}}, restServer *{{ .P.RESTService }}.Server{{- end -}}
-	{{- if $M.Opts.Graphql -}}, graphqlServer *{{ .P.GraphQLService }}.Server{{- end -}}
-	{{- if (or $M.Opts.Rest $M.Opts.Graphql) }}, proxy *{{ .P.GRPCService }}.Proxy{{- end -}}
-) *{{ $M.Service.Name }}ServerService {
-	server := &{{ $M.Service.Name }}ServerService{
+// WithName assigns a name to the service
+func (s *{{ $M.Service.Name }}Service) WithName(name string) *{{ $M.Service.Name }}Service {
+	s.name = name
+	return s
+}
+
+// WithGrpcServer assigns a grpc server to the service.
+func (s *{{ $M.Service.Name }}Service) WithGrpcServer(server *{{ .P.GrpcService }}.Server) *{{ $M.Service.Name }}Service {
+	server.WithDependencies(s)
+	s.grpcServer = server
+	return s
+}
+
+{{ if $M.Opts.Http -}}
+// WithHttpServer assigns a http server to the service.
+func (s *{{ $M.Service.Name }}Service) WithHttpServer(server *{{ .P.HttpService }}.Server) *{{ $M.Service.Name }}Service {
+	server.WithDependencies(s)
+	s.httpServer = server
+	return s
+}
+{{- end }}
+
+
+// New{{ $M.Service.Name }}Service returns a new {{ $M.Service.Name }}Service
+func New{{ $M.Service.Name }}Service(impl {{ $M.Service.Name }}Server, config *{{ $M.Service.Name }}ServiceConfig) *{{ $M.Service.Name }}Service {
+	server := &{{ $M.Service.Name }}Service{
+		name: config.Name,
 		impl: impl,
-		grpcServer: grpcServer,
-		{{ if $M.Opts.Graphql -}} graphqlServer: graphqlServer,{{- end }}
-		{{ if $M.Opts.Rest -}} restServer: restServer,{{- end }}
-		{{ if (or $M.Opts.Graphql $M.Opts.Rest) -}}proxy: proxy,{{- end }}
+		config: config,
+		
+		grpcServer: config.GrpcServer,
+		{{ if $M.Opts.Http -}}httpServer: config.HttpServer,{{- end }}
 	}
 
 	if asService, ok := impl.({{ .P.Service }}.Service); ok {
 		server.WithDependencies(asService)
 	}
 
-	grpcServer.WithDependencies(server)
-	{{ if $M.Opts.Rest -}}
-		restServer.WithDependencies(server)
-	{{- end }}
-	{{ if $M.Opts.Graphql -}}
-		graphqlServer.WithDependencies(server)
-	{{- end }}
 	return server
 }
 `
 
 	tmpl, err := template.New("defineService").
 		Funcs(template.FuncMap{
-			"ToLower":    strings.ToLower,
 			"ToDashCase": protocgenlib.ToDashCase,
+			"ToLower":    strings.ToLower,
 		}).
 		Parse(tmplSrc)
 
@@ -194,14 +235,12 @@ func New{{ $M.Service.Name }}ServerService(impl {{ $M.Service.Name }}Server, grp
 	p := map[string]string{
 		"Context":     m.File.QualifiedPackageName("context"),
 		"GRPC":        m.File.QualifiedPackageName("google.golang.org/grpc"),
-		"GRPCService": m.File.QualifiedPackageName("github.com/rleszilm/genms/service/grpc"),
+		"GrpcService": m.File.QualifiedPackageName("github.com/rleszilm/genms/service/grpc"),
+		"Runtime":     m.File.QualifiedPackageName("github.com/grpc-ecosystem/grpc-gateway/v2/runtime"),
 		"Service":     m.File.QualifiedPackageName("github.com/rleszilm/genms/service"),
 	}
-	if m.Opts.Graphql {
-		p["GraphQLService"] = m.File.QualifiedPackageName("github.com/rleszilm/genms/service/graphql")
-	}
-	if m.Opts.Rest {
-		p["RESTService"] = m.File.QualifiedPackageName("github.com/rleszilm/genms/service/rest")
+	if m.Opts.Http {
+		p["HttpService"] = m.File.QualifiedPackageName("github.com/rleszilm/genms/service/http")
 	}
 
 	buf := &bytes.Buffer{}

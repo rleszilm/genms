@@ -5,16 +5,16 @@ import (
 
 	"contrib.go.opencensus.io/exporter/prometheus"
 	"github.com/rleszilm/genms/service"
-	rest_service "github.com/rleszilm/genms/service/rest"
+	http_service "github.com/rleszilm/genms/service/http"
 )
 
 // Exporter is the prometheus metric exporter.
 type Exporter struct {
-	service.Dependencies
+	service.UnimplementedService
 
 	*prometheus.Exporter
 	config *Config
-	server *rest_service.Server
+	server *http_service.Server
 }
 
 // Initialize implements service.Service.Initialize.
@@ -27,8 +27,8 @@ func (e *Exporter) Shutdown(ctx context.Context) error {
 	return nil
 }
 
-// ID implements service.Service.ID
-func (e *Exporter) ID() string {
+// String implements service.Service.String
+func (e *Exporter) String() string {
 	return "genms-metrics-prometheus"
 }
 
@@ -45,7 +45,7 @@ func (e *Exporter) Stop() error {
 }
 
 // NewExporter instantiates and returns a prometheus Exporter.
-func NewExporter(config *Config, server *rest_service.Server) (*Exporter, error) {
+func NewExporter(config *Config, server *http_service.Server) (*Exporter, error) {
 	pe, err := prometheus.NewExporter(
 		prometheus.Options{
 			Namespace:   config.Namespace,
