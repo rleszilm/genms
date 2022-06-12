@@ -1,0 +1,15 @@
+syntax = "proto3";
+
+package genms;
+option go_package = "github.com/rleszilm/genms/protoc-gen-genms/annotations";
+
+import "google/protobuf/descriptor.proto";
+
+message ServiceOptions {
+    bool http = 1;
+    bool websocket = 2;
+}
+
+extend google.protobuf.ServiceOptions {
+    optional ServiceOptions service_options = 51000;
+}

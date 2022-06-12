@@ -1,0 +1,42 @@
+syntax = "proto3";
+
+package greeter;
+option go_package = "github.com/rleszilm/genms/protoc-gen-go-genms/example/greeter";
+
+import "google/api/annotations.proto";
+import "protoc-gen-genms/annotations/annotations.proto";
+
+message Message {
+    string value = 1;
+    optional string constraint = 2;
+}
+
+service WithHTTP {
+    option (genms.service_options) = {
+        http: true
+    };
+
+    rpc HelloHTTPUU(Message) returns (Message) {
+        option (google.api.http) = {
+            get: "/v1/http/uu"
+        };
+    }
+
+    rpc HelloHTTPUS(Message) returns (stream Message) {
+        option (google.api.http) = {
+            get: "/v1/http/us"
+        };
+    }
+
+    rpc HelloHTTPSU(stream Message) returns (Message) {
+        option (google.api.http) = {
+            get: "/v1/http/su"
+        };
+    }
+
+    rpc HelloHTTPSS(stream Message) returns (stream Message) {
+        option (google.api.http) = {
+            get: "/v1/http/ss"
+        };
+    }
+}

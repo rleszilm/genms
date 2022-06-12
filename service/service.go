@@ -2,13 +2,11 @@ package service
 
 import (
 	"context"
-
-	"github.com/rleszilm/genms/log"
+	"fmt"
 )
 
-var (
-	logs = log.NewChannel("service")
-)
+// SID is a service identifier assigned to a service by the manager.
+type SID int64
 
 // Service describes a long-running instance whose life-cycle should start with Initialize and end
 // with a Shutdown call.
@@ -20,27 +18,96 @@ type Service interface {
 	// Shutdown closes the long-running instance, or service.
 	Shutdown(context.Context) error
 
-	// NameOf returns the name of a service. This must be unique if there are multiple instances of the same
-	// service.
-	NameOf() string
-
-	// String returns a string identifier for the service.
+	// String returns the identifier of a service. This must be unique if there are multiple instances
+	// of the same service.
 	String() string
 
-	// Dependants returns the servers dependencies.
-	Dependants() Services
+	// SID returns the services service id.
+	SID() SID
+
+	// WithSID assigns a SID to the service.
+	withSID(SID)
+
+	// dependencies returns the servers dependencies.
+	dependencies() Services
 
 	// WithDependency adds a dependency to the service.
 	WithDependencies(...Service)
+
+	// Signaller returns the signaller assigned to the service.
+	Signaller() Signaller
+
+	// WithSignaller specifies the signaller that the service should use to report statuses.
+	withSignaller(Signaller)
+
+	// mustEmbedUnimplementedService
+	mustEmbedUnimplementedService()
 }
 
-// Listener is a Service that accepts connections and does work based on the requests made.
-type Listener interface {
-	Service
+// Signal describes a message sent from a service back to the manager.
+type Signal interface {
+	SID() SID
+	Message() string
+	Error() error
+}
 
-	// Scheme returns the request scheme of the underlying server.
-	Scheme() string
+// Signaller describes an interface that transmits signals between a service and the manager.
+type Signaller interface {
+	Signal(Signal)
+}
 
-	// Addr returns the address that the LIstener is listening on.
-	Addr() string
+// UnimplementedService is an implementation of Service that provides base logic and returns errors when user
+// implemented methods are called but not defined.
+type UnimplementedService struct {
+	Services
+	sid       SID
+	signaller Signaller
+}
+
+// Initialize implements Service.Initialize.
+func (u *UnimplementedService) Initialize(_ context.Context) error {
+	return fmt.Errorf("Service.Initialize is not defined")
+}
+
+// Shutdown implements Service.Shutdown.
+func (u *UnimplementedService) Shutdown(_ context.Context) error {
+	return fmt.Errorf("Service.Shutdown is not defined")
+}
+
+// String implements Service.String.
+func (u *UnimplementedService) String() string {
+	return "Service.String is not defined"
+}
+
+// SID implements Service.SID.
+func (u *UnimplementedService) SID() SID {
+	return u.sid
+}
+
+// withSID implements Service.withSID.
+func (u *UnimplementedService) withSID(s SID) {
+	u.sid = s
+}
+
+// dependencies implements Service.dependencies.
+func (u *UnimplementedService) dependencies() Services {
+	return u.Services
+}
+
+// WithDependencies implements Service.WithDependencies.
+func (u *UnimplementedService) WithDependencies(svcs ...Service) {
+	u.Services = append(u.Services, svcs...)
+}
+
+// Signaller implements Service.Signaller.
+func (u *UnimplementedService) Signaller() Signaller {
+	return u.signaller
+}
+
+// withSignaller implements Service.withSignaller.
+func (u *UnimplementedService) withSignaller(s Signaller) {
+	u.signaller = s
+}
+
+func (u *UnimplementedService) mustEmbedUnimplementedService() {
 }

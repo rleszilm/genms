@@ -7,5 +7,6 @@
 # Dependency directories
 vendor/
 
-cmd/protoc-gen-go-genms/example/main
-cmd/protoc-gen-go-genms-dal/example/main
+# Directories
+.proto
+.vscode

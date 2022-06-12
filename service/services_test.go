@@ -5,29 +5,28 @@ import (
 	"testing"
 
 	"github.com/rleszilm/genms/service"
-	"github.com/rleszilm/genms/service/servicefakes"
 )
 
+type fakeService struct {
+	service.UnimplementedService
+	str string
+}
+
+func (f *fakeService) clearDependencies() {
+	f.Services = service.Services{}
+}
+
 func TestServicesSort(t *testing.T) {
-	svc1 := &servicefakes.FakeService{}
-	svc1.StringReturns("svc-1")
-
-	svc2 := &servicefakes.FakeService{}
-	svc2.StringReturns("svc-2")
-
-	svc3 := &servicefakes.FakeService{}
-	svc3.StringReturns("svc-3")
-
-	svc4 := &servicefakes.FakeService{}
-	svc4.StringReturns("svc-4")
-
-	svc5 := &servicefakes.FakeService{}
-	svc5.StringReturns("svc-5")
+	svc1 := &fakeService{str: "service 1"}
+	svc2 := &fakeService{str: "service 2"}
+	svc3 := &fakeService{str: "service 3"}
+	svc4 := &fakeService{str: "service 4"}
+	svc5 := &fakeService{str: "service 5"}
 
 	testcases := []struct {
 		desc   string
 		svcs   []service.Service
-		deps   map[*servicefakes.FakeService][]service.Service
+		deps   map[*fakeService][]service.Service
 		expect []service.Service
 		cycle  []service.Service
 		err    error
@@ -40,7 +39,7 @@ func TestServicesSort(t *testing.T) {
 		{
 			desc: "many dependencies",
 			svcs: []service.Service{svc1, svc2, svc3, svc4, svc5},
-			deps: map[*servicefakes.FakeService][]service.Service{
+			deps: map[*fakeService][]service.Service{
 				svc1: {svc2, svc3, svc4, svc5},
 				svc2: {svc3, svc4, svc5},
 				svc3: {svc4, svc5},
@@ -52,7 +51,7 @@ func TestServicesSort(t *testing.T) {
 		{
 			desc: "branching dependencies",
 			svcs: []service.Service{svc1, svc2, svc3, svc4, svc5},
-			deps: map[*servicefakes.FakeService][]service.Service{
+			deps: map[*fakeService][]service.Service{
 				svc1: {svc2, svc3},
 				svc2: {svc4},
 				svc3: {svc5},
@@ -64,7 +63,7 @@ func TestServicesSort(t *testing.T) {
 		{
 			desc: "simple cycle",
 			svcs: []service.Service{svc1, svc2},
-			deps: map[*servicefakes.FakeService][]service.Service{
+			deps: map[*fakeService][]service.Service{
 				svc1: {svc2},
 				svc2: {svc1},
 			},
@@ -74,7 +73,7 @@ func TestServicesSort(t *testing.T) {
 		{
 			desc: "longer cycle",
 			svcs: []service.Service{svc1, svc2, svc3, svc4},
-			deps: map[*servicefakes.FakeService][]service.Service{
+			deps: map[*fakeService][]service.Service{
 				svc1: {svc2},
 				svc2: {svc3},
 				svc3: {svc4},
@@ -88,7 +87,8 @@ func TestServicesSort(t *testing.T) {
 	for _, tc := range testcases {
 		t.Run(tc.desc, func(t *testing.T) {
 			for svc, deps := range tc.deps {
-				svc.DependantsReturns(deps)
+				svc.clearDependencies()
+				svc.WithDependencies(deps...)
 			}
 
 			svcs := service.Services(tc.svcs)

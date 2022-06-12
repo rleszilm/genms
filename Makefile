@@ -13,24 +13,23 @@ deps:
 generate:
 	go generate ./...
 
-proto: proto-annotations
+proto: pb-include
+	protoc \
+		-I . \
+		--go_out=. \
+		--go_opt=paths=source_relative \
+		`ls protoc-gen-genms/annotations/*.proto`
 
-proto-annotations:
-	protoc \
-		-I . \
-		--go_out=. \
-		--go_opt=paths=source_relative \
-		`ls cmd/protoc-gen-go-genms/annotations/*.proto`
-	protoc \
-		-I . \
-		--go_out=. \
-		--go_opt=paths=source_relative \
-		`ls cmd/protoc-gen-go-genms-dal/annotations/*.proto`
-	protoc \
-		-I . \
-		--go_out=. \
-		--go_opt=paths=source_relative \
-		`ls cmd/protoc-gen-go-genms-dal/annotations/types/*.proto`
+pb-include: .proto/github.com/googleapis/googleapis .proto/github.com/rleszilm/grpc-graphql-gateway
+	git -C .proto/github.com/googleapis/googleapis pull
+	git -C .proto/github.com/rleszilm/grpc-graphql-gateway pull
+
+.proto/github.com/googleapis/googleapis:
+	git clone https://github.com/googleapis/googleapis.git .proto/github.com/googleapis/googleapis
+	git clone https://github.com/rleszilm/grpc-graphql-gateway.git .proto/github.com/rleszilm/grpc-graphql-gateway
+
+lint:
+	staticcheck $(PACKAGES)
 
 ## Test runs all project unit tests.
 test:
@@ -48,13 +47,12 @@ test-clean:
 	docker compose down --remove-orphans
 
 tool-chain:
-	go get \
+	go install \
+		github.com/awalterschulze/goderive \
+		github.com/envoyproxy/protoc-gen-validate \
 		github.com/grpc-ecosystem/grpc-gateway/v2/protoc-gen-grpc-gateway \
 		github.com/grpc-ecosystem/grpc-gateway/v2/protoc-gen-openapiv2 \
-		github.com/envoyproxy/protoc-gen-validate \
-		github.com/awalterschulze/goderive \
-		github.com/rleszilm/grpc-graphql-gateway/protoc-gen-graphql \
-		github.com/rleszilm/genms/cmd/protoc-gen-go-genms \
-		github.com/rleszilm/genms/cmd/protoc-gen-go-genms-dal
+		github.com/rleszilm/genms/protoc-gen-genms \
+		honnef.co/go/tools/cmd/staticcheck
 
 .DEFAULT: codegen test

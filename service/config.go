@@ -17,6 +17,15 @@ type TLS struct {
 	Cert    string `envconfig:"cert" default:""`
 }
 
+// Proxy is configuration used when configuring a proxy.
+type Proxy struct {
+	Enabled  bool   `envconfig:"enabled" default:"true"`
+	Mode     string `envconfig:"mode" default:"local"`
+	Prefix   string `envconfig:"prefix" default:"/"`
+	Addr     string `envconfig:"addr" default:""`
+	Insecure bool   `envconfig:"insecure" default:"false"`
+}
+
 // NewFromEnv returns a new Gamehub configuration based on environment variables.
 func NewFromEnv(prefix string) (*Config, error) {
 	c := Config{}
