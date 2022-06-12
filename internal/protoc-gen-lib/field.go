@@ -98,10 +98,7 @@ func (f *Field) IsRef() bool {
 
 // IsMessage returns whether the field is a reference.
 func (f *Field) IsMessage() bool {
-	if f.field.Message != nil {
-		return true
-	}
-	return false
+	return f.field.Message != nil
 }
 
 // IsSlice returns whether the field is a slice of values.

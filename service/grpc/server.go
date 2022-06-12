@@ -20,7 +20,7 @@ type GrpcService func(*grpc.Server)
 
 // Server is a service.Service that handles grpc requests.
 type Server struct {
-	service.Dependencies
+	service.UnimplementedService
 	name       string
 	config     *Config
 	grpc       *grpc.Server
@@ -70,14 +70,13 @@ func (s *Server) Shutdown(_ context.Context) error {
 	return nil
 }
 
-// NameOf implements Server.NameOf()
-func (s *Server) NameOf() string {
-	return s.name
-}
-
 // String implements Server.String()
 func (s *Server) String() string {
-	return s.name
+	if s.name != "" {
+		return "genms-grpc-" + s.name
+	}
+	return "genms-grpc"
+
 }
 
 // Scheme implements service.Listen.Scheme

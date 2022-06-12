@@ -3,6 +3,9 @@ package service
 import "errors"
 
 var (
+	// ErrUnimplemented is returned when an unimplemented method is called.
+	ErrUnimplemented = errors.New("unimplemented")
+
 	// ErrDependencyCycle is returned when services canot be started because of a
 	// cycle in dependencies.
 	ErrDependencyCycle = errors.New("dependency cycle")

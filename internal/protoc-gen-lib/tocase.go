@@ -7,7 +7,7 @@ import (
 )
 
 var (
-	tokenRegex = regexp.MustCompile("[\\s_-]")
+	tokenRegex = regexp.MustCompile(`[\s_-]`)
 )
 
 func ToTitleCase(s string) string {
