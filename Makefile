@@ -29,7 +29,7 @@ pb-include: .proto/github.com/googleapis/googleapis .proto/github.com/rleszilm/g
 	git clone https://github.com/rleszilm/grpc-graphql-gateway.git .proto/github.com/rleszilm/grpc-graphql-gateway
 
 lint:
-	staticcheck $(PACKAGES)
+	golangci-lint run
 
 ## Test runs all project unit tests.
 test:
@@ -50,9 +50,9 @@ tool-chain:
 	go install \
 		github.com/awalterschulze/goderive \
 		github.com/envoyproxy/protoc-gen-validate \
+		github.com/golangci/golangci-lint/cmd/golangci-lint \
 		github.com/grpc-ecosystem/grpc-gateway/v2/protoc-gen-grpc-gateway \
 		github.com/grpc-ecosystem/grpc-gateway/v2/protoc-gen-openapiv2 \
-		github.com/rleszilm/genms/protoc-gen-genms \
-		honnef.co/go/tools/cmd/staticcheck
+		github.com/rleszilm/genms/protoc-gen-genms
 
 .DEFAULT: codegen test

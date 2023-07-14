@@ -5,13 +5,8 @@ import (
 	"net/http/pprof"
 	"runtime"
 
-	"github.com/rleszilm/genms/log"
 	"github.com/rleszilm/genms/service"
 	http_service "github.com/rleszilm/genms/service/http"
-)
-
-var (
-	logs = log.NewChannel("pprof")
 )
 
 // Service function returns an http.Handler that handles system status request.
@@ -26,11 +21,21 @@ type Service struct {
 func (s *Service) Initialize(_ context.Context) error {
 	if s.config.Enabled {
 		runtime.SetBlockProfileRate(1)
-		s.server.WithRouteFunc("/debug/pprof/", pprof.Index)
-		s.server.WithRouteFunc("/debug/pprof/cmdline", pprof.Cmdline)
-		s.server.WithRouteFunc("/debug/pprof/profile", pprof.Profile)
-		s.server.WithRouteFunc("/debug/pprof/symbol", pprof.Symbol)
-		s.server.WithRouteFunc("/debug/pprof/trace", pprof.Trace)
+		if err := s.server.WithRouteFunc("/debug/pprof/", pprof.Index); err != nil {
+			return err
+		}
+		if err := s.server.WithRouteFunc("/debug/pprof/cmdline", pprof.Cmdline); err != nil {
+			return err
+		}
+		if err := s.server.WithRouteFunc("/debug/pprof/profile", pprof.Profile); err != nil {
+			return err
+		}
+		if err := s.server.WithRouteFunc("/debug/pprof/symbol", pprof.Symbol); err != nil {
+			return err
+		}
+		if err := s.server.WithRouteFunc("/debug/pprof/trace", pprof.Trace); err != nil {
+			return err
+		}
 	}
 	return nil
 }
