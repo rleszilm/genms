@@ -1,7 +1,7 @@
 package http_service
 
 import (
-	"github.com/rleszilm/genms/log"
+	"github.com/rleszilm/genms/logging"
 	"go.opencensus.io/stats"
 	"go.opencensus.io/stats/view"
 	"go.opencensus.io/tag"
@@ -45,6 +45,6 @@ func init() {
 	}
 
 	if err := view.Register(views...); err != nil {
-		log.Fatal("Cannot register metrics:", err)
+		logging.Fatal("Cannot register metrics:", err)
 	}
 }

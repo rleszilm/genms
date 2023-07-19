@@ -5,8 +5,8 @@ import (
 	"fmt"
 )
 
-// SID is a service identifier assigned to a service by the manager.
-type SID int64
+// ServiceID is a service identifier assigned to a service by the manager.
+type ServiceID int64
 
 // Service describes a long-running instance whose life-cycle should start with Initialize and end
 // with a Shutdown call.
@@ -22,16 +22,16 @@ type Service interface {
 	// of the same service.
 	String() string
 
-	// SID returns the services service id.
-	SID() SID
+	// ServiceID returns the services service id.
+	ServiceID() ServiceID
 
-	// WithSID assigns a SID to the service.
-	withSID(SID)
+	// withSID assigns a SID to the service.
+	withServiceID(ServiceID)
 
 	// dependencies returns the servers dependencies.
 	dependencies() Services
 
-	// WithDependency adds a dependency to the service.
+	// WithDependencies adds a dependency to the service.
 	WithDependencies(...Service)
 
 	// Signaller returns the signaller assigned to the service.
@@ -46,7 +46,7 @@ type Service interface {
 
 // Signal describes a message sent from a service back to the manager.
 type Signal interface {
-	SID() SID
+	ServiceID() ServiceID
 	Message() string
 	Error() error
 }
@@ -60,7 +60,7 @@ type Signaller interface {
 // implemented methods are called but not defined.
 type UnimplementedService struct {
 	Services
-	sid       SID
+	sid       ServiceID
 	signaller Signaller
 }
 
@@ -79,24 +79,24 @@ func (u *UnimplementedService) String() string {
 	return "Service.String is not defined"
 }
 
-// SID implements Service.SID.
-func (u *UnimplementedService) SID() SID {
+// ServiceID implements Service.SID.
+func (u *UnimplementedService) ServiceID() ServiceID {
 	return u.sid
 }
 
-// withSID implements Service.withSID.
-func (u *UnimplementedService) withSID(s SID) {
+// withServiceID implements Service.withServiceID.
+func (u *UnimplementedService) withServiceID(s ServiceID) {
 	u.sid = s
-}
-
-// dependencies implements Service.dependencies.
-func (u *UnimplementedService) dependencies() Services {
-	return u.Services
 }
 
 // WithDependencies implements Service.WithDependencies.
 func (u *UnimplementedService) WithDependencies(svcs ...Service) {
 	u.Services = append(u.Services, svcs...)
+}
+
+// dependencies implements Service.dependencies.
+func (u *UnimplementedService) dependencies() Services {
+	return u.Services
 }
 
 // Signaller implements Service.Signaller.

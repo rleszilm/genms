@@ -6,13 +6,14 @@ import (
 	"reflect"
 
 	"github.com/grpc-ecosystem/grpc-gateway/v2/runtime"
-	"github.com/rleszilm/genms/log"
+	"github.com/rleszilm/genms/logging"
 	"github.com/rleszilm/genms/service"
 	"google.golang.org/grpc"
+	"google.golang.org/grpc/credentials/insecure"
 )
 
 var (
-	logs = log.NewChannel("http")
+	logs = logging.NewChannel("http")
 )
 
 // LocalGrpcProxy is a function that registers http routes against a grpc server implementation.
@@ -98,8 +99,7 @@ func (s *Server) WithRoute(pattern string, handler http.Handler) error {
 
 // WithRouteFunc adds a route to the http service
 func (s *Server) WithRouteFunc(pattern string, handler http.HandlerFunc) error {
-	s.WithRoute(pattern, handler)
-	return nil
+	return s.WithRoute(pattern, handler)
 }
 
 // WithLocalGrpcProxy adds http methods that proxy to a grpc server.
@@ -131,7 +131,7 @@ func (s *Server) WithRemoteGrpcProxy(ctx context.Context, proxy *service.Proxy, 
 
 	proxyOpts := []grpc.DialOption{}
 	if proxy.Insecure {
-		proxyOpts = append(proxyOpts, grpc.WithInsecure())
+		proxyOpts = append(proxyOpts, grpc.WithTransportCredentials(insecure.NewCredentials()))
 	}
 
 	if s.grpcMux == nil {

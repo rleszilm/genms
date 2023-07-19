@@ -6,13 +6,13 @@ import (
 	"net"
 
 	grpc_middleware "github.com/grpc-ecosystem/go-grpc-middleware"
-	"github.com/rleszilm/genms/log"
+	"github.com/rleszilm/genms/logging"
 	"github.com/rleszilm/genms/service"
 	"google.golang.org/grpc"
 )
 
 var (
-	logs = log.NewChannel("grpc")
+	logs = logging.NewChannel("grpc")
 )
 
 // GrpcService is a function that registers a grpc service against a server.

@@ -34,8 +34,7 @@ func (e *Exporter) String() string {
 
 // Start initialize registers the prometheus exporter and starts metric collection.
 func (e *Exporter) Start() error {
-	e.server.WithRoute(e.config.RequestPath, e)
-	return nil
+	return e.server.WithRoute(e.config.RequestPath, e)
 }
 
 // Stop stops the exporter from publishing metrics.

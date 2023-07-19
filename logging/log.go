@@ -1,4 +1,4 @@
-package log
+package logging
 
 import (
 	"fmt"
@@ -275,6 +275,7 @@ func NewChannel(name string) *Channel {
 		prefixPanic:   fmt.Sprintf("[Panic](%s): ", name),
 		prefixPrint:   fmt.Sprintf("[Print](%s): ", name),
 	}
+
 	return channels[name]
 }
 

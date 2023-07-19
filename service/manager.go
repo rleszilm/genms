@@ -7,11 +7,11 @@ import (
 	"os/signal"
 	"syscall"
 
-	"github.com/rleszilm/genms/log"
+	"github.com/rleszilm/genms/logging"
 )
 
 var (
-	logs = log.NewChannel("service")
+	logs = logging.NewChannel("service")
 )
 
 // Manager maintains a list of app.Service interfaces. The Manager is intended to Initialize, Run
@@ -27,7 +27,7 @@ type Manager struct {
 func (m *Manager) Register(svcs ...Service) {
 	l := len(m.svcs)
 	for i := 0; i < len(svcs); i++ {
-		svcs[i].withSID(SID(i + l))
+		svcs[i].withServiceID(ServiceID(i + l))
 	}
 
 	m.svcs = append(m.svcs, svcs...)
@@ -51,9 +51,9 @@ func (m *Manager) Initialize(ctx context.Context) error {
 
 		for i := 0; i < len(m.svcs); i++ {
 			svc := m.svcs[i]
-			logs.Infof("starting service <%d> %s(%T)", svc.SID(), svc.String(), svc)
+			logs.Infof("starting service <%d> %s(%T)", svc.ServiceID(), svc.String(), svc)
 			if err := svc.Initialize(ctx); err != nil {
-				done <- fmt.Errorf("cannot start service: <%d> %s - %w", svc.SID(), svc.String(), err)
+				done <- fmt.Errorf("cannot start service: <%d> %s - %w", svc.ServiceID(), svc.String(), err)
 				return
 			}
 		}
@@ -86,7 +86,7 @@ func (m *Manager) Shutdown(ctx context.Context) error {
 
 		for i := len(m.svcs); i > 0; i-- {
 			svc := m.svcs[i-1]
-			logs.Infof("shutting down service <%d> %s(%T)", svc.SID(), svc.String(), svc)
+			logs.Infof("shutting down service <%d> %s(%T)", svc.ServiceID(), svc.String(), svc)
 			if err := svc.Shutdown(ctx); err != nil {
 				done <- err
 				return
@@ -119,7 +119,7 @@ func (m *Manager) Wait() {
 		case s := <-m.signals:
 			err := s.Error()
 			if err != nil {
-				logs.Error("manager shutting down due to component error: <%d> %s", s.SID(), err)
+				logs.Error("manager shutting down due to component error: <%d> %s", s.ServiceID(), err)
 				return
 			}
 		}

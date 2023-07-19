@@ -3,14 +3,14 @@ package middleware_grpc
 import (
 	"strings"
 
-	"github.com/rleszilm/genms/log"
+	"github.com/rleszilm/genms/logging"
 	"go.opencensus.io/stats"
 	"go.opencensus.io/stats/view"
 	"go.opencensus.io/tag"
 )
 
 var (
-	logs = log.NewChannel("grpc-mid")
+	logs = logging.NewChannel("grpc-mid")
 )
 
 var (
