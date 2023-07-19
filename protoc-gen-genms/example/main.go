@@ -77,5 +77,7 @@ func main() {
 		log.Fatal("Unable to start services: ", err)
 	}
 	manager.Wait()
-	manager.Shutdown(ctx)
+	if err := manager.Shutdown(ctx); err != nil {
+		log.Println("unable to shutdown services:", err)
+	}
 }

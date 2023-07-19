@@ -2,16 +2,17 @@ package healthcheck
 
 import (
 	"context"
+	"fmt"
 	"net/http"
 	"path"
 
-	"github.com/rleszilm/genms/log"
+	"github.com/rleszilm/genms/logging"
 	"github.com/rleszilm/genms/service"
 	http_service "github.com/rleszilm/genms/service/http"
 )
 
 var (
-	logs = log.NewChannel("healthcheck")
+	logs = logging.NewChannel("healthcheck")
 )
 
 // StatusFunc is a function that returns true/false depending on whether the system
@@ -33,9 +34,13 @@ type Service struct {
 func (s *Service) Initialize(_ context.Context) error {
 	if s.config.Enabled {
 		logs.Debug("health route:", s.config.RequestPrefix)
-		s.server.WithRouteFunc(s.config.RequestPrefix, s.ServeHealthy)
+		if err := s.server.WithRouteFunc(s.config.RequestPrefix, s.ServeHealthy); err != nil {
+			return err
+		}
 		logs.Debug("ready route:", path.Join(s.config.RequestPrefix, "ready"))
-		s.server.WithRouteFunc(path.Join(s.config.RequestPrefix, "ready"), s.ServeReady)
+		if err := s.server.WithRouteFunc(path.Join(s.config.RequestPrefix, "ready"), s.ServeReady); err != nil {
+			return err
+		}
 	} else {
 		logs.Debug("health checks disabled")
 	}
@@ -72,19 +77,13 @@ func (s *Service) ServeHealthy(w http.ResponseWriter, req *http.Request) {
 	logs.Debug("serving healthy status")
 	if s.healthyFunc != nil {
 		logs.Trace("using custom healthy logic")
-		if ok, err := s.healthyFunc(); err != nil {
-			w.WriteHeader(http.StatusInternalServerError)
-			w.Write([]byte("system is not healthy:" + err.Error()))
-			return
-		} else if !ok {
-			w.WriteHeader(http.StatusInternalServerError)
-			w.Write([]byte("system is not healthy"))
+		if ok, err := s.healthyFunc(); err != nil || !ok {
+			respond(w, "system is not healthy:", nil)
 			return
 		}
 	}
 
-	w.WriteHeader(http.StatusOK)
-	w.Write([]byte("system is healthy"))
+	respond(w, "system is healthy", nil)
 }
 
 // ServeReady runs the system ready check.
@@ -92,20 +91,13 @@ func (s *Service) ServeReady(w http.ResponseWriter, req *http.Request) {
 	logs.Debug("serving ready status")
 	if s.readyFunc != nil {
 		logs.Trace("using custom status logic")
-		if ok, err := s.readyFunc(); err != nil {
-			w.WriteHeader(http.StatusInternalServerError)
-			w.Write([]byte("system is not ready:" + err.Error()))
-			return
-		} else if !ok {
-			w.WriteHeader(http.StatusInternalServerError)
-			w.Write([]byte("system is not ready"))
+		if ok, err := s.readyFunc(); err != nil || !ok {
+			respond(w, "system is not ready:", nil)
 			return
 		}
-		return
 	}
 
-	w.WriteHeader(http.StatusOK)
-	w.Write([]byte("system is ready"))
+	respond(w, "system is ready", nil)
 }
 
 // NewService instantitates a Service server.
@@ -117,4 +109,25 @@ func NewService(config *Config, server *http_service.Server) *Service {
 
 	server.WithDependencies(svc)
 	return svc
+}
+
+func respond(w http.ResponseWriter, resp string, err error) {
+	if asStatusError, ok := err.(*http_service.StatusError); ok && err != nil {
+		w.WriteHeader(asStatusError.StatusCode())
+		if _, err := w.Write([]byte(fmt.Sprint(resp, err))); err != nil {
+			logs.Error("could not write response:", err)
+		}
+		return
+	} else if err != nil {
+		w.WriteHeader(http.StatusInternalServerError)
+		if _, err := w.Write([]byte(fmt.Sprint(resp, err))); err != nil {
+			logs.Error("could not write response:", err)
+		}
+		return
+	}
+
+	w.WriteHeader(http.StatusOK)
+	if _, err := w.Write([]byte(resp)); err != nil {
+		logs.Error("could not write response:", err)
+	}
 }

@@ -1,7 +1,7 @@
 package main
 
 import (
-	"io/ioutil"
+	"io"
 	"log"
 	"os"
 
@@ -35,7 +35,7 @@ func main() {
 		}
 	}()
 
-	buf, err := ioutil.ReadAll(os.Stdin)
+	buf, err := io.ReadAll(os.Stdin)
 	if err != nil {
 		genError = err
 		return

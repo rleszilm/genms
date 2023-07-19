@@ -2,7 +2,7 @@
 BUILD_ARGS ?= CGO_ENABLED=0
 BUILD_FLAGS ?= -a -ldflags "-s"
 
-PACKAGES ?= $(shell go list ./... | egrep -v genms/tools)
+PACKAGES ?= $(shell go list ./... | egrep -v genms/tools | egrep -v vendor/)
 
 ## Testing config
 TEST_MODE ?= unit
